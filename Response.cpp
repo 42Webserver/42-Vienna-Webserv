@@ -29,9 +29,17 @@ Response::~Response()
 
 void Response::createResponseMessage()
 {
-/* 	int error_code;
-	if ((error_code = checkMethod()) > 0) */
-		
+	int error_code;
+	if ((error_code = checkMethod()) > 0)
+		sendErrorMsg(error_code);
+	if ((error_code = checkUri()) > 0)
+		sendErrorMsg(error_code);
+	//Create Response header!;	
+}
+
+void Response::sendErrorMsg(int a_error_code)
+{
+	std::cout << "FUCK I DONT WANT TO SEND ERROR PAGES" << '\n';
 }
 
 int Response::checkMethod()
@@ -64,8 +72,12 @@ int Response::checkUri()
 		while ((readDir = readdir(directory)) != NULL)
 		{
 			if (m_request.getValue("uri") == readDir->d_name)
+			{
+				closedir(directory);
 				return (std::cout << "Filename found!!!!	", 0); //File found
+			}
 		}
+		closedir(directory);
 		return (404); //File not found!
 	}
 	return (0);

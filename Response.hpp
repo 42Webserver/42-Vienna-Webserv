@@ -22,10 +22,11 @@ public:
     Response& operator=(const Response& other);
     ~Response();
 
-    void createResponseMessage();
-    int checkMethod();
-    int checkUri() ;
-    
+    void    createResponseMessage();
+    void    sendErrorMsg(int a_error_code);
+    int     checkMethod();
+    int     checkUri() ;
+
 };
 
 #endif // !RESPONSE_H
