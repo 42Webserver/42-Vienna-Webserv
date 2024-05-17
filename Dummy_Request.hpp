@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+//#include "Response.hpp"
 
 class Dummy_Request
 {
@@ -12,10 +13,11 @@ class Dummy_Request
         Dummy_Request(const Dummy_Request& other);
         Dummy_Request& operator=(const Dummy_Request& other);
         ~Dummy_Request();
+        std::string const & getValue(std::string const & key) const;
+        Dummy_Request(void);
 
     private:
 
-        Dummy_Request(void);
         std::map <std::string, std::string> m_request;
 
 };

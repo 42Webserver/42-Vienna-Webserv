@@ -26,3 +26,8 @@ Dummy_Request &Dummy_Request::operator=(const Dummy_Request &other)
 Dummy_Request::~Dummy_Request()
 {
 }
+
+std::string const &Dummy_Request::getValue(std::string const &key) const
+{
+    return (m_request.find(key)->second);
+}
