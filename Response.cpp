@@ -29,16 +29,44 @@ Response::~Response()
 
 void Response::createResponseMessage()
 {
-	std::cout << m_request.getValue("method") << '\n';
+/* 	int error_code;
+	if ((error_code = checkMethod()) > 0) */
+		
 }
 
 int Response::checkMethod()
 {
 	std::string method = m_request.getValue("method");
+
 	if (method.empty())
 		return (405); //Something else if there is no method???
-	if (method == "GET" || method == "POST" || method == "DELETE")
+	else if (method == "GET" || method == "POST" || method == "DELETE")
 		return 0;
 	else
 		return (405); //Errorcode Method not Found
+}
+
+int Response::checkUri()
+{
+	if (m_request.getValue("method") == "GET")
+	{
+		DIR* directory;
+		struct dirent *readDir;
+		std::string uri = m_request.getValue("uri");
+
+		if (uri.empty())
+			return (std::cerr << "Error: empty uri" << '\n', 400); //400 Bad Request
+		if (uri.length() > 256)
+			return (std::cerr << "Error: Uri too long" << '\n', 414); //414 Uri too long
+		directory = opendir("www");
+		if (!directory)
+			return (std::cerr << "Error: directory not found" << '\n', 500); //500 Internal Server 
+		while ((readDir = readdir(directory)) != NULL)
+		{
+			if (m_request.getValue("uri") == readDir->d_name)
+				return (std::cout << "Filename found!!!!	", 0); //File found
+		}
+		return (404); //File not found!
+	}
+	return (0);
 }

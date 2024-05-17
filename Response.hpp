@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <dirent.h>
 #include "Dummy_Request.hpp" 
 
 class Response
@@ -23,7 +24,8 @@ public:
 
     void createResponseMessage();
     int checkMethod();
-    void checkUri() ;
+    int checkUri() ;
+    
 };
 
 #endif // !RESPONSE_H
