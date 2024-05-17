@@ -35,6 +35,7 @@ void Response::createResponseMessage()
 	if ((error_code = checkUri()) > 0)
 		sendErrorMsg(error_code);
 	//Create Response header!;	
+	//Read from file to string for uploading page!
 }
 
 void Response::sendErrorMsg(int a_error_code)
