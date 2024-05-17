@@ -1,6 +1,6 @@
-NAME		= PmergeMe
+NAME		= response
 
-SRC			=	main.cpp PmergeMe.cpp\
+SRC			=	main.cpp Dummy_Request.cpp Response.cpp\
 
 OBJS		= $(SRC:.cpp=.o)
 
