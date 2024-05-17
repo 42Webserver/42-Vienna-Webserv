@@ -22,6 +22,8 @@ public:
     ~Response();
 
     void createResponseMessage();
+    int checkMethod();
+    void checkUri() ;
 };
 
 #endif // !RESPONSE_H
