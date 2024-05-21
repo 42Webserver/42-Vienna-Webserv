@@ -5,6 +5,10 @@ Webserver::Webserver(void)
 	Server testSrvr;
 	if (testSrvr.initServerSocket(INADDR_ANY, 8080) != -1)
 		m_servers.push_back(testSrvr);
+	if (testSrvr.initServerSocket(INADDR_ANY, 8090) != -1)
+		m_servers.push_back(testSrvr);
+	else
+		std::cerr << "fail port 8090" << '\n';
 }
 
 Webserver::Webserver(const Webserver& a_other) : m_servers(a_other.m_servers) {}

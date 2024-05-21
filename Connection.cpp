@@ -32,7 +32,6 @@ std::string	Connection::readUntilSep(std::string& a_ouput, const std::string& a_
 
 	do
 	{
-		std::cout << "Before recv" << '\n';
 		recvRet = recv(m_clientSocket, buffer, BUFFER_SIZE, 0);
 		if (recvRet == -1)
 			throw (std::runtime_error("Error: recv bad socket?"));
@@ -64,6 +63,9 @@ int Connection::reciveRequestRaw(void)
 			m_body.append(remainder);
 			readUntilSep(m_body, "\r\n\r\n");
 		}
+		m_request = Request(m_head, m_body, m_clientSocket);
+		m_response = Response(m_request);
+		m_response.createResponseMessage();
 	}
 	catch(const std::exception& e)
 	{
@@ -77,6 +79,7 @@ int Connection::reciveRequestRaw(void)
 int Connection::sendResponse(void) const
 {
 	const std::string&	response = m_response.getResponse();
+	std::cout << "Response: " << response << '\n';
 	return (send(m_clientSocket, response.data(), response.size(), 0));
 }
 

@@ -8,8 +8,7 @@
 #include <map>
 #include <dirent.h>
 #include <ctime>
-#include "Dummy_Request.hpp" 
-
+#include "Request.hpp"
 
 /// global variable///
 extern std::map<std::string, std::string> g_status_codes;
@@ -19,12 +18,12 @@ class Response
 private:
 
 	std::string     m_responseMsg;
-	Dummy_Request   m_request;
+	Request   	m_request;
 
 public:
 
 	Response(void);
-	Response(const Dummy_Request& a_request);
+	Response(const Request& a_request);
 	Response(const Response& other);
 	Response& operator=(const Response& other);
 	~Response();
@@ -40,7 +39,7 @@ public:
 	void				addServerName(std::string& a_response_header);
 	void				addDateAndTime(std::string& a_response_header);
 	void				addServerConnection(std::string& a_response_header);
-	std::string const & getReponse() const;
+	std::string const & getResponse() const;
 	void				getBody(std::string const & filename);
 };
 

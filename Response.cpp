@@ -4,7 +4,7 @@ Response::Response(void)
 {
 }
 
-Response::Response(const Dummy_Request& a_request) : m_request(a_request)
+Response::Response(const Request& a_request) : m_request(a_request)
 {
 }
 
@@ -56,7 +56,7 @@ void Response::createResponseMessage()
 void Response::sendValidMsg(int const & a_error_code)
 {
 	getResponseHeader(a_error_code);
-	getBody("www/index.html");
+	getBody(m_request.getValue("uri"));
 	std::cout << m_responseMsg << '\n';
 }
 
@@ -169,14 +169,14 @@ void Response::addServerConnection(std::string &a_response_header)
 	a_response_header.append("\r\n");
 }
 
-std::string const &Response::getReponse() const
+std::string const &Response::getResponse() const
 {
 	return (m_responseMsg);
 }
 
 void Response::getBody(std::string const &filename)
 {
-	std::ifstream input_file(filename.c_str());
+	std::ifstream input_file(("www/" + filename).c_str());
 	std::stringstream body;
 	
 	if (!input_file.is_open() || !input_file.good())

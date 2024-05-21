@@ -20,7 +20,7 @@ pollfd	Server::newSocket(int a_sockFd)
 {
 	pollfd newPfd;
 	newPfd.fd = a_sockFd;
-	newPfd.events = POLLIN | POLLOUT | POLLERR | POLLHUP | POLLNVAL;
+	newPfd.events = POLLIN | POLLERR | POLLHUP | POLLNVAL;
 	newPfd.revents = 0;
 	return (newPfd);
 }
@@ -55,6 +55,7 @@ int Server::initServerSocket(int a_ip, int a_port)
 		return (-1);
 	}
 	m_sockets.push_back(newSocket(sock));
+	m_sockets.front().events |= POLLIN;
 	return (0);
 }
 
@@ -78,7 +79,7 @@ int	Server::acceptNewConnection(int a_sockFd) //make to memeber
 int Server::serverPoll(void)
 {
 	// std::cout << "Polling " << m_sockets.size() << " sockets, server socket: " << m_sockets.at(0).fd << std::endl;
-	int	pollRet = poll(m_sockets.data(), m_sockets.size(), 100);
+	int	pollRet = poll(m_sockets.data(), m_sockets.size(), 10);
 	if (pollRet == 0)
 	{
 		// std::cout << "Poll timeout. Lets move on\n";
@@ -89,6 +90,7 @@ int Server::serverPoll(void)
 	std::cout << pollRet << " sockets triggered by events\n";
 	for (std::size_t i = 0; i < m_sockets.size(); i++)
 	{
+		std::cout << "Socket " << m_sockets.at(i).fd << "	 events: " << m_sockets.at(i).revents << '\n';
 		if (m_sockets.at(i).revents & POLLIN)
 		{
 			std::cout << "Do read/accept request.\n";
@@ -104,6 +106,7 @@ int Server::serverPoll(void)
 			{
 				if (conn->reciveRequestRaw() == -1)
 					std::cerr << "Error: recv\n";
+				m_sockets.at(i).events |= POLLOUT;
 				conn->printHeadNBody();
 			}
 
@@ -121,16 +124,20 @@ int Server::serverPoll(void)
 				if (found->sendResponse() == -1)
 					std::cerr << "Error: sending" << '\n';
 				close(found->getSocketFd());
-				std::cout << "Close socket " << m_sockets.at(i).fd << '\n';
+				// std::cout << "Close socket " << m_sockets.at(i).fd << '\n';
 				m_sockets.erase(m_sockets.begin() + i);
 				m_connections.erase(found);
+				i--;
 				continue ;
 			}
 		}
 		if (m_sockets.at(i).revents & POLLERR)
 			std::cout << "Socket error.\n";
 		if (m_sockets.at(i).revents & POLLHUP)
+		{
 			std::cout << "Socket hang-up.\n";
+			exit(1);
+		}
 		if (m_sockets.at(i).revents & POLLNVAL)
 			std::cout << "Invalid request: socket not open.\n";
 	}
