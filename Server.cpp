@@ -16,11 +16,12 @@ Server &Server::operator=(const Server &other)
 
 Server::~Server() {}
 
-pollfd	newSock(int a_sockFd) //make to memeber
+pollfd	Server::newSocket(int a_sockFd)
 {
 	pollfd newPfd;
 	newPfd.fd = a_sockFd;
 	newPfd.events = POLLIN | POLLOUT | POLLERR | POLLHUP | POLLNVAL;
+	newPfd.revents = 0;
 	return (newPfd);
 }
 
@@ -53,20 +54,25 @@ int Server::initServerSocket(int a_ip, int a_port)
 		std::cerr << "Error: listen failed.\n";
 		return (-1);
 	}
-	m_sockets.push_back(newSock(sock));
+	m_sockets.push_back(newSocket(sock));
 	return (0);
 }
 
-pollfd	acceptNewConnection(int a_sockFd) //make to memeber
+int	Server::acceptNewConnection(int a_sockFd) //make to memeber
 {
 	struct sockaddr clientAdr;
 	socklen_t		addrlen = sizeof(struct sockaddr);
 	int clientFd = accept(a_sockFd, &clientAdr, &addrlen);
 	if (clientFd == -1)
+	{
 		std::cerr << "Error: fatal, accept fail.\n";
+		return (-1);
+	}
 	std::cout << "new socket: " << clientFd << '\n';
-
-	return (newSock(clientFd));
+	pollfd socket = newSocket(clientFd);
+	m_sockets.push_back(socket);
+	m_connections.push_back(Connection(socket.fd));
+	return (0);
 }
 
 int Server::serverPoll(void)
@@ -83,52 +89,53 @@ int Server::serverPoll(void)
 	std::cout << pollRet << " sockets triggered by events\n";
 	for (std::size_t i = 0; i < m_sockets.size(); i++)
 	{
-		pollfd& curr = m_sockets.at(i);
-		if (curr.revents & POLLIN)
+		if (m_sockets.at(i).revents & POLLIN)
 		{
 			std::cout << "Do read/accept request.\n";
-			std::vector<Connection>::iterator conn = std::find(m_connections.begin(), m_connections.end(), curr.fd);
+			std::vector<Connection>::iterator conn = std::find(m_connections.begin(), m_connections.end(), m_sockets.at(i).fd);
 
 			if (conn == m_connections.end())
 			{
-				pollfd newSocket = acceptNewConnection(curr.fd);
-				m_sockets.push_back(newSocket);
-				m_connections.push_back(Connection(newSocket.fd));
+				if (acceptNewConnection(m_sockets.at(i).fd) == -1)
+					std::cerr << "Error: accepting new client connection\n";
+				
 			}
 			else if (conn != m_connections.end())
 			{
 				if (conn->reciveRequestRaw() == -1)
-					std::cerr << "err\n";
+					std::cerr << "Error: recv\n";
 				conn->printHeadNBody();
 			}
 
-/* 			Connection clientConnection(head);
+			/* Connection clientConnection(head);
 			clientConnect.init(); */
 
 		}
-		if (curr.revents & POLLOUT)
+		if (m_sockets.at(i).revents & POLLOUT)
 		{
 			std::cout << "Pollout triggered" << '\n';
-			std::vector<Connection>::iterator found = std::find(m_connections.begin(), m_connections.end(), curr.fd);
+			std::vector<Connection>::iterator found = std::find(m_connections.begin(), m_connections.end(), m_sockets.at(i).fd);
 			if (found != m_connections.end())
 			{
-				std::cout << "Return response to request. On socket: " << curr.fd << '\n';
-				send(found->getSocketFd(), "lul", 3, 0);
+				std::cout << "Return response to request. On socket: " << m_sockets.at(i).fd << '\n';
+				if (found->sendResponse() == -1)
+					std::cerr << "Error: sending" << '\n';
 				close(found->getSocketFd());
+				std::cout << "Close socket " << m_sockets.at(i).fd << '\n';
 				m_sockets.erase(m_sockets.begin() + i);
 				m_connections.erase(found);
-				std::cout << "Close socket " << curr.fd << '\n';
+				continue ;
 			}
 		}
-		if (curr.revents & POLLERR)
+		if (m_sockets.at(i).revents & POLLERR)
 			std::cout << "Socket error.\n";
-		if (curr.revents & POLLHUP)
+		if (m_sockets.at(i).revents & POLLHUP)
 			std::cout << "Socket hang-up.\n";
-		if (curr.revents & POLLNVAL)
+		if (m_sockets.at(i).revents & POLLNVAL)
 			std::cout << "Invalid request: socket not open.\n";
 	}
 
-	return (0);
+	return (pollRet);
 }
 
 const std::vector<pollfd>& Server::getSockets(void) const

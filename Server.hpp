@@ -1,5 +1,5 @@
-#ifndef SERVER_H
-# define SERVER_H
+#ifndef SERVER_HPP
+# define SERVER_HPP
 
 #include <vector>
 #include <sys/types.h>
@@ -18,6 +18,8 @@ private:
 	std::vector<Connection>	m_connections;
 	sockaddr_in				m_serverAddress;
 
+	pollfd	newSocket(int a_sockFd);
+
 public:
 	Server(void);
 	// Server(long a_ip, long a_port);
@@ -27,7 +29,10 @@ public:
 
 	int	initServerSocket(int a_ip, int a_port);
 	int	serverPoll(void);
+
+	int	acceptNewConnection(int a_sockFd);
+
 	const std::vector<pollfd>& getSockets(void) const;
 };
 
-#endif // !SERVER_H
+#endif // !SERVER_HPP

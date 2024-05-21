@@ -1,5 +1,5 @@
-#ifndef WEBSERVER_H
-# define WEBSERVER_H
+#ifndef WEBSERVER_HPP
+# define WEBSERVER_HPP
 
 #include <vector>
 #include "Server.hpp"
@@ -23,4 +23,4 @@ public:
 };
 
 
-#endif // !WEBSERVER_H
+#endif // !WEBSERVER_HPP

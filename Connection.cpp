@@ -35,7 +35,7 @@ std::string	Connection::readUntilSep(std::string& a_ouput, const std::string& a_
 		std::cout << "Before recv" << '\n';
 		recvRet = recv(m_clientSocket, buffer, BUFFER_SIZE, 0);
 		if (recvRet == -1)
-			throw (std::runtime_error("Error: recv error"));
+			throw (std::runtime_error("Error: recv bad socket?"));
 		a_ouput.append(buffer, recvRet);
 		sepPos = a_ouput.find(a_seperator);
 		// std::cout << "Condition1: " << (recvRet == BUFFER_SIZE) << " Conditon2: " << (sepPos == std::string::npos) << '\n';
@@ -72,6 +72,12 @@ int Connection::reciveRequestRaw(void)
 	}
 	
 	return (0);
+}
+
+int Connection::sendResponse(void) const
+{
+	const std::string&	response = m_response.getResponse();
+	return (send(m_clientSocket, response.data(), response.size(), 0));
 }
 
 bool Connection::operator==(const int a_fd) const
