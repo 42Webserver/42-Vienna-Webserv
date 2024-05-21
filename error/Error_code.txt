@@ -1,0 +1,16 @@
+Error codes webserver: 
+
+2xx SUCCESS
+200 OK
+
+
+4xx Client-Error
+400 Bad Request
+404 Not Found
+405 Method Not Allowed
+414 URI Too Long
+
+5xx Server-Error
+500 Internal Server Error 
+505 HTTP Version not supported
+
