@@ -31,21 +31,40 @@ void Response::createResponseMessage()
 {
 	int error_code;
 	if ((error_code = checkMethod()) > 0)
+	{
 		sendErrorMsg(error_code);
+		return ;
+	}
 	if ((error_code = checkUri()) > 0)
+	{
 		sendErrorMsg(error_code);
+		return ; 
+	}
 	if ((error_code = checkHttpVersion()) > 0)
+	{
 		sendErrorMsg(error_code);
-	//Create Response header!;	
+		return ;
+	}
+	if (error_code == 0)
+	{
+		sendValidMsg(200);
+		return ;
+	}
 	//Read from file to string for uploading page!
 }
 
-
+void Response::sendValidMsg(int const & a_error_code)
+{
+	getResponseHeader(a_error_code);
+	getBody("www/index.html");
+	std::cout << m_responseMsg << '\n';
+}
 
 void Response::sendErrorMsg(int const & a_error_code)
 {
 	getResponseHeader(a_error_code);
-	std::cout << "FUCK I DONT WANT TO SEND ERROR PAGES" << '\n';
+	getBody("error/notFound.html");
+	std::cout << m_responseMsg << '\n';
 }
 
 int Response::checkMethod()
@@ -80,7 +99,7 @@ int Response::checkUri()
 			if (m_request.getValue("uri") == readDir->d_name)
 			{
 				closedir(directory);
-				return (std::cout << "Filename found!!!!" << '\n', 0); //File found
+				return (/* std::cout << "Filename found!!!!" << '\n', */ 0); //File found
 			}
 		}
 		closedir(directory);
@@ -104,7 +123,8 @@ void Response::getResponseHeader(int const & a_status_code)
 	addDateAndTime(response_header);
 	addServerName(response_header);
 	addServerConnection(response_header);
-	std::cout << response_header << '\n';
+	response_header.append("\r\n");
+	m_responseMsg += response_header;
 }
 
 void	Response::addStatusLine(int const &a_status_code, std::string& a_response_header)
@@ -147,4 +167,24 @@ void Response::addServerConnection(std::string &a_response_header)
 	//else closed
 	a_response_header.append("Connection: closed");
 	a_response_header.append("\r\n");
+}
+
+std::string const &Response::getReponse() const
+{
+	return (m_responseMsg);
+}
+
+void Response::getBody(std::string const &filename)
+{
+	std::ifstream input_file(filename.c_str());
+	std::stringstream body;
+	
+	if (!input_file.is_open() || !input_file.good())
+	{
+		std::cerr << "Error: open error file" << '\n';
+		return ;
+	}
+	body << input_file.rdbuf();
+	m_responseMsg.append(body.str());
+	m_responseMsg.append("\r\n");
 }

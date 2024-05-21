@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <map>
 #include <dirent.h>
 #include <ctime>
@@ -30,6 +31,7 @@ public:
 
 	void				createResponseMessage();
 	void				sendErrorMsg(int const & a_error_code);
+	void				sendValidMsg(int const & a_error_code);
 	int					checkMethod();
 	int					checkUri();
 	int					checkHttpVersion();
@@ -39,7 +41,7 @@ public:
 	void				addDateAndTime(std::string& a_response_header);
 	void				addServerConnection(std::string& a_response_header);
 	std::string const & getReponse() const;
-
+	void				getBody(std::string const & filename);
 };
 
 #endif // !RESPONSE_H
