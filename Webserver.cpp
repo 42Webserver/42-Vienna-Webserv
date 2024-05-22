@@ -42,7 +42,7 @@ int Webserver::pollServers(void)
 				std::cerr << "Server Error: could not accept new client" << '\n';
 				continue ;
 			}
-			m_polls.addConnection(client_socket);
+			m_polls.addConnection(Connection(m_servers.at(i), client_socket));
 		}
 /* 		if (m_polls.getPollfdsAt(i).revents & POLLOUT)
 			std::cout << "Pollout triggered" << '\n'; */
