@@ -4,12 +4,14 @@
 #include <vector>
 #include "Server.hpp"
 #include <poll.h>
+#include "PollContainer.hpp"
 
 class Webserver
 {
 private:
 
-	std::vector<Server>	m_servers;
+	std::vector<Server>		m_servers;
+	PollContainer			m_polls;
 
 public:
 
@@ -18,9 +20,11 @@ public:
 	Webserver& operator=(const Webserver& other);
 	~Webserver();
 
-	std::vector<pollfd>	serversToPollfd(const std::vector<Server>& a_servers) const;
+	int	pollServers(void);
+	int pollClients(void);
 	int	run();
 };
 
 
 #endif // !WEBSERVER_HPP
+
