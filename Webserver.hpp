@@ -13,6 +13,9 @@ private:
 	std::vector<Server>		m_servers;
 	PollContainer			m_polls;
 
+	int	pollServers(void);
+	int pollClients(void);
+
 public:
 
 	Webserver(void);
@@ -20,9 +23,7 @@ public:
 	Webserver& operator=(const Webserver& other);
 	~Webserver();
 
-	int	pollServers(void);
-	int pollClients(void);
-	int	run();
+	int	runServer();
 };
 
 

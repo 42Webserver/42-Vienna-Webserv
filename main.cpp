@@ -19,5 +19,9 @@ int	main()
 	Webserver webserv;
 
 	initStatusCodes();
-	webserv.run();
+	if (webserv.runServer() == -1)
+	{
+		std::cerr << "FATAL SHUTDOWN: server has shut down.\n";
+		return (1);
+	}
 }

@@ -29,7 +29,7 @@ public:
 
 	int	initServerSocket(int a_ip, int a_port);
 
-	int	acceptNewConnection(int a_sockFd);
+	int	acceptNewConnection(void);
 };
 
 #endif // !SERVER_HPP
