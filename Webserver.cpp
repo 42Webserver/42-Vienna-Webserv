@@ -60,17 +60,17 @@ int Webserver::pollClients(void)
 {
 	for (std::size_t i = m_servers.size(); i < m_polls.getPollfds().size(); i++)
 	{
-		std::cout << "Socket " << m_polls.getPollfdsAt(i).fd << "	 events: " << m_polls.getPollfdsAt(i).revents << '\n';
+		//std::cout << "Socket " << m_polls.getPollfdsAt(i).fd << "	 events: " << m_polls.getPollfdsAt(i).revents << '\n';
 		if (m_polls.getPollfdsAt(i).revents & POLLIN)
 		{
-			std::cout << "Do read/accept request.\n";
+			//std::cout << "Do read/accept request.\n";
 			if (m_polls.getConnection(i).reciveRequestRaw() == -1)
 				std::cerr << "Mal schaun\n";
 			m_polls.getPollfdsAt(i).events |= POLLOUT;
 		}
 		if (m_polls.getPollfdsAt(i).revents & POLLOUT)
 		{
-			std::cout << "Pollout triggered\n";
+			//std::cout << "Pollout triggered\n";
 			if (m_polls.getConnection(i).sendResponse() == -1)
 				std::cerr << "Error: send\n";
 			m_polls.removeConnection(i--); 	//? Sicher

@@ -64,6 +64,6 @@ int	Server::acceptNewConnection(int a_sockFd) //make to memeber
 		std::cerr << "Error: fatal, accept fail.\n";
 		return (-1);
 	}
-	std::cout << "new socket: " << clientFd << '\n';
+	//std::cout << "new socket: " << clientFd << '\n';
 	return (clientFd);
 }
