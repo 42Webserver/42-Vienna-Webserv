@@ -35,13 +35,14 @@ public:
 	int					checkMethod();
 	int					checkUri();
 	int					checkHttpVersion();
-	void				getResponseHeader(int const & a_status_code);
+	void				getResponseHeader(int const & a_status_code, const std::string& a_body);
+	void				addContentLength(const std::string& a_body, std::string& a_response_header);
 	void				addStatusLine(int const & a_status_code, std::string& a_reponse_header);
 	void				addServerName(std::string& a_response_header);
 	void				addDateAndTime(std::string& a_response_header);
 	void				addServerConnection(std::string& a_response_header);
 	std::string const & getResponse() const;
-	void				getBody(std::string const & filename);
+	std::string 		getBody(std::string const & filename);
 };
 
 #endif // !RESPONSE_HPP

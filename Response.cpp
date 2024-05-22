@@ -55,16 +55,21 @@ void Response::createResponseMessage()
 
 void Response::sendValidMsg(int const & a_error_code)
 {
-	getResponseHeader(a_error_code);
-	getBody("www/" + this->m_request.getValue("uri"));
+	std::string body = getBody("www/" + this->m_request.getValue("uri"));
+	getResponseHeader(a_error_code, body);
+	m_responseMsg.append(body);
+	m_responseMsg.append("\r\n");
 	std::cout << m_responseMsg << '\n';
 }
 
 void Response::sendErrorMsg(int const & a_error_code)
 {
-	getResponseHeader(a_error_code);
-	getBody("error/notFound.html");
+	std::string body = getBody("error/notFound.html");
+	getResponseHeader(a_error_code, body);
+	m_responseMsg.append(body);
+	m_responseMsg.append("\r\n");
 	std::cout << m_responseMsg << '\n';
+
 }
 
 int Response::checkMethod()
@@ -86,9 +91,9 @@ int Response::checkUri()
 		DIR* directory;
 		struct dirent *readDir;
 		std::string uri = m_request.getValue("uri");
-
+		std::cout << "uri: '"<< uri << "'" << std::endl;
 		if (uri.empty())
-			return (std::cerr << "Error: empty uri" << '\n', 400); //400 Bad Request
+			m_request.setValue("uri", "index.html"); //Hier muss der index aus dem config hin!
 		if (uri.length() > 256)
 			return (std::cerr << "Error: Uri too long" << '\n', 414); //414 Uri too long
 		directory = opendir("www");
@@ -115,16 +120,26 @@ int Response::checkHttpVersion()
 	return 0;
 }
 
-void Response::getResponseHeader(int const & a_status_code)
+void Response::getResponseHeader(int const & a_status_code, const std::string& a_body)
 {
 	std::string response_header;
 
 	addStatusLine(a_status_code, response_header);
 	addDateAndTime(response_header);
 	addServerName(response_header);
+	addContentLength(a_body, response_header);
 	addServerConnection(response_header);
 	response_header.append("\r\n");
 	m_responseMsg += response_header;
+}
+
+void Response::addContentLength(const std::string& a_body, std::string& a_response_header)
+{
+	std::ostringstream size; 
+	size << a_body.length();
+	a_response_header.append("Content-length: ");
+	a_response_header.append(size.str());
+	a_response_header.append("\r\n");
 }
 
 void	Response::addStatusLine(int const &a_status_code, std::string& a_response_header)
@@ -165,7 +180,7 @@ void Response::addServerConnection(std::string &a_response_header)
 {
 	//check if we are sending, more response message => keep-alive!
 	//else closed
-	a_response_header.append("Connection: closed");
+	a_response_header.append("Connection: keep-alive");
 	a_response_header.append("\r\n");
 }
 
@@ -174,7 +189,7 @@ std::string const &Response::getResponse() const
 	return (m_responseMsg);
 }
 
-void Response::getBody(std::string const &filename)
+std::string Response::getBody(std::string const &filename)
 {
 	std::ifstream input_file(filename.c_str());
 	std::stringstream body;
@@ -182,9 +197,10 @@ void Response::getBody(std::string const &filename)
 	if (!input_file.is_open() || !input_file.good())
 	{
 		std::cerr << "Error: open error file" << '\n';
-		return ;
+		return body.str();
 	}
 	body << input_file.rdbuf();
-	m_responseMsg.append(body.str());
-	m_responseMsg.append("\r\n");
+	return (body.str());
+/* 	m_responseMsg.append(body.str());
+	m_responseMsg.append("\r\n"); */
 }
