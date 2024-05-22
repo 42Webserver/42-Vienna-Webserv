@@ -1,0 +1,3 @@
+add content-length to response header: 
+add dynamic error page with needed error_code + message! 
+check if config has user defined errorpages! 
