@@ -4,16 +4,10 @@
 #include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include "Request.hpp"
+#include "Response.hpp"
 
 #define BUFFER_SIZE 16
-
-class Response
-{
-public:
-	const std::string getResponse(void) const {return ("Response here!");}
-};
-
-class Request;
 
 class Connection
 {
@@ -25,6 +19,7 @@ private:
 	std::string	m_body;
 
 	Response	m_response;
+	Request		m_request;
 
 	std::string	readUntilSep(std::string& a_ouput, const std::string& a_seperator);
 	Connection(void);
