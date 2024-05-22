@@ -36,10 +36,10 @@ void PollContainer::addServer(const Server& a_server)
 	m_pollfds.push_back(newPollfd(a_server.getServerSocket(), POLLIN | POLLOUT | POLLERR | POLLNVAL));
 }
 
-void PollContainer::addConnection(int a_clientSocket)
+void PollContainer::addConnection(const Connection& a_connection)
 {
-	m_pollfds.push_back(newPollfd(a_clientSocket, POLLIN | POLLERR | POLLNVAL));
-	m_connections.push_back(a_clientSocket);
+	m_pollfds.push_back(newPollfd(a_connection.getSocketFd(), POLLIN | POLLERR | POLLNVAL));
+	m_connections.push_back(a_connection);
 }
 
 void PollContainer::removeConnection(int a_idx)
