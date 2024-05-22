@@ -73,8 +73,8 @@ void Request::initMap(std::string head)
 		createKeyValuePair(line);
 		prevPos = pos;
 	}
-	for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
-		std::cout << "key = '" << it->first << "' value = " << it->second  << std::endl;
+	/* for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
+		std::cout << "key = '" << it->first << "' value = " << it->second  << std::endl; */
 }
 
 
@@ -86,4 +86,9 @@ int Request::getClientSocket() const
 const std::string &Request::getValue(const std::string &a_key)
 {
 	return (m_requestHeader[a_key]);
+}
+
+void Request::setValue(const std::string &a_key, std::string a_value)
+{
+	m_requestHeader[a_key] = a_value;
 }
