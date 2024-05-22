@@ -1,14 +1,12 @@
 #include "Connection.hpp"
 
-Connection::Connection(void) {}
-
-Connection::Connection(int a_clientSocket) : m_clientSocket(a_clientSocket)
+Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket) 
 {
 	std::cout << "New connection on fd: " << m_clientSocket << '\n';
 }
 
 Connection::Connection(const Connection &a_other)
-	: m_clientSocket(a_other.m_clientSocket), m_head(a_other.m_head), m_body(a_other.m_body) {}
+	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_head(a_other.m_head), m_body(a_other.m_body)  {}
 
 Connection &Connection::operator=(const Connection &a_other)
 {
@@ -17,6 +15,7 @@ Connection &Connection::operator=(const Connection &a_other)
 		m_clientSocket = a_other.m_clientSocket;
 		m_head = a_other.m_head;
 		m_body = a_other.m_body;
+		m_server = a_other.m_server;
 	}
 	return (*this);
 }
