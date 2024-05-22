@@ -8,7 +8,7 @@
 #include <map>
 #include <dirent.h>
 #include <ctime>
-#include "Dummy_Request.hpp" 
+#include "Request.hpp" 
 
 
 /// global variable///
@@ -19,12 +19,12 @@ class Response
 private:
 
 	std::string     m_responseMsg;
-	Dummy_Request   m_request;
+	Request   m_request;
 
 public:
 
 	Response(void);
-	Response(const Dummy_Request& a_request);
+	Response(const Request& a_request);
 	Response(const Response& other);
 	Response& operator=(const Response& other);
 	~Response();

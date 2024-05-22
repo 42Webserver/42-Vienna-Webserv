@@ -4,7 +4,7 @@ Response::Response(void)
 {
 }
 
-Response::Response(const Dummy_Request& a_request) : m_request(a_request)
+Response::Response(const Request& a_request) : m_request(a_request)
 {
 }
 
