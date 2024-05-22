@@ -14,9 +14,24 @@ void initStatusCodes()
     g_status_codes["505"] = "HTTP Version not supported";
 }
 
-int	main()
+int	main(int argc, char **argv)
 {
-	Webserver webserv;
+	if (argc > 2)
+	{
+		std::cerr << "Error: too many arguments." << std::endl;
+		return (1);
+	}
+
+    std::string configName;
+
+    if (argc == 1)
+        configName = std::string("webserv.conf");
+    else
+        configName = std::string(argv[1]);
+
+    Webserver webserv(configName);
+
+    exit(42);
 
 	initStatusCodes();
 	webserv.run();
