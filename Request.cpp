@@ -26,7 +26,7 @@ Request::~Request()
 
 Request::Request(std::string& head, std::string& body, int fd) : m_clientSocket(fd)
 {
-	//std::istringstream iss(head); 
+	//std::istringstream iss(head);
 	(void)body;
 	initMap(head);
 }
@@ -57,10 +57,10 @@ void Request::createKeyValuePair(std::string &line)
 
 void Request::initMap(std::string head)
 {
-	std::string line; 
+	std::string line;
 	size_t pos = 0;
 	size_t prevPos = 0;
-	
+
 	pos = head.find("\r\n", pos);
 	pos += 2;
 	line = head.substr(prevPos, pos - prevPos);
@@ -78,7 +78,12 @@ void Request::initMap(std::string head)
 }
 
 
-int Request::getClientSocket() const 
+int Request::getClientSocket() const
 {
 	return (m_clientSocket);
+}
+
+const std::string &Request::getValue(const std::string &a_key)
+{
+	return (m_requestHeader[a_key]);
 }

@@ -1,5 +1,5 @@
-#ifndef RESPONSE_H
-# define RESPONSE_H
+#ifndef RESPONSE_HPP
+# define RESPONSE_HPP
 
 #include <string>
 #include <iostream>
@@ -8,7 +8,7 @@
 #include <map>
 #include <dirent.h>
 #include <ctime>
-#include "Request.hpp" 
+#include "Request.hpp"
 
 
 /// global variable///
@@ -18,8 +18,8 @@ class Response
 {
 private:
 
-	std::string     m_responseMsg;
-	Request   m_request;
+	std::string	m_responseMsg;
+	Request		m_request;
 
 public:
 
@@ -40,8 +40,8 @@ public:
 	void				addServerName(std::string& a_response_header);
 	void				addDateAndTime(std::string& a_response_header);
 	void				addServerConnection(std::string& a_response_header);
-	std::string const & getReponse() const;
+	std::string const & getResponse() const;
 	void				getBody(std::string const & filename);
 };
 
-#endif // !RESPONSE_H
+#endif // !RESPONSE_HPP

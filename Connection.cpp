@@ -2,7 +2,7 @@
 
 Connection::Connection(void) {}
 
-Connection::Connection(int a_clientSocket) : m_clientSocket(a_clientSocket) 
+Connection::Connection(int a_clientSocket) : m_clientSocket(a_clientSocket)
 {
 	std::cout << "New connection on fd: " << m_clientSocket << '\n';
 }
@@ -72,7 +72,7 @@ int Connection::reciveRequestRaw(void)
 		std::cerr << e.what() << '\n';
 		return (-1);
 	}
-	
+
 	return (0);
 }
 

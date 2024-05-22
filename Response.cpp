@@ -38,7 +38,7 @@ void Response::createResponseMessage()
 	if ((error_code = checkUri()) > 0)
 	{
 		sendErrorMsg(error_code);
-		return ; 
+		return ;
 	}
 	if ((error_code = checkHttpVersion()) > 0)
 	{
@@ -56,7 +56,7 @@ void Response::createResponseMessage()
 void Response::sendValidMsg(int const & a_error_code)
 {
 	getResponseHeader(a_error_code);
-	getBody("www/index.html");
+	getBody("www/" + this->m_request.getValue("uri"));
 	std::cout << m_responseMsg << '\n';
 }
 
@@ -93,7 +93,7 @@ int Response::checkUri()
 			return (std::cerr << "Error: Uri too long" << '\n', 414); //414 Uri too long
 		directory = opendir("www");
 		if (!directory)
-			return (std::cerr << "Error: directory not found" << '\n', 500); //500 Internal Server 
+			return (std::cerr << "Error: directory not found" << '\n', 500); //500 Internal Server
 		while ((readDir = readdir(directory)) != NULL)
 		{
 			if (m_request.getValue("uri") == readDir->d_name)
@@ -138,7 +138,7 @@ void	Response::addStatusLine(int const &a_status_code, std::string& a_response_h
 	a_response_header += ' ';
 	a_response_header.append(g_status_codes[convert.str()]);
 	a_response_header.append("\r\n");
-	
+
 }
 
 void Response::addServerName(std::string &a_response_header)
@@ -156,7 +156,7 @@ void Response::addDateAndTime(std::string &a_response_header)
 	char buffer[30];
 	a_response_header.append("Date: ");
 	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", now);
-	
+
 	a_response_header.append(buffer);
 	a_response_header.append("\r\n");
 }
@@ -169,7 +169,7 @@ void Response::addServerConnection(std::string &a_response_header)
 	a_response_header.append("\r\n");
 }
 
-std::string const &Response::getReponse() const
+std::string const &Response::getResponse() const
 {
 	return (m_responseMsg);
 }
@@ -178,7 +178,7 @@ void Response::getBody(std::string const &filename)
 {
 	std::ifstream input_file(filename.c_str());
 	std::stringstream body;
-	
+
 	if (!input_file.is_open() || !input_file.good())
 	{
 		std::cerr << "Error: open error file" << '\n';

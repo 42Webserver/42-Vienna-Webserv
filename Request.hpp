@@ -1,5 +1,5 @@
-#ifndef REQUEST_H
-# define REQUEST_H
+#ifndef REQUEST_HPP
+# define REQUEST_HPP
 
 #include <iostream>
 #include <string>
@@ -23,6 +23,7 @@ class Request
 		void    createKeyValuePair(std::string & line);
 		void    initMap(std::string head);
 		int		getClientSocket() const;
+		const 	std::string& getValue(const std::string& a_key);
 
 	private:
 		int									m_clientSocket;
@@ -30,4 +31,4 @@ class Request
 
 };
 
-#endif // !REQUEST_H
+#endif // !REQUEST_HPP
