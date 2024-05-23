@@ -6,17 +6,22 @@
 #include <sys/socket.h>
 #include "Request.hpp"
 #include "Response.hpp"
+#include "Server.hpp"
 
 #define BUFFER_SIZE 16
+
+class Server;
 
 class Connection
 {
 private:
 
+	Server&		m_server;
 	int			m_clientSocket;
 
 	std::string	m_head;
 	std::string	m_body;
+
 
 	Response	m_response;
 	Request		m_request;
@@ -26,7 +31,7 @@ private:
 
 public:
 
-	Connection(int a_clientSocket);
+	Connection(Server& a_server, int a_clientSocket);
 	Connection(const Connection& a_other);
 	~Connection();
 
