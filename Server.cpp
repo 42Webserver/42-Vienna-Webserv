@@ -2,7 +2,12 @@
 
 Server::Server(void) {}
 
-Server::Server(const Server& a_other) : m_serverSocket(a_other.m_serverSocket), m_serverAddress(a_other.m_serverAddress) {}
+Server::Server(const Server& a_other) : m_serverSocket(a_other.m_serverSocket), m_serverAddress(a_other.m_serverAddress) {
+
+	m_config["404"] = "error/notFound.html";
+	m_config["index"] = "www/";
+
+}
 
 Server &Server::operator=(const Server &other)
 {
