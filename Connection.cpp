@@ -54,6 +54,8 @@ int Connection::getSocketFd(void) const
 
 int Connection::reciveRequestRaw(void)
 {
+	m_head.empty();
+	m_body.empty();
 	try
 	{
 		std::string remainder = readUntilSep(m_head, "\r\n\r\n");

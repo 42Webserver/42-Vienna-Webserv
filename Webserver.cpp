@@ -76,27 +76,7 @@ int Webserver::pollClients(void)
 {
 	for (std::size_t i = m_servers.size(); i < m_polls.getPollfds().size(); i++)
 	{
-		std::cout << "Socket " << m_polls.getPollfdsAt(i).fd << "	 events: " << m_polls.getPollfdsAt(i).revents << '\n';
-		if (m_polls.getPollfdsAt(i).revents & POLLIN)
-		{
-			std::cout << "Do read/accept request.\n";
-			std::cout << m_polls.getPollfdsAt(i);
-			if (m_polls.getConnection(i).reciveRequestRaw() == -1)
-				std::cerr << "Mal schaun\n";
-			m_polls.getPollfdsAt(i).events |= POLLOUT;
-			m_polls.getPollfdsAt(i).events ^= POLLIN;
-		}
-		if (m_polls.getPollfdsAt(i).revents & POLLOUT)
-		{
-			std::cout << "Pollout triggered\n";
-			if (m_polls.getConnection(i).sendResponse() == -1)
-				std::cerr << "Error: send\n";
-			// close(m_polls.getPollfdsAt(i).fd);
-			// m_polls.removeConnection(i--); 	//? Sicher
-			// continue ;						//?
-			m_polls.getPollfdsAt(i).events |= POLLIN;
-			m_polls.getPollfdsAt(i).events ^= POLLOUT;
-		}
+		std::cout << m_polls.getPollfdsAt(i);
 		if (m_polls.getPollfdsAt(i).revents & POLLHUP)
 		{
 			std::cout << "Socket hang-up.\n";
@@ -114,6 +94,25 @@ int Webserver::pollClients(void)
 			std::cerr << "Invalid request: socket not open.\n";
 			m_polls.removeConnection(i--);
 			continue;
+		}
+		if (m_polls.getPollfdsAt(i).revents & POLLIN)
+		{
+			std::cout << "Do read/accept request.\n";
+			if (m_polls.getConnection(i).reciveRequestRaw() == -1)
+				std::cerr << "Mal schaun\n";
+			m_polls.getPollfdsAt(i).events ^= POLLOUT;
+			m_polls.getPollfdsAt(i).events ^= POLLIN;
+		}
+		if (m_polls.getPollfdsAt(i).revents & POLLOUT)
+		{
+			std::cout << "Pollout triggered\n";
+			if (m_polls.getConnection(i).sendResponse() == -1)
+				std::cerr << "Error: send\n";
+			// close(m_polls.getPollfdsAt(i).fd);
+			// m_polls.removeConnection(i--); 	//? Sicher
+			// continue ;						//?
+			m_polls.getPollfdsAt(i).events ^= POLLIN;
+			m_polls.getPollfdsAt(i).events ^= POLLOUT;
 		}
 		m_polls.getPollfdsAt(i).revents = 0;
 	}

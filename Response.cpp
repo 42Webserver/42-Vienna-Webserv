@@ -153,9 +153,9 @@ void Response::addDateAndTime(std::string &a_response_header)
 	std::time_t t = std::time(NULL);
     std::tm* now = std::localtime(&t);
 
-	char buffer[30];
+	char buffer[32];
 	a_response_header.append("Date: ");
-	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", now);
+	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S CEST", now);
 
 	a_response_header.append(buffer);
 	a_response_header.append("\r\n");
@@ -165,7 +165,7 @@ void Response::addServerConnection(std::string &a_response_header)
 {
 	//check if we are sending, more response message => keep-alive!
 	//else closed
-	a_response_header.append("Connection: closed");
+	a_response_header.append("Connection:" + m_request.getValue("Connection"));
 	a_response_header.append("\r\n");
 }
 
@@ -185,6 +185,10 @@ void Response::getBody(std::string const &filename)
 		return ;
 	}
 	body << input_file.rdbuf();
+	std::stringstream ss;
+	ss << "Content-Length: " << body.str().size();
+	m_responseMsg.insert(m_responseMsg.size() - 2, ss.str());
+	m_responseMsg.append("\r\n");
 	m_responseMsg.append(body.str());
 	m_responseMsg.append("\r\n");
 }
