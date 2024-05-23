@@ -1,12 +1,12 @@
 #include "Connection.hpp"
 
-Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket) 
+Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket), m_response(m_request, m_server)
 {
 	//std::cout << "New connection on fd: " << m_clientSocket << '\n';
 }
 
 Connection::Connection(const Connection &a_other)
-	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_head(a_other.m_head), m_body(a_other.m_body)  {}
+	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_head(a_other.m_head), m_body(a_other.m_body), m_response(a_other.m_response)  {}
 
 Connection &Connection::operator=(const Connection &a_other)
 {
@@ -15,7 +15,10 @@ Connection &Connection::operator=(const Connection &a_other)
 		m_clientSocket = a_other.m_clientSocket;
 		m_head = a_other.m_head;
 		m_body = a_other.m_body;
-		m_server = a_other.m_server;
+		m_server = a_other.m_server;quest::Request(void)
+{
+}
+
 	}
 	return (*this);
 }
@@ -63,7 +66,7 @@ int Connection::reciveRequestRaw(void)
 			readUntilSep(m_body, "\r\n\r\n");
 		}
 		m_request = Request(m_head, m_body, m_clientSocket);
-		m_response = Response(m_request);
+		m_response = Response(m_request, m_server);
 		m_response.createResponseMessage();
 	}
 	catch(const std::exception& e)
