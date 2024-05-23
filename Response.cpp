@@ -64,10 +64,10 @@ void Response::sendValidMsg(int const & a_error_code)
 
 void Response::sendErrorMsg(int const & a_error_code)
 {
-	std::string body = getBody("error/notFound.html");
+	
+	std::string body = getDefaultErrorBody(a_error_code);
 	getResponseHeader(a_error_code, body);
 	m_responseMsg.append(body);
-	m_responseMsg.append("\r\n");
 	std::cout << m_responseMsg << '\n';
 
 }
@@ -203,4 +203,18 @@ std::string Response::getBody(std::string const &filename)
 	return (body.str());
 /* 	m_responseMsg.append(body.str());
 	m_responseMsg.append("\r\n"); */
+}
+
+std::string Response::getDefaultErrorBody(int const &a_status_code)
+{
+	std::ostringstream convert;
+	std::string body;
+
+	convert << a_status_code;
+	body.append("<html><head><title>");
+	body.append(convert.str() + ' ' + g_status_codes[convert.str()]);
+	body.append("</title></head><body><h1>");
+	body.append(convert.str() + ' ' + g_status_codes[convert.str()]);
+	body.append("</h1></body></html>\r\n\r\n");
+	return body;
 }

@@ -43,6 +43,7 @@ public:
 	void				addServerConnection(std::string& a_response_header);
 	std::string const & getResponse() const;
 	std::string 		getBody(std::string const & filename);
+	std::string			getDefaultErrorBody(int const& a_status_code);
 };
 
 #endif // !RESPONSE_HPP
