@@ -54,8 +54,8 @@ int Connection::getSocketFd(void) const
 
 int Connection::reciveRequestRaw(void)
 {
-	m_head.empty();
-	m_body.empty();
+	m_head.clear();
+	m_body.clear();
 	try
 	{
 		std::string remainder = readUntilSep(m_head, "\r\n\r\n");
@@ -64,6 +64,7 @@ int Connection::reciveRequestRaw(void)
 			m_body.append(remainder);
 			readUntilSep(m_body, "\r\n\r\n");
 		}
+		std::cout << "Request:\n" << "Head:\n" << m_head << "\nBody:\n" << (m_body.size() > 15 ? m_body.substr(15) : m_body) << '\n';
 		m_request = Request(m_head, m_body, m_clientSocket);
 		m_response = Response(m_request);
 		m_response.createResponseMessage();
