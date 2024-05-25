@@ -1,10 +1,14 @@
+<!DOCTYPE html>
 <html>
-	<link rel='stylesheet' href='main.css' type='text/css' media='all' />
-	<body style="display: flex; flex-direction: column;">
-		<h1>Hello, World!</h1>
-		<button style="width: 100px;" onclick="test()">Test</button>
-		<img src="bild.jpg">
-		<input type="file">
-	</body>
-	<script type='text/javascript' src='main.js'></script>
+    <link rel='stylesheet' href='main.css' type='text/css' media='all' />
+    <body style="display: flex; flex-direction: column;">
+        <h1>Hello, World!</h1>
+        <button style="width: 100px;" onclick="test()">Test</button>
+        <img src="bild.jpg">
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="file" title="file">
+            <button type="submit">Upload</button>
+        </form>
+    </body>
+    <script type='text/javascript' src='main.js'></script>
 </html>
