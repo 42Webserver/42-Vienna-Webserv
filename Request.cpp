@@ -14,6 +14,8 @@ Request &Request::operator=(const Request &other)
 	if (this != &other)
 	{
 		m_requestHeader = other.m_requestHeader;
+		m_clientSocket = other.m_clientSocket;
+		m_body = other.m_body;
 	}
 	return (*this);
 }
@@ -24,11 +26,11 @@ Request::~Request()
 
 
 
-Request::Request(std::string& head, std::string& body, int fd) : m_clientSocket(fd)
+Request::Request(const std::string& head, const std::string& body, int fd) : m_body(body), m_clientSocket(fd)
 {
 	//std::istringstream iss(head);
-	(void)body;
 	initMap(head);
+	std::cout << "header = " << head << std::endl;
 }
 
 void Request::getRequestLine(std::string& line)
@@ -91,4 +93,10 @@ const std::string &Request::getValue(const std::string &a_key)
 void Request::setValue(const std::string &a_key, std::string a_value)
 {
 	m_requestHeader[a_key] = a_value;
+}
+
+std::string Request::getBody() const
+{
+	//std::cout << "getBody = " << this->m_body << std::endl;
+    return (this->m_body);
 }
