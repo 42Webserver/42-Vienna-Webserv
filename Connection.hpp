@@ -23,8 +23,8 @@ private:
 	std::string	m_body;
 
 
-	Response	m_response;
 	Request		m_request;
+	Response	m_response;
 
 	std::string	readUntilSep(std::string& a_ouput, const std::string& a_seperator);
 	Connection(void);
