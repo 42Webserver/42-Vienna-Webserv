@@ -9,8 +9,10 @@
 #include <dirent.h>
 #include <ctime>
 #include "Request.hpp"
+#include "Server.hpp"
 
-
+class Server;
+class Request;
 /// global variable///
 extern std::map<std::string, std::string> g_status_codes;
 
@@ -18,13 +20,14 @@ class Response
 {
 private:
 
-	std::string	m_responseMsg;
-	Request		m_request;
+	std::string		m_responseMsg;
+	Request*			m_request;
+	Server&			m_server;
+	Response(void);
 
 public:
 
-	Response(void);
-	Response(const Request& a_request);
+	Response(Request* a_request, Server& a_server);
 	Response(const Response& other);
 	Response& operator=(const Response& other);
 	~Response();
@@ -43,7 +46,7 @@ public:
 	void				addServerConnection(std::string& a_response_header);
 	std::string const & getResponse() const;
 	std::string 		getBody(std::string const & filename);
-	std::string			getDefaultErrorBody(int const& a_status_code);
+	std::string			getDefaultErrorBody(const std::string& a_status_code);
 };
 
 #endif // !RESPONSE_HPP

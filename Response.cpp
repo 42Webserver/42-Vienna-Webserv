@@ -1,17 +1,12 @@
 #include "Response.hpp"
 
-Response::Response(void)
+Response::Response(Request* a_request, Server& a_server) : m_request(a_request), m_server(a_server)
 {
 }
 
-Response::Response(const Request& a_request) : m_request(a_request)
-{
-}
-
-Response::Response(const Response &other)
-{
-	*this = other;
-}
+Response::Response(const Response &other) : m_responseMsg(other.m_responseMsg), m_request(other.m_request), \
+	m_server(other.m_server)
+{}
 
 Response &Response::operator=(const Response &other)
 {
@@ -19,6 +14,7 @@ Response &Response::operator=(const Response &other)
 	{
 		m_request = other.m_request;
 		m_responseMsg = other.m_responseMsg;
+		m_server = other.m_server;
 	}
 	return (*this);
 }
@@ -55,7 +51,7 @@ void Response::createResponseMessage()
 
 void Response::sendValidMsg(int const & a_error_code)
 {
-	std::string body = getBody("www/" + this->m_request.getValue("uri"));
+	std::string body = getBody("www/" + this->m_request->getValue("uri"));
 	getResponseHeader(a_error_code, body);
 	m_responseMsg.append(body);
 	m_responseMsg.append("\r\n");
@@ -64,8 +60,10 @@ void Response::sendValidMsg(int const & a_error_code)
 
 void Response::sendErrorMsg(int const & a_error_code)
 {
-	
-	std::string body = getDefaultErrorBody(a_error_code);
+	std::ostringstream status_code;
+
+	status_code << a_error_code;
+	std::string body = getDefaultErrorBody(status_code.str());
 	getResponseHeader(a_error_code, body);
 	m_responseMsg.append(body);
 	std::cout << m_responseMsg << '\n';
@@ -74,7 +72,7 @@ void Response::sendErrorMsg(int const & a_error_code)
 
 int Response::checkMethod()
 {
-	std::string method = m_request.getValue("method");
+	std::string method = m_request->getValue("method");
 
 	if (method.empty())
 		return (405); //Something else if there is no method???
@@ -86,14 +84,14 @@ int Response::checkMethod()
 
 int Response::checkUri()
 {
-	if (m_request.getValue("method") == "GET")
+	if (m_request->getValue("method") == "GET")
 	{
 		DIR* directory;
 		struct dirent *readDir;
-		std::string uri = m_request.getValue("uri");
+		std::string uri = m_request->getValue("uri");
 		std::cout << "uri: '"<< uri << "'" << std::endl;
 		if (uri.empty())
-			m_request.setValue("uri", "index.html"); //Hier muss der index aus dem config hin!
+			m_request->setValue("uri", "index.html"); //Hier muss der index aus dem config hin!
 		if (uri.length() > 256)
 			return (std::cerr << "Error: Uri too long" << '\n', 414); //414 Uri too long
 		directory = opendir("www");
@@ -101,7 +99,7 @@ int Response::checkUri()
 			return (std::cerr << "Error: directory not found" << '\n', 500); //500 Internal Server
 		while ((readDir = readdir(directory)) != NULL)
 		{
-			if (m_request.getValue("uri") == readDir->d_name)
+			if (m_request->getValue("uri") == readDir->d_name)
 			{
 				closedir(directory);
 				return (/* std::cout << "Filename found!!!!" << '\n', */ 0); //File found
@@ -110,12 +108,33 @@ int Response::checkUri()
 		closedir(directory);
 		return (404); //File not found!
 	}
+	else if (m_request->getValue("method") == "POST")
+	{
+		std::cout << "\n\nAAAAAAALAAAAAAAAAAAAAAAARRRMMM --> POST-REQUEST INCOMING !!!\n\n\n" << std::endl;
+
+			std::ofstream outFile("upload.pdf");
+		if (!outFile.is_open())
+		{
+			std::cout << "ERRRRRROORRRRRR!!!" << std::endl;
+				return 500;
+		}
+
+		outFile << m_request->getBody();
+		outFile.close();
+
+		return 404;
+	}
+	else if (m_request->getValue("method") == "DELETE")
+	{	
+		std::cout << "VERGISS GANZ SCHNELL, LOESCHEN TUN WIR HIER GAR NICHTS!!!!" << std::endl;
+		return 404;
+	}
 	return (0);
 }
 
 int Response::checkHttpVersion()
 {
-    if (m_request.getValue("http_version") != "HTTP/1.1")
+    if (m_request->getValue("http_version") != "HTTP/1.1")
 		return (505); // 505 Version not supported
 	return 0;
 }
@@ -147,7 +166,7 @@ void	Response::addStatusLine(int const &a_status_code, std::string& a_response_h
 	std::ostringstream convert;
 
 	convert << a_status_code;
-	a_response_header.append(m_request.getValue("http_version"));
+	a_response_header.append(m_request->getValue("http_version"));
 	a_response_header += ' ';
 	a_response_header.append(convert.str());
 	a_response_header += ' ';
@@ -205,16 +224,14 @@ std::string Response::getBody(std::string const &filename)
 	m_responseMsg.append("\r\n"); */
 }
 
-std::string Response::getDefaultErrorBody(int const &a_status_code)
+std::string Response::getDefaultErrorBody(const std::string&a_status_code)
 {
-	std::ostringstream convert;
 	std::string body;
 
-	convert << a_status_code;
 	body.append("<html><head><title>");
-	body.append(convert.str() + ' ' + g_status_codes[convert.str()]);
+	body.append(a_status_code + ' ' + g_status_codes[a_status_code]);
 	body.append("</title></head><body><h1>");
-	body.append(convert.str() + ' ' + g_status_codes[convert.str()]);
+	body.append(a_status_code + ' ' + g_status_codes[a_status_code]);
 	body.append("</h1></body></html>\r\n\r\n");
 	return body;
 }
