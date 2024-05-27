@@ -12,8 +12,8 @@
  
 - location scope
   * allowed_methods
-  * http redirection
   * root
   * autoindex
   * index
+  * return
   * _CGI_
