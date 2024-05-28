@@ -30,7 +30,7 @@ public:
 	void	replaceWhitespaces(std::string& str);
 	void	separateSpecialChars(std::string& str);
 	void    removeComments(std::string& str);
-	void	processLine(std::string& line);
+	void	processLine(std::string& line, std::vector<std::string>& tokens);
 	void	readConfigFile(const std::string& file);
 
 	int	run();

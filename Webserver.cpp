@@ -164,23 +164,69 @@ void    Webserver::removeComments(std::string& str)
     }
 }
 
-void	Webserver::processLine(std::string& line)
+void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 {
-	std::stringstream	stream(line);
-
 	if (line.empty())
 		return;
-
+	;;;;;;;;
 	this->removeComments(line);
-	// check if the last character is a semicolon (in case of not server, etc.)
 	this->replaceWhitespaces(line);
 	this->separateSpecialChars(line);
 
-	if (line.at(line.length() - 1) != ' ')
-		line.append(" ");
+	std::stringstream	stream(line);
 
-	if (line.at(0) == ' ')
-		line.erase(0, 1);
+	std::string current;
+
+
+	int checkBegin = 0;
+	while (std::getline(stream, current, ' '))
+	{
+		std::cout << "XXX: " << current << std::endl;
+		if (current == ";" && checkBegin == 0)
+		{
+			std::cout << "ERROR 0!!!" << std::endl;
+			exit(1);
+		}
+		if (!current.empty())
+			tokens.push_back(current);
+		if (!current.empty())
+			checkBegin++;
+	}
+
+	if (((tokens.back() != ";") && (tokens.back() != "http" && tokens.back() != "Server" && tokens.back() != "{" && tokens.back() != "}")))
+	{
+		std::cout << "hier: '" << tokens.back() << "'" << std::endl;
+		std::cout << "ERROR 1!!!" << std::endl;
+		exit(1);
+	}
+	else if (tokens.back() == ";")
+	{
+		std::string vorletztes;
+
+
+		if (tokens.size() >= 2)
+			vorletztes = tokens.at(tokens.size() - 2);
+
+		if (vorletztes.empty())
+		{
+			std::cout << "hier: '" << tokens.back() << "'" << std::endl;
+			std::cout << "ERROR 2!!!" << std::endl;
+			exit(1);
+		}
+
+		if (vorletztes == "http" || vorletztes == "Server" || vorletztes == "{" || vorletztes == "}"  || vorletztes == ";")
+		{
+			std::cout << "hier: '" << tokens.back() << "'" << std::endl;
+			std::cout << "ERROR 3!!!" << std::endl;
+			exit(1);
+		}
+	}
+
+	// if (line.at(line.length() - 1) != ' ')
+	// 	line.append(" ");
+
+	// if (line.at(0) == ' ')
+	// 	line.erase(0, 1);
 }
 
 void	Webserver::readConfigFile(const std::string& file)
@@ -201,17 +247,19 @@ void	Webserver::readConfigFile(const std::string& file)
 	if (line.empty())
 		throw(std::runtime_error("Error: config-file is empty."));
 
-	std::stringstream	config_raw;
-	processLine(line);
-	config_raw << line;
+	std::vector<std::string>	tokens;
+
+	// std::stringstream	config_raw;
+	processLine(line, tokens);
+	// config_raw << line;
 
 
 	while (std::getline(buffer, line, '\n'))
 	{
 		try
 		{
-			processLine(line);
-			config_raw << line;
+			processLine(line, tokens);
+			// config_raw << line;
 		}
 		catch(const std::exception& e)
 		{
@@ -219,7 +267,11 @@ void	Webserver::readConfigFile(const std::string& file)
 		}
 	}
 
-	std::cout << "Result: " << config_raw.str() << std::endl;
+	std::cout << "Result: " << std::endl;
+	for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end(); ++it)
+	{
+		std::cout << *it << "<EOL>" << std::endl;
+	}
 
 	inFile.close();
 	exit(42);
