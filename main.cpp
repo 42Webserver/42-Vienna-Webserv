@@ -29,9 +29,9 @@ int	main(int argc, char **argv)
     else
         configName = std::string(argv[1]);
 
+    // Webserver webserv;
     Webserver webserv(configName);
 
-    exit(42);
 
 	initStatusCodes();
 	webserv.run();

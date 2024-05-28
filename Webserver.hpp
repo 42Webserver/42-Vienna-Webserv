@@ -12,13 +12,13 @@ class Webserver
 {
 private:
 
-	Webserver(void);
 
 	std::vector<Server>	m_servers;
 	PollContainer		m_polls;
 
 public:
 
+	Webserver(void);
 	Webserver(const std::string& configName);
 	Webserver(const Webserver& other);
 	Webserver& operator=(const Webserver& other);
@@ -27,9 +27,10 @@ public:
 	int	pollServers(void);
 	int	pollClients(void);
 
-	void	trimWhitespaces(std::string& str);
-	// void	replaceWhitespaces(std::string& str, char c);
-	void	processLine(std::string line);
+	void	replaceWhitespaces(std::string& str);
+	void	separateSpecialChars(std::string& str);
+	void    removeComments(std::string& str);
+	void	processLine(std::string& line);
 	void	readConfigFile(const std::string& file);
 
 	int	run();

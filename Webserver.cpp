@@ -119,70 +119,68 @@ int	Webserver::run()
 	return (0);
 }
 
-void	Webserver::trimWhitespaces(std::string& str)
+void Webserver::replaceWhitespaces(std::string& str)
 {
-	std::string	whitespaces = "\t\n\v\f\r ";
-	size_t		start = 0;
-	size_t		end = str.length() - 1;
+    std::string whitespaces = "\t\r\n\f\v ";
 
-	while (start < str.length())
-	{
-		if (whitespaces.find(str[start]) > whitespaces.length())
-			break;
-		start++;
-	}
-	while (end > start)
-	{
-		if (whitespaces.find(str[end]) > whitespaces.length())
-			break;
-		end--;
-	}
-	if (start != str.length())
-		str = str.substr(start, end - start + 1);
+    for (std::string::iterator  it = str.begin(); it != str.end(); ++it)
+    {
+        if (whitespaces.find(*it) == std::string::npos)
+            continue;
+        else
+        {
+            std::string::iterator tmp = it;
+            for (; tmp != str.end(); ++tmp)
+            {
+                if (whitespaces.find(*tmp) == std::string::npos)
+                    break;
+            }
+            str.erase(it + 1, tmp);
+            if (*it != ' ')
+                *it = ' ';
+        }
+    }
 }
 
-// void	Webserver::replaceWhitespaces(std::string& str, char c)
-// {
-// 	std::string	whitespaces = "\t\n\v\f\r ";
-// 	size_t		start = 0;
-// 	size_t		end = str.length() - 1;
-// 	size_t		i = 0;
+void	Webserver::separateSpecialChars(std::string& str)
+{
+	for (size_t i = 0; i < str.length(); i++)
+	{
+		if (str.at(i) == ';' && (i != 0 && str.at(i - 1) != ' '))
+			str.insert(str.begin() + i, ' ');
+		else if (str.at(i) == '{' && (i != 0 && str.at(i - 1) != ' '))
+			str.insert(str.begin() + i, ' ');
+		else if (str.at(i) == '}' && (i != 0 && str.at(i - 1) != ' '))
+			str.insert(str.begin() + i, ' ');
+	}
+}
 
-// 	size_t		len = str.length();
+void    Webserver::removeComments(std::string& str)
+{
+    size_t hashtag;
+    if ((hashtag = str.find('#')) != std::string::npos)
+    {
+        str.erase(hashtag, str.length());
+    }
+}
 
-// 	while (i < len)
-// 	{
-// 		if (whitespaces.find(str[i]) == std::string::npos)
-// 			i++;
-// 		if (str[i] != '\0')
-// 		{
-// 			start = i;
-// 			while ()
-// 		}
-// 	}
-
-// }
-
-void	Webserver::processLine(std::string line)
+void	Webserver::processLine(std::string& line)
 {
 	std::stringstream	stream(line);
 
 	if (line.empty())
 		return;
 
-	// update this function to trim whitespaces to one space in the middle of the string
-	this->trimWhitespaces(line);
+	this->removeComments(line);
+	// check if the last character is a semicolon (in case of not server, etc.)
+	this->replaceWhitespaces(line);
+	this->separateSpecialChars(line);
 
-	//this->replaceWhitespaces(line, ' ');
+	if (line.at(line.length() - 1) != ' ')
+		line.append(" ");
 
-	std::cout << "line: " << line << std::endl;
-
-	std::string	current;
-
-    while (std::getline(stream, current, ' '))
-	{
-
-	}
+	if (line.at(0) == ' ')
+		line.erase(0, 1);
 }
 
 void	Webserver::readConfigFile(const std::string& file)
@@ -203,11 +201,17 @@ void	Webserver::readConfigFile(const std::string& file)
 	if (line.empty())
 		throw(std::runtime_error("Error: config-file is empty."));
 
+	std::stringstream	config_raw;
+	processLine(line);
+	config_raw << line;
+
+
 	while (std::getline(buffer, line, '\n'))
 	{
 		try
 		{
 			processLine(line);
+			config_raw << line;
 		}
 		catch(const std::exception& e)
 		{
@@ -215,5 +219,8 @@ void	Webserver::readConfigFile(const std::string& file)
 		}
 	}
 
+	std::cout << "Result: " << config_raw.str() << std::endl;
+
 	inFile.close();
+	exit(42);
 }

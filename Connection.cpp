@@ -4,7 +4,7 @@ Connection::Connection(void) {}
 
 Connection::Connection(int a_clientSocket) : m_clientSocket(a_clientSocket)
 {
-	std::cout << "New connection on fd: " << m_clientSocket << '\n';
+	// std::cout << "New connection on fd: " << m_clientSocket << '\n';
 }
 
 Connection::Connection(const Connection &a_other)
@@ -79,7 +79,7 @@ int Connection::reciveRequestRaw(void)
 int Connection::sendResponse(void) const
 {
 	const std::string&	response = m_response.getResponse();
-	std::cout << "Response: " << response << '\n';
+	// std::cout << "Response: " << response << '\n';
 	return (send(m_clientSocket, response.data(), response.size(), 0));
 }
 
