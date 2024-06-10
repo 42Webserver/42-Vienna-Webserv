@@ -330,16 +330,16 @@ void	Webserver::readConfigFile(const std::string& file)
 		throw(std::runtime_error("Error: invalid http format in config-file."));
 
 	tokens.pop_back();
-	tokens.erase(tokens.begin(), tokens.begin() + 1);
+	tokens.erase(tokens.begin(), tokens.begin() + 2);
 
 	// check and remove http etc.
 	// location handeln
 
-/* 	std::cout << "Result: " << std::endl;
+	std::cout << "Result: " << std::endl;
 	for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end(); ++it)
 	{
 		std::cout << *it << "<EOL>" << std::endl;
-	} */
+	}
 	std::cout << "+++++++++SAFE DATA++++++++++++++" << std::endl;
 	safeData(tokens);
 	inFile.close();
