@@ -26,6 +26,7 @@ Webserver::Webserver(const std::string& configName)
 	catch(const std::exception& e)
 	{
 		std::cerr << e.what() << '\n';
+		exit(42);
 	}
 }
 
@@ -166,32 +167,23 @@ void    Webserver::removeComments(std::string& str)
     }
 }
 
-bool Webserver::checkDoubleSemicolon(std::vector<std::string> tokens)
-{
-	for (size_t i = 0; i < tokens.size(); i++)
-	{
-		if (i > 0 && tokens.at(i) == ";" && tokens.at(i - 1) == ";")
-		{
-			std::cerr << "Double semicolumn" << std::endl;
-			return (true);
-		}
-	}
-	return (false);
-}
-
 void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 {
 	if (line.empty())
 		return;
 
+	std::cout << "line1: " << "<<" << line << ">>" << std::endl;
+
 	this->removeComments(line);
 	this->replaceWhitespaces(line);
 	this->separateSpecialChars(line);
 
+	if (line.length() == 1 && line.at(0) == ' ')
+		return;
+
 	std::stringstream	stream(line);
 
 	std::string current;
-
 
 	int checkBegin = 0;
 	while (std::getline(stream, current, ' '))
@@ -203,9 +195,24 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 			exit(1);
 		}
 		if (!current.empty())
+		{
 			tokens.push_back(current);
-		if (!current.empty())
 			checkBegin++;
+		}
+	}
+
+	if (checkBegin > 1 && line.find_first_of("{}") != std::string::npos)
+	{
+		std::cout << "line2: " << "<<" << line << ">>" << std::endl;
+		throw(std::runtime_error("Error: invalid line in config-file."));
+	}
+
+
+	if (checkBegin >= 2 && tokens.at(tokens.size() - checkBegin) == "location")
+	{
+		if (checkBegin != 2 || tokens.back().at(0) != '/')
+			throw(std::runtime_error("Error: invalid location in config-file."));
+		return;
 	}
 
 	if (((tokens.back() != ";") && (tokens.back() != "http" && tokens.back() != "Server" && tokens.back() != "{" && tokens.back() != "}")))
@@ -228,32 +235,37 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 			exit(1);
 		}
 
-		if (vorletztes == "http" || vorletztes == "Server" || vorletztes == "{" || vorletztes == "}"  /* || vorletztes == ";" */)
+		if (vorletztes == "http" || vorletztes == "Server" || vorletztes == "{" || vorletztes == "}")
 		{
 			std::cout << "hier: '" << tokens.back() << "'" << std::endl;
 			std::cout << "ERROR 3!!!" << std::endl;
 			exit(1);
 		}
 	}
-	if (checkDoubleSemicolon(tokens))
-		exit(1);
 }
 
-bool	Webserver::checkBraces(std::vector<std::string>& tokens)
+void	Webserver::checkSyntax(std::vector<std::string>& tokens)
 {
 	std::vector<std::string>::iterator	it;
-	int									count = 0;
+	int									braceCount = 0;
 
 	for (it = tokens.begin(); it != tokens.end(); ++it)
 	{
-		if (count < 0)
-			return (true);
-		if (*it == "{")
-			count++;
-		else if (*it == "}")
-			count--;
+		if (braceCount < 0)
+			throw(std::runtime_error("Error: config-file: invalid braces."));
+		if (braceCount != 2 && *it == "location")
+			throw(std::runtime_error("Error: config-file: location in wrong scope."));
+		if (*it == "{" || *it == "}")
+			*it == "{" ? braceCount++ : braceCount--;
+
+		if (it != tokens.begin() && *it == ";" && *(it - 1) == ";")
+			throw(std::runtime_error("Error: config-file: consecutive semicolons."));
+
+		if (*it == "location" && ((it + 2) == tokens.end() || *(it + 2) != "{"))
+			throw(std::runtime_error("Error: config-file: invalid location scope."));
 	}
-	return (count != 0);
+	if (braceCount != 0)
+		throw(std::runtime_error("Error: config-file: invalid braces."));
 }
 
 void	Webserver::readConfigFile(const std::string& file)
@@ -268,11 +280,11 @@ void	Webserver::readConfigFile(const std::string& file)
 	std::stringstream buffer;
 	buffer << inFile.rdbuf();
 
+	if (buffer.str().empty())
+		throw(std::runtime_error("Error: config-file is empty."));
+
 	std::string line;
 	std::getline(buffer, line, '\n');
-
-	if (line.empty())
-		throw(std::runtime_error("Error: config-file is empty."));
 
 	std::vector<std::string>	tokens;
 
@@ -283,19 +295,33 @@ void	Webserver::readConfigFile(const std::string& file)
 		try
 		{
 			processLine(line, tokens);
-			// config_raw << line;
 		}
 		catch(const std::exception& e)
 		{
-			std::cerr << e.what() << '\n';
+			throw;
 		}
 	}
 
-	if (checkBraces(tokens))
+	try
 	{
-		std::cout << "BRACES-ERROR!" << std::endl;
-		exit (1234);
+		checkSyntax(tokens);
 	}
+	catch(const std::exception& e)
+	{
+		throw;
+	}
+
+	// remove http and according braces
+	if (tokens.size() < 3)
+		throw(std::runtime_error("Error: too few arguments in config-file."));
+	if (tokens.at(0) != "http" || tokens.at(1) != "{" || tokens.back() != "}")
+		throw(std::runtime_error("Error: invalid http format in config-file."));
+
+	tokens.pop_back();
+	tokens.erase(tokens.begin(), tokens.begin() + 1);
+
+	// check and remove http etc.
+	// location handeln
 
 	std::cout << "Result: " << std::endl;
 	for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end(); ++it)
