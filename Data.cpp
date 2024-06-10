@@ -36,12 +36,12 @@ bool safeData(std::vector<std::string> tokens)
 				if (tokens.at(i) == "{" || tokens.at(i) == "}")
 				{
 					tokens.at(i) == "{" ? countScopes++ : countScopes--;
+					if (countScopes == 0)
+					{
+						std::cout << "Finished server scope! | i = "<< i <<  std::endl;
+						break;
+					}
 					continue;
-				}
-				if (countScopes == 0)
-				{
-					std::cout << "Finished server scope! | i = "<< i <<  std::endl;
-					break;
 				}
 				//key = string
 				if (newSubserver.find(tokens.at(i)) != newSubserver.end())
@@ -72,31 +72,35 @@ bool safeData(std::vector<std::string> tokens)
 					else if (tokens.at(i) == "server_name" || tokens.at(i) == "error_page" || \
 						tokens.at(i) == "allowed_methods" || tokens.at(i) == "return")
 					{
-						std::cout << "KEY = " << tokens.at(i) << std::endl;
 						i++;
 						std::vector<std::string> value;
 						while (tokens.at(i) != ";")
 							value.push_back(tokens.at(i++));
-						std::cout << "Value size = " << value.size() << std::endl;
 						newSubserver[tokens.at(i - value.size() - 1)] = value;
 					}
-					
-				}
-				else if (tokens.at(i) == "location")
-				{
-					std::cout << "Found a location! and skip it now!" << std::endl;
-					while(tokens.at(i) != "}")
-					 i++;
-				}
-				else 
-				{
-					std::cout << "Trash not allowed: " << tokens.at(i) <<  std::endl;
-					std::cout << "Befor trash" << tokens.at(i - 1) << std::endl;
-					return (false);
-				}
+					//Add location
+					}
+					else if (tokens.at(i) == "location")
+					{
+						std::cout << "Found a location! and skip it now!" << std::endl;
+						while(tokens.at(i) != "}")
+						i++;
+					}
+					else 
+					{
+						std::cout << "Trash not allowed: " << tokens.at(i) <<  std::endl;
+						std::cout << "Befor trash" << tokens.at(i - 1) << std::endl;
+						return (false);
+					}
 			}
 			data.push_back(newSubserver);
 		}
+		else 
+		{
+			std::cout << "Trash between scopes!: " << tokens.at(i) << "pos: " << i << std::endl;
+			return (false);
+		}
+
 	}
 
 	printData(data);
