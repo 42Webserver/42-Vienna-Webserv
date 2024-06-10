@@ -239,6 +239,21 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 		exit(1);
 }
 
+bool	Webserver::checkBraces(std::vector<std::string>& tokens)
+{
+	std::vector<std::string>::iterator	it;
+	int									count = 0;
+
+	for (it = tokens.begin(); it != tokens.end(); ++it)
+	{
+		if (*it == "{")
+			count++;
+		else if (*it == "}")
+			count--;
+	}
+	return (count != 0);
+}
+
 void	Webserver::readConfigFile(const std::string& file)
 {
 	std::cout << "<< Starting to read the config-file... >>\n" << std::endl;
@@ -272,6 +287,12 @@ void	Webserver::readConfigFile(const std::string& file)
 		{
 			std::cerr << e.what() << '\n';
 		}
+	}
+
+	if (checkBraces(tokens))
+	{
+		std::cout << "BRACES-ERROR!" << std::endl;
+		exit (1234);
 	}
 
 	std::cout << "Result: " << std::endl;
