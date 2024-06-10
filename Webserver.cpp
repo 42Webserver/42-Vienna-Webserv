@@ -335,11 +335,11 @@ void	Webserver::readConfigFile(const std::string& file)
 	// check and remove http etc.
 	// location handeln
 
-	std::cout << "Result: " << std::endl;
+/* 	std::cout << "Result: " << std::endl;
 	for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end(); ++it)
 	{
 		std::cout << *it << "<EOL>" << std::endl;
-	}
+	} */
 	std::cout << "+++++++++SAFE DATA++++++++++++++" << std::endl;
 	safeData(tokens);
 	inFile.close();
