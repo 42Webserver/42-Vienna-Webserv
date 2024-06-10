@@ -7,6 +7,7 @@
 #include <poll.h>
 #include "PollContainer.hpp"
 #include <fstream>
+#include "Data.hpp"
 
 class Webserver
 {
