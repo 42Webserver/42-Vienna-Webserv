@@ -32,6 +32,7 @@ public:
 	void    removeComments(std::string& str);
 	void	processLine(std::string& line, std::vector<std::string>& tokens);
 	void	readConfigFile(const std::string& file);
+	bool	checkDoubleSemicolon(std::vector<std::string> tokens);
 
 	int	run();
 };

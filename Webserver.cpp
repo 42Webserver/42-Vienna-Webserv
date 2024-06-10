@@ -164,6 +164,19 @@ void    Webserver::removeComments(std::string& str)
     }
 }
 
+bool Webserver::checkDoubleSemicolon(std::vector<std::string> tokens)
+{
+	for (size_t i = 0; i < tokens.size(); i++)
+	{
+		if (i > 0 && tokens.at(i) == ";" && tokens.at(i - 1) == ";")
+		{
+			std::cerr << "Double semicolumn" << std::endl;
+			return (true);
+		}
+	}
+	return (false);
+}
+
 void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 {
 	if (line.empty())
@@ -221,6 +234,9 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 			exit(1);
 		}
 	}
+	if (checkDoubleSemicolon(tokens))
+		exit(1);
+	//check double semi!
 
 	// if (line.at(line.length() - 1) != ' ')
 	// 	line.append(" ");
