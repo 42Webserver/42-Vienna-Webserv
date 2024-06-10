@@ -237,13 +237,6 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 	}
 	if (checkDoubleSemicolon(tokens))
 		exit(1);
-	//check double semi!
-
-	// if (line.at(line.length() - 1) != ' ')
-	// 	line.append(" ");
-
-	// if (line.at(0) == ' ')
-	// 	line.erase(0, 1);
 }
 
 void	Webserver::readConfigFile(const std::string& file)
@@ -266,10 +259,7 @@ void	Webserver::readConfigFile(const std::string& file)
 
 	std::vector<std::string>	tokens;
 
-	// std::stringstream	config_raw;
 	processLine(line, tokens);
-	// config_raw << line;
-
 
 	while (std::getline(buffer, line, '\n'))
 	{
