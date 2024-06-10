@@ -253,8 +253,16 @@ void	Webserver::checkSyntax(std::vector<std::string>& tokens)
 	{
 		if (braceCount < 0)
 			throw(std::runtime_error("Error: config-file: invalid braces."));
-		if (braceCount != 2 && *it == "location")
+
+		if (*it == "http" && braceCount != 0)
+			throw(std::runtime_error("Error: config-file: http in wrong scope."));
+
+		if (*it == "Server" && braceCount != 1)
+			throw(std::runtime_error("Error: config-file: Server in wrong scope."));
+
+		if (*it == "location" && braceCount != 2)
 			throw(std::runtime_error("Error: config-file: location in wrong scope."));
+
 		if (*it == "{" || *it == "}")
 			*it == "{" ? braceCount++ : braceCount--;
 
@@ -263,6 +271,8 @@ void	Webserver::checkSyntax(std::vector<std::string>& tokens)
 
 		if (*it == "location" && ((it + 2) == tokens.end() || *(it + 2) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid location scope."));
+		if (*it == "Server" && ((it + 2) == tokens.end() || *(it + 2) != "{"))
+			throw(std::runtime_error("Error: config-file: invalid Server scope."));
 	}
 	if (braceCount != 0)
 		throw(std::runtime_error("Error: config-file: invalid braces."));
