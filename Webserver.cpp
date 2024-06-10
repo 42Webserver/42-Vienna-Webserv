@@ -266,12 +266,15 @@ void	Webserver::checkSyntax(std::vector<std::string>& tokens)
 		if (*it == "{" || *it == "}")
 			*it == "{" ? braceCount++ : braceCount--;
 
+		if (*it == "{" && (it + 1 == tokens.end() || *(it + 1) == "}"))
+			throw(std::runtime_error("Error: config-file: empty scope."));
+
 		if (it != tokens.begin() && *it == ";" && *(it - 1) == ";")
 			throw(std::runtime_error("Error: config-file: consecutive semicolons."));
 
 		if (*it == "location" && ((it + 2) == tokens.end() || *(it + 2) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid location scope."));
-		if (*it == "Server" && ((it + 2) == tokens.end() || *(it + 1) != "{"))
+		if (*it == "Server" && ((it + 1) == tokens.end() || *(it + 1) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid Server scope."));
 	}
 	if (braceCount != 0)
