@@ -6,17 +6,6 @@
 #include <iostream>
 #include <map>
 
-struct location
-{
-    std::string root;
-    std::string index; 
-    int client_max_body_size;
-    std::vector<std::string> error_pages;
-    std::vector<std::string> allowed_methods;
-    bool autoindex;
-    std::vector<std::string> redir; 
-};
-
 struct subserver
 {
     std::map< std::string, std::vector<std::string> >server;
