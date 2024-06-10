@@ -146,6 +146,8 @@ void	Webserver::separateSpecialChars(std::string& str)
 {
 	for (size_t i = 0; i < str.length(); i++)
 	{
+		if (i != str.length() - 1 && str.at(i) == ';' && (str.at(i + 1) != ' '))
+			str.insert(str.begin() + i + 1, ' ');
 		if (str.at(i) == ';' && (i != 0 && str.at(i - 1) != ' '))
 			str.insert(str.begin() + i, ' ');
 		else if (str.at(i) == '{' && (i != 0 && str.at(i - 1) != ' '))
@@ -181,7 +183,7 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 {
 	if (line.empty())
 		return;
-	;;;;;;;;
+
 	this->removeComments(line);
 	this->replaceWhitespaces(line);
 	this->separateSpecialChars(line);
@@ -216,7 +218,6 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 	{
 		std::string vorletztes;
 
-
 		if (tokens.size() >= 2)
 			vorletztes = tokens.at(tokens.size() - 2);
 
@@ -227,7 +228,7 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 			exit(1);
 		}
 
-		if (vorletztes == "http" || vorletztes == "Server" || vorletztes == "{" || vorletztes == "}"  || vorletztes == ";")
+		if (vorletztes == "http" || vorletztes == "Server" || vorletztes == "{" || vorletztes == "}"  /* || vorletztes == ";" */)
 		{
 			std::cout << "hier: '" << tokens.back() << "'" << std::endl;
 			std::cout << "ERROR 3!!!" << std::endl;
