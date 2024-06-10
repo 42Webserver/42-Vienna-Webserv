@@ -172,7 +172,7 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 	if (line.empty())
 		return;
 
-	std::cout << "line1: " << "<<" << line << ">>" << std::endl;
+	// std::cout << "line1: " << "<<" << line << ">>" << std::endl;
 
 	this->removeComments(line);
 	this->replaceWhitespaces(line);
@@ -188,7 +188,7 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 	int checkBegin = 0;
 	while (std::getline(stream, current, ' '))
 	{
-		std::cout << "XXX: " << current << std::endl;
+		// std::cout << "XXX: " << current << std::endl;
 		if (current == ";" && checkBegin == 0)
 		{
 			std::cout << "ERROR 0!!!" << std::endl;
@@ -271,7 +271,7 @@ void	Webserver::checkSyntax(std::vector<std::string>& tokens)
 
 		if (*it == "location" && ((it + 2) == tokens.end() || *(it + 2) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid location scope."));
-		if (*it == "Server" && ((it + 2) == tokens.end() || *(it + 2) != "{"))
+		if (*it == "Server" && ((it + 2) == tokens.end() || *(it + 1) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid Server scope."));
 	}
 	if (braceCount != 0)
@@ -311,7 +311,6 @@ void	Webserver::readConfigFile(const std::string& file)
 			throw;
 		}
 	}
-
 	try
 	{
 		checkSyntax(tokens);
@@ -333,12 +332,13 @@ void	Webserver::readConfigFile(const std::string& file)
 	// check and remove http etc.
 	// location handeln
 
-	std::cout << "Result: " << std::endl;
+/* 	std::cout << "Result: " << std::endl;
 	for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end(); ++it)
 	{
 		std::cout << *it << "<EOL>" << std::endl;
-	}
-
+	} */
+	std::cout << "+++++++++SAFE DATA++++++++++++++" << std::endl;
+	safeData(tokens);
 	inFile.close();
 	exit(42);
 }
