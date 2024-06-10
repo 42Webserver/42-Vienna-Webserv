@@ -246,6 +246,8 @@ bool	Webserver::checkBraces(std::vector<std::string>& tokens)
 
 	for (it = tokens.begin(); it != tokens.end(); ++it)
 	{
+		if (count < 0)
+			return (true);
 		if (*it == "{")
 			count++;
 		else if (*it == "}")
