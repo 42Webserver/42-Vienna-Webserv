@@ -34,6 +34,8 @@ public:
 	void	processLine(std::string& line, std::vector<std::string>& tokens);
 	void	readConfigFile(const std::string& file);
 	void	checkSyntax(std::vector<std::string>& tokens);
+	void	removeHttpScope(std::vector<std::string>& tokens);
+	void	sortConfigVector(std::vector<std::string>& tokens);
 
 	int	run();
 };

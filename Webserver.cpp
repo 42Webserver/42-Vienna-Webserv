@@ -162,17 +162,13 @@ void    Webserver::removeComments(std::string& str)
 {
     size_t hashtag;
     if ((hashtag = str.find('#')) != std::string::npos)
-    {
         str.erase(hashtag, str.length());
-    }
 }
 
 void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 {
 	if (line.empty())
 		return;
-
-	// std::cout << "line1: " << "<<" << line << ">>" << std::endl;
 
 	this->removeComments(line);
 	this->replaceWhitespaces(line);
@@ -188,12 +184,8 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 	int checkBegin = 0;
 	while (std::getline(stream, current, ' '))
 	{
-		// std::cout << "XXX: " << current << std::endl;
 		if (current == ";" && checkBegin == 0)
-		{
-			std::cout << "ERROR 0!!!" << std::endl;
-			exit(1);
-		}
+			throw(std::runtime_error("Error: config-file: line begins with semicolon''."));
 		if (!current.empty())
 		{
 			tokens.push_back(current);
@@ -202,25 +194,19 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 	}
 
 	if (checkBegin > 1 && line.find_first_of("{}") != std::string::npos)
-	{
-		std::cout << "line2: " << "<<" << line << ">>" << std::endl;
-		throw(std::runtime_error("Error: invalid line in config-file."));
-	}
+		throw(std::runtime_error("Error: config-file: empty scope."));
 
 
 	if (checkBegin >= 2 && tokens.at(tokens.size() - checkBegin) == "location")
 	{
 		if (checkBegin != 2 || tokens.back().at(0) != '/')
-			throw(std::runtime_error("Error: invalid location in config-file."));
+			throw(std::runtime_error("Error: config-file: invalid location."));
 		return;
 	}
 
 	if (((tokens.back() != ";") && (tokens.back() != "http" && tokens.back() != "Server" && tokens.back() != "{" && tokens.back() != "}")))
-	{
-		std::cout << "hier: '" << tokens.back() << "'" << std::endl;
-		std::cout << "ERROR 1!!!" << std::endl;
-		exit(1);
-	}
+		throw(std::runtime_error("Error: config-file: invalid line without semicolon."));
+
 	else if (tokens.back() == ";")
 	{
 		std::string vorletztes;
@@ -229,18 +215,10 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 			vorletztes = tokens.at(tokens.size() - 2);
 
 		if (vorletztes.empty())
-		{
-			std::cout << "hier: '" << tokens.back() << "'" << std::endl;
-			std::cout << "ERROR 2!!!" << std::endl;
-			exit(1);
-		}
+			throw(std::runtime_error("Error: config-file: invalid line with semicolon."));
 
 		if (vorletztes == "http" || vorletztes == "Server" || vorletztes == "{" || vorletztes == "}")
-		{
-			std::cout << "hier: '" << tokens.back() << "'" << std::endl;
-			std::cout << "ERROR 3!!!" << std::endl;
-			exit(1);
-		}
+			throw(std::runtime_error("Error: config-file: semicolon after special token (http / Server / { / })."));
 	}
 }
 
@@ -274,6 +252,7 @@ void	Webserver::checkSyntax(std::vector<std::string>& tokens)
 
 		if (*it == "location" && ((it + 2) == tokens.end() || *(it + 2) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid location scope."));
+
 		if (*it == "Server" && ((it + 1) == tokens.end() || *(it + 1) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid Server scope."));
 	}
@@ -281,67 +260,73 @@ void	Webserver::checkSyntax(std::vector<std::string>& tokens)
 		throw(std::runtime_error("Error: config-file: invalid braces."));
 }
 
+void	Webserver::sortConfigVector(std::vector<std::string>& tokens)
+{
+	std::vector<std::string>						sortedTokens;
+	std::vector<std::vector<std::string>::iterator>	locations;
+
+	for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end(); ++it)
+	{
+		if (*it == "}")
+		{
+			while (locations.size() > 0)
+			{
+				std::vector<std::string>::iterator i = locations.front();
+				while (*i != "}")
+					sortedTokens.push_back(*(i++));
+				sortedTokens.push_back(*(i++));
+				locations.erase(locations.begin());
+			}
+			sortedTokens.push_back(*it);
+			continue;
+		}
+		if (*it != "location")
+			sortedTokens.push_back(*it);
+		else
+		{
+			locations.push_back(it);
+			while (*it != "}")
+				it++;
+		}
+	}
+	tokens = sortedTokens;
+}
+
+void	Webserver::removeHttpScope(std::vector<std::string>& tokens)
+{
+	if (tokens.size() < 3)
+		throw(std::runtime_error("Error: config-file: too few arguments."));
+	if (tokens.at(0) != "http" || tokens.at(1) != "{" || tokens.back() != "}")
+		throw(std::runtime_error("Error: config-file: invalid http format."));
+
+	tokens.pop_back();
+	tokens.erase(tokens.begin(), tokens.begin() + 2);
+}
+
 void	Webserver::readConfigFile(const std::string& file)
 {
-	std::cout << "<< Starting to read the config-file... >>\n" << std::endl;
-
 	std::ifstream inFile(file.c_str());
 
 	if (!inFile.is_open())
-		throw(std::runtime_error("Error: could not open config-file."));
+		throw(std::runtime_error("Error: config-file: could not open."));
 
 	std::stringstream buffer;
 	buffer << inFile.rdbuf();
 
 	if (buffer.str().empty())
-		throw(std::runtime_error("Error: config-file is empty."));
-
-	std::string line;
-	std::getline(buffer, line, '\n');
+		throw(std::runtime_error("Error: config-file: file is empty."));
 
 	std::vector<std::string>	tokens;
-
-	processLine(line, tokens);
+	std::string 				line;
 
 	while (std::getline(buffer, line, '\n'))
-	{
-		try
-		{
-			processLine(line, tokens);
-		}
-		catch(const std::exception& e)
-		{
-			throw;
-		}
-	}
-	try
-	{
-		checkSyntax(tokens);
-	}
-	catch(const std::exception& e)
-	{
-		throw;
-	}
+		processLine(line, tokens);
 
-	// remove http and according braces
-	if (tokens.size() < 3)
-		throw(std::runtime_error("Error: too few arguments in config-file."));
-	if (tokens.at(0) != "http" || tokens.at(1) != "{" || tokens.back() != "}")
-		throw(std::runtime_error("Error: invalid http format in config-file."));
-
-	tokens.pop_back();
-	tokens.erase(tokens.begin(), tokens.begin() + 2);
-
-	// check and remove http etc.
-	// location handeln
-
-/* 	std::cout << "Result: " << std::endl;
-	for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end(); ++it)
-	{
-		std::cout << *it << "<EOL>" << std::endl;
-	} */
-	std::cout << "+++++++++SAFE DATA++++++++++++++" << std::endl;
+	checkSyntax(tokens);
+	removeHttpScope(tokens);
+	sortConfigVector(tokens);
 	safeData(tokens);
+
 	inFile.close();
 	exit(42);
 }
