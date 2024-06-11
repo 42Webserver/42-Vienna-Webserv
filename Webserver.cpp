@@ -238,6 +238,9 @@ void	Webserver::checkSyntax(std::vector<std::string>& tokens)
 		if (*it == "Server" && braceCount != 1)
 			throw(std::runtime_error("Error: config-file: Server in wrong scope."));
 
+		if (braceCount == 1 && *(it - 1) == "}" && *it == "{")
+			throw(std::runtime_error("Error: config-file: missing Server."));
+
 		if (*it == "location" && braceCount != 2)
 			throw(std::runtime_error("Error: config-file: location in wrong scope."));
 
