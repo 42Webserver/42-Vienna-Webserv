@@ -35,7 +35,7 @@ void printData(std::vector <struct subserver> data)
 bool getLocation(struct subserver &newSubserver, std::vector<std::string> &tokens, size_t &i)
 {
 	std::map< std::string, std::vector<std::string> > location;
-	initLocation(location, newSubserver);
+	initLocation(location);
 	std::vector<std::string> value;
 	value.push_back(tokens.at(i + 1));
 	location["name"] = value;
@@ -47,7 +47,8 @@ bool getLocation(struct subserver &newSubserver, std::vector<std::string> &token
 			|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex")
 		{
 			value.push_back(tokens.at(++i));
-			location[tokens.at(i - 1)] = value;
+			if (location[tokens.at(i - 1)].empty())
+				location[tokens.at(i - 1)] = value;
 			if (tokens.at(++i) != ";")
 				throw std::runtime_error("Error: config-file: Two many arguments for key [locationscope]");
 		}
@@ -57,12 +58,14 @@ bool getLocation(struct subserver &newSubserver, std::vector<std::string> &token
 			i++;
 			while (tokens.at(i) != ";")
 				value.push_back(tokens.at(i++));
-			location[tokens.at(i - value.size() - 1)] = value;
+			if (location[tokens.at(i - value.size() - 1)].empty())
+				location[tokens.at(i - value.size() - 1)] = value;
 		}
 		else
 			throw std::runtime_error("Error: config-file: Trash not allowed [locationscope]"); 
 		i++;
 	}
+	updateLocation(location, newSubserver);
 	newSubserver.location.push_back(location);
 	return (true);
 }
@@ -88,10 +91,14 @@ bool safeData(std::vector<std::string> tokens)
 						break;
 					continue;
 				}
+
+	//todo: check alway if there is already a value in a key, set the value of server after the location scope!!!!
+
 				//key = string
 				if (newSubserver.server.find(tokens.at(i)) != newSubserver.server.end())
 				{
 					//Add exactly one
+					std::vector<std::string> value;
 					if (tokens.at(i + 1) == ";")
 						throw std::runtime_error("Error: config-file: Missing argument at key [serverscope]");
 					//ADD just one arg!
@@ -99,11 +106,10 @@ bool safeData(std::vector<std::string> tokens)
 						|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex")
 					{
 						i++;
-						std::vector <std::string> value;
 						value.push_back(tokens.at(i));
-						newSubserver.server[tokens.at(i - 1)] = value;
-						i++;
-						if (tokens.at(i) != ";")
+						if (newSubserver.server[tokens.at(i - 1)].empty())
+							newSubserver.server[tokens.at(i - 1)] = value;
+						if (tokens.at(++i) != ";")
 							throw std::runtime_error("Error: config-file: Two many arguments for key [serverscope]");
 					}
 					//ADD optional multiple arguments!
@@ -111,10 +117,10 @@ bool safeData(std::vector<std::string> tokens)
 						tokens.at(i) == "allowed_methods" || tokens.at(i) == "return")
 					{
 						i++;
-						std::vector<std::string> value;
 						while (tokens.at(i) != ";")
 							value.push_back(tokens.at(i++));
-						newSubserver.server[tokens.at(i - value.size() - 1)] = value;
+						if (newSubserver.server[tokens.at(i - value.size() - 1)].empty())
+							newSubserver.server[tokens.at(i - value.size() - 1)] = value;
 					}
 					//Add location
 				}
@@ -147,14 +153,32 @@ void initSubserver(struct subserver &subserver)
 	subserver.server["locations"];
 }
 
-void initLocation(std::map<std::string, std::vector<std::string> > &location, struct subserver newSubserver)
+void updateLocation(std::map<std::string, std::vector<std::string> > &location, struct subserver newSubserver)
 {
-	location["index"] = newSubserver.server["index"];
-	location["client_max_body_size"] = newSubserver.server["client_max_body_size"];
-	location["error_page"] = newSubserver.server["error_page"];
-	location["allowed_methods"] = newSubserver.server["allowed_methods"];
-	location["autoindex"] = newSubserver.server["autoindex"];
-	location["return"] = newSubserver.server["return"];
-	location["root"] = newSubserver.server["root"];
+	if (location["index"].empty())
+		location["index"] = newSubserver.server["index"];
+	if (location["client_max_body_size"].empty())
+		location["client_max_body_size"] = newSubserver.server["client_max_body_size"];
+	if (location["error_page"].empty())
+		location["error_page"] = newSubserver.server["error_page"];
+	if (location["allowed_methods"].empty())
+		location["allowed_methods"] = newSubserver.server["allowed_methods"];
+	if (location["autoindex"].empty())
+		location["autoindex"] = newSubserver.server["autoindex"];
+	if (location["return"].empty())
+		location["return"] = newSubserver.server["return"];
+	if (location["root"].empty())
+		location["root"] = newSubserver.server["root"];
+}
+
+void initLocation(std::map<std::string, std::vector<std::string> > &location)
+{
+	location["index"];
+	location["client_max_body_size"];
+	location["error_page"];
+	location["allowed_methods"];
+	location["autoindex"] ;
+	location["return"];
+	location["root"];
 	location["name"];
 }
