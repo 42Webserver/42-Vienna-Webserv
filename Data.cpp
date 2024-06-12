@@ -15,7 +15,7 @@ void printData(std::vector <struct subserver> data)
 			std::cout<< std::endl;
 		}
 		std::cout << "Location: \n";
-		
+
 		for (size_t j = 0; j < data.at(i).location.size(); j++)
 		{
 			std::cout << "Location number: " << j << std::endl;
@@ -28,7 +28,7 @@ void printData(std::vector <struct subserver> data)
 				}
 				std::cout<< std::endl;
 			}
-		}	
+		}
 	}
 }
 
@@ -62,7 +62,7 @@ bool getLocation(struct subserver &newSubserver, std::vector<std::string> &token
 				location[tokens.at(i - value.size() - 1)] = value;
 		}
 		else
-			throw std::runtime_error("Error: config-file: Trash not allowed [locationscope]"); 
+			throw std::runtime_error("Error: config-file: Trash not allowed [locationscope]");
 		i++;
 	}
 	updateLocation(location, newSubserver);
@@ -91,9 +91,6 @@ std::vector<struct subserver> safeData(std::vector<std::string> tokens)
 						break;
 					continue;
 				}
-
-	//todo: check alway if there is already a value in a key, set the value of server after the location scope!!!!
-
 				//key = string
 				if (newSubserver.server.find(tokens.at(i)) != newSubserver.server.end())
 				{
@@ -155,20 +152,14 @@ void initSubserver(struct subserver &subserver)
 
 void updateLocation(std::map<std::string, std::vector<std::string> > &location, struct subserver newSubserver)
 {
-	if (location["index"].empty())
-		location["index"] = newSubserver.server["index"];
-	if (location["client_max_body_size"].empty())
-		location["client_max_body_size"] = newSubserver.server["client_max_body_size"];
-	if (location["error_page"].empty())
-		location["error_page"] = newSubserver.server["error_page"];
-	if (location["allowed_methods"].empty())
-		location["allowed_methods"] = newSubserver.server["allowed_methods"];
-	if (location["autoindex"].empty())
-		location["autoindex"] = newSubserver.server["autoindex"];
-	if (location["return"].empty())
-		location["return"] = newSubserver.server["return"];
-	if (location["root"].empty())
-		location["root"] = newSubserver.server["root"];
+	std::map<std::string, std::vector<std::string> >::iterator	it = location.begin();
+
+	while (it != location.end())
+	{
+		if ((it)->second.empty())
+			it->second = newSubserver.server[it->first];
+		it++;
+	}
 }
 
 void initLocation(std::map<std::string, std::vector<std::string> > &location)

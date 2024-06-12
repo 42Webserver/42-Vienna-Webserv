@@ -194,7 +194,7 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 	}
 
 	if (checkBegin > 1 && line.find_first_of("{}") != std::string::npos)
-		throw(std::runtime_error("Error: config-file: empty scope."));
+		throw(std::runtime_error("Error: config-file: invalid characters next to braces."));
 
 
 	if (checkBegin >= 2 && tokens.at(tokens.size() - checkBegin) == "location")
@@ -226,9 +226,15 @@ void	Webserver::checkSyntax(std::vector<std::string>& tokens)
 {
 	std::vector<std::string>::iterator	it;
 	int									braceCount = 0;
-
+	int 								maxBraceCount = 0;
 	for (it = tokens.begin(); it != tokens.end(); ++it)
 	{
+		if (it != tokens.begin() && *it == "http")
+			throw(std::runtime_error("Error: config-file: invalid http format."));
+
+		if (braceCount > maxBraceCount)
+			maxBraceCount = braceCount;
+
 		if (braceCount < 0)
 			throw(std::runtime_error("Error: config-file: invalid braces."));
 
@@ -237,6 +243,9 @@ void	Webserver::checkSyntax(std::vector<std::string>& tokens)
 
 		if (*it == "Server" && braceCount != 1)
 			throw(std::runtime_error("Error: config-file: Server in wrong scope."));
+
+		if (braceCount == 1 && *(it - 1) == "}" && *it == "{")
+			throw(std::runtime_error("Error: config-file: missing Server."));
 
 		if (*it == "location" && braceCount != 2)
 			throw(std::runtime_error("Error: config-file: location in wrong scope."));
@@ -256,6 +265,8 @@ void	Webserver::checkSyntax(std::vector<std::string>& tokens)
 		if (*it == "Server" && ((it + 1) == tokens.end() || *(it + 1) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid Server scope."));
 	}
+	if (maxBraceCount > 3 || maxBraceCount < 2)
+		throw(std::runtime_error("Error: config-file: invalid format."));
 	if (braceCount != 0)
 		throw(std::runtime_error("Error: config-file: invalid braces."));
 }
