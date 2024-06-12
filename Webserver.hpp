@@ -8,6 +8,7 @@
 #include "PollContainer.hpp"
 #include <fstream>
 #include "Data.hpp"
+#include "ConfigParser.hpp"
 
 class Webserver
 {
@@ -20,7 +21,7 @@ private:
 public:
 
 	Webserver(void);
-	Webserver(const std::string& configName);
+	Webserver(std::vector<struct subserver> subservers);
 	Webserver(const Webserver& other);
 	Webserver& operator=(const Webserver& other);
 	~Webserver();
