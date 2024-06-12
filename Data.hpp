@@ -17,5 +17,6 @@ std::vector<struct subserver>    safeData(std::vector<std::string> tokens);
 void    initSubserver(struct subserver &subserver);
 void    initLocation(std::map<std::string, std::vector<std::string> > &location);
 void    updateLocation(std::map<std::string, std::vector<std::string> > &location, struct subserver newSubserver);
+void    printData(std::vector <struct subserver> data);
 
 #endif // !DATA_H
