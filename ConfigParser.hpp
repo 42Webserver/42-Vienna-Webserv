@@ -7,6 +7,8 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <limits>
+#include <cstdlib>
 #include "Data.hpp"
 
 class ConfigParser
@@ -31,8 +33,9 @@ private:
 
 	static void	checkValue(const std::string& key, std::vector<std::string>& value);
 	static void	checkValueAutoindex(std::string& value);
-	static void	checkValueRoot(std::string& value);
 	static void	checkValueClientMaxBodySize(std::string& value);
+	// static void	checkValueListen(std::vector<std::string>& value);
+	static void	checkValueRoot(std::string& value);
 	static void	checkValueReturn(std::vector<std::string>& value);
 	static void	checkValueAllowedMethods(std::vector<std::string>& value);
 
@@ -48,6 +51,7 @@ private:
 
 public:
 	static std::vector<struct subserver>	parseConfig(std::string& configname);
+	static void	checkValueListen(std::vector<std::string>& value);
 };
 
 

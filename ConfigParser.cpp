@@ -252,6 +252,56 @@ void	ConfigParser::checkValueClientMaxBodySize(std::string& value)
 		throw(std::runtime_error("Error: config-file: invalid value at key 'client_max_body_size'."));
 }
 
+void	ConfigParser::checkValueListen(std::vector<std::string>& value)
+{
+	std::cout << "listen: " << value.at(0) << std::endl;
+
+	if (value.at(0).find_first_not_of("0123456789") == std::string::npos)
+	{
+		long	nb = std::atol(value.at(0).c_str());
+
+		if (nb > std::numeric_limits<unsigned short>::max())
+			throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
+		value.push_back(value.at(0));
+		value.at(0) = "0";
+		return;
+	}
+
+	size_t	last = value.at(0).find_last_of(":");
+
+	if (last == std::string::npos)
+		throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
+
+	std::string	ip = value.at(0).substr(0, last);
+	std::string	port = value.at(0).substr(last + 1, value.at(0).length() - last);
+
+	std::cout << "ip: " << ip << std::endl;
+	std::cout << "port: " << port << std::endl;
+
+	if (ip != "localhost" && ip != "[::]")
+	{
+		throw(std::runtime_error("Error: config-file: invalid ip at key 'listen'."));
+		value.at(0) = ip;
+	}
+
+	if (port.find_first_not_of("0123456789") == std::string::npos)
+	{
+		long	nb = std::atol(port.c_str());
+
+		if (nb > std::numeric_limits<unsigned short>::max())
+			throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
+		value.push_back(port);
+		return;
+	}
+
+
+	// 80 / 8080
+	// [::]:80
+	// localhost:80
+	// 10.0.0.1:80
+
+}
+
 void	ConfigParser::checkValueRoot(std::string& value)
 {
 	if (value.at(0) != '/')
