@@ -73,8 +73,8 @@ void Request::initMap(std::string head)
 		createKeyValuePair(line);
 		prevPos = pos;
 	}
-	for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
-		std::cout << "key = '" << it->first << "' value = " << it->second  << std::endl;
+	// for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
+		// std::cout << "key = '" << it->first << "' value = " << it->second  << std::endl;
 }
 
 

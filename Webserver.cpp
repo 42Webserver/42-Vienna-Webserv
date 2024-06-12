@@ -17,6 +17,11 @@ Webserver::Webserver(void)
 		std::cerr << "fail port 8090" << '\n';
 }
 
+Webserver::Webserver(std::vector<struct subserver> subservers)
+{
+	(void)subservers;
+}
+
 Webserver::Webserver(const Webserver& a_other) : m_servers(a_other.m_servers) {}
 
 Webserver&	Webserver::operator=(const Webserver& a_other)

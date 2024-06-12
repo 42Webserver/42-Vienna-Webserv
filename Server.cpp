@@ -44,7 +44,7 @@ int Server::initServerSocket(int a_ip, int a_port)
 		std::cerr << "Error: binding socket to ip failed.\n";
 		return (-1);
 	}
-	std::cout << m_serverAddress.sin_addr.s_addr << " " << m_serverAddress.sin_port << std::endl;
+	// std::cout << m_serverAddress.sin_addr.s_addr << " " << m_serverAddress.sin_port << std::endl;
 	if (listen(sock, 16) == -1)
 	{
 		std::cerr << "Error: listen failed.\n";
@@ -64,6 +64,6 @@ int	Server::acceptNewConnection(int a_sockFd) //make to memeber
 		std::cerr << "Error: fatal, accept fail.\n";
 		return (-1);
 	}
-	std::cout << "new socket: " << clientFd << '\n';
+	// std::cout << "new socket: " << clientFd << '\n';
 	return (clientFd);
 }

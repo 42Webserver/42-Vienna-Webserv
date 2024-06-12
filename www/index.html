@@ -2,8 +2,12 @@
 	<link rel='stylesheet' href='main.css' type='text/css' media='all' />
 	<body style="display: flex; flex-direction: column;">
 		<h1>Hello, World!</h1>
-		<button style="width: 100px;" onclick="test()">Test</button>
-		<img src="bild.jpg">
+		<button id="rotateButton" style="width: 100px;" onclick="startRotation()">Rotate!</button>
+
+		<div class="circular--portrait rotate-container">
+			<img src="bild.jpg" />
+		</div>
+
 		<input type="file">
 	</body>
 	<script type='text/javascript' src='main.js'></script>
