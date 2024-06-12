@@ -13,7 +13,7 @@ class Webserver
 {
 private:
 
-
+	std::vector<struct subserver> m_subservers;
 	std::vector<Server>	m_servers;
 	PollContainer		m_polls;
 

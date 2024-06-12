@@ -336,8 +336,8 @@ void	Webserver::readConfigFile(const std::string& file)
 	checkSyntax(tokens);
 	removeHttpScope(tokens);
 	sortConfigVector(tokens);
-	safeData(tokens);
-
+	m_subservers = safeData(tokens);
+	printData(m_subservers);
 	inFile.close();
 	exit(42);
 }
