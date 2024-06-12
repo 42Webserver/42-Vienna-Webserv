@@ -28,7 +28,8 @@ void printData(std::vector <struct subserver> data)
 				}
 				std::cout<< std::endl;
 			}
-		}
+		}			struct subserver newSubserver;
+
 	}
 }
 
@@ -70,6 +71,43 @@ bool getLocation(struct subserver &newSubserver, std::vector<std::string> &token
 	return (true);
 }
 
+bool	endOfServerScope(std::string &str, size_t &countScopes)
+{
+		str == "{" ? countScopes++ : countScopes--;
+		if (countScopes == 0)
+			return (true);
+		return false;
+}
+
+void	addValue(const std::vector<std::string> &tokens, struct subserver &newSubserver, size_t &i)
+{
+	std::vector<std::string> value;
+	
+	if (tokens.at(i + 1) == ";")
+		throw std::runtime_error("Error: config-file: Missing argument at key [serverscope]");
+	//ADD just one arg!
+	if (tokens.at(i) == "listen" || tokens.at(i) == "root" || tokens.at(i) == "index" \
+		|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex")
+	{
+		i++;
+		value.push_back(tokens.at(i));
+		if (newSubserver.server[tokens.at(i - 1)].empty())
+			newSubserver.server[tokens.at(i - 1)] = value;
+		if (tokens.at(++i) != ";")
+			throw std::runtime_error("Error: config-file: Two many arguments for key [serverscope]");
+	}
+	//ADD optional multiple arguments!
+	else if (tokens.at(i) == "server_name" || tokens.at(i) == "error_page" || \
+		tokens.at(i) == "allowed_methods" || tokens.at(i) == "return")
+	{
+		i++;
+		while (tokens.at(i) != ";")
+			value.push_back(tokens.at(i++));
+		if (newSubserver.server[tokens.at(i - value.size() - 1)].empty())
+			newSubserver.server[tokens.at(i - value.size() - 1)] = value;
+	}	
+}
+
 std::vector<struct subserver> safeData(std::vector<std::string> tokens)
 {
 	std::vector<struct subserver> data;
@@ -80,48 +118,19 @@ std::vector<struct subserver> safeData(std::vector<std::string> tokens)
 			i += 2;
 			struct subserver newSubserver;
 			initSubserver(newSubserver);
-			//Already skip the opening brackets of serverscope
-			int countScopes = 1;
+			size_t countScopes = 1;
 			for (; i < tokens.size(); i++)
 			{
 				if (tokens.at(i) == "{" || tokens.at(i) == "}")
 				{
-					tokens.at(i) == "{" ? countScopes++ : countScopes--;
-					if (countScopes == 0)
+					if (endOfServerScope(tokens.at(i), countScopes))
 						break;
-					continue;
+					else 
+						continue;
 				}
-				//key = string
-				if (newSubserver.server.find(tokens.at(i)) != newSubserver.server.end())
-				{
-					//Add exactly one
-					std::vector<std::string> value;
-					if (tokens.at(i + 1) == ";")
-						throw std::runtime_error("Error: config-file: Missing argument at key [serverscope]");
-					//ADD just one arg!
-					if (tokens.at(i) == "listen" || tokens.at(i) == "root" || tokens.at(i) == "index" \
-						|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex")
-					{
-						i++;
-						value.push_back(tokens.at(i));
-						if (newSubserver.server[tokens.at(i - 1)].empty())
-							newSubserver.server[tokens.at(i - 1)] = value;
-						if (tokens.at(++i) != ";")
-							throw std::runtime_error("Error: config-file: Two many arguments for key [serverscope]");
-					}
-					//ADD optional multiple arguments!
-					else if (tokens.at(i) == "server_name" || tokens.at(i) == "error_page" || \
-						tokens.at(i) == "allowed_methods" || tokens.at(i) == "return")
-					{
-						i++;
-						while (tokens.at(i) != ";")
-							value.push_back(tokens.at(i++));
-						if (newSubserver.server[tokens.at(i - value.size() - 1)].empty())
-							newSubserver.server[tokens.at(i - value.size() - 1)] = value;
-					}
-					//Add location
-				}
-				else if (tokens.at(i) == "location")
+				if (newSubserver.server.find(tokens.at(i)) != newSubserver.server.end()) //add value
+					addValue(tokens, newSubserver, i);
+				else if (tokens.at(i) == "location") 		//Add location
 					getLocation(newSubserver, tokens, i);
 				else
 					throw std::runtime_error("Error: config-file: Trash not allowed [serverscope]");
@@ -131,8 +140,6 @@ std::vector<struct subserver> safeData(std::vector<std::string> tokens)
 		else
 			throw std::runtime_error("Error: config-file: Trash between scopes!");
 	}
-	printData(data);
-	std::cout << "Number of subservers: " << data.size() << std::endl;
 	return (data);
 }
 
