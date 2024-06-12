@@ -27,12 +27,19 @@ int	main(int argc, char **argv)
     if (argc == 1)
         configName = std::string("webserv.conf");
     else
+    {
         configName = std::string(argv[1]);
+    }
 
-    // Webserver webserv;
-    Webserver webserv(configName);
-
-
-	initStatusCodes();
-	webserv.run();
+	try
+	{
+        Webserver webserv = Webserver(ConfigParser::parseConfig(configName));
+        initStatusCodes();
+	    webserv.run();
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+		exit(42);
+	}
 }
