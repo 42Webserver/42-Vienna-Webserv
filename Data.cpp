@@ -16,10 +16,10 @@ void printData(std::vector <struct subserver> data)
 		}
 		std::cout << "Location: \n";
 
-		for (size_t j = 0; j < data.at(i).location.size(); j++)
+		for (size_t j = 0; j < data.at(i).locations.size(); j++)
 		{
 			std::cout << "Location number: " << j << std::endl;
-			for (std::map<std::string, std::vector<std::string> > ::iterator it = data.at(i).location.at(j).begin(); it != data.at(i).location.at(j).end(); ++it)
+			for (std::map<std::string, std::vector<std::string> > ::iterator it = data.at(i).locations.at(j).begin(); it != data.at(i).locations.at(j).end(); ++it)
 			{
 				std::cout << "		Key: " << it->first << " | value: ";
 				for (size_t j = 0; j < it->second.size(); j++)
@@ -66,7 +66,7 @@ bool getLocation(struct subserver &newSubserver, std::vector<std::string> &token
 		i++;
 	}
 	updateLocation(location, newSubserver);
-	newSubserver.location.push_back(location);
+	newSubserver.locations.push_back(location);
 	return (true);
 }
 

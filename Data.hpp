@@ -9,9 +9,10 @@
 
 struct subserver
 {
-    std::map< std::string, std::vector<std::string> >server;
-    std::vector <std::map< std::string, std::vector<std::string> > > location;
+    std::map< std::string, std::vector<std::string> > server;
+    std::vector <std::map< std::string, std::vector<std::string> > > locations;
 };
+
 std::vector<struct subserver>    safeData(std::vector<std::string> tokens);
 void    initSubserver(struct subserver &subserver);
 void    initLocation(std::map<std::string, std::vector<std::string> > &location);
