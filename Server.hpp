@@ -11,6 +11,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include <algorithm>
+#include "Data.hpp"
 
 class Server
 {
@@ -18,7 +19,7 @@ private:
 
 	int									m_serverSocket;
 	sockaddr_in							m_serverAddress;
-	std::map<std::string, std::string>	m_config;
+	std::vector<struct subserver>		m_subServers;
 
 public:
 	Server(void);
@@ -28,9 +29,14 @@ public:
 
 	int	getServerSocket(void) const;
 
-	int	initServerSocket(int a_ip, int a_port);
+	void	addSubServer(const struct subserver& a_subServer);
+	short	getPort(void) const;
+
+	int	initServerSocket();
 
 	int	acceptNewConnection(int a_sockFd);
+
+	bool	operator==(int a_port) const;
 };
 
 #endif // !SERVER_HPP

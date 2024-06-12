@@ -9,14 +9,17 @@
 #include <fstream>
 #include "Data.hpp"
 #include "ConfigParser.hpp"
+#include <map>
 
 class Webserver
 {
 private:
 
-	std::vector<struct subserver>	m_subservers;
-	std::vector<Server>				m_servers;
-	PollContainer					m_polls;
+	std::vector<Server>		m_servers;
+	PollContainer			m_polls;
+
+	int	pollServers(void);
+	int	pollClients(void);
 
 public:
 
@@ -26,8 +29,6 @@ public:
 	Webserver& operator=(const Webserver& other);
 	~Webserver();
 
-	int	pollServers(void);
-	int	pollClients(void);
 	int	run();
 };
 
