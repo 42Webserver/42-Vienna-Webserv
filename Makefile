@@ -1,7 +1,7 @@
 NAME=	webserv
 FLAGS=	-Wall -Werror -Wextra -pedantic -std=c++98 -g
 
-FILES=	main.cpp Webserver.cpp Server.cpp Connection.cpp Request.cpp Response.cpp PollContainer.cpp Data.cpp
+FILES=	main.cpp Webserver.cpp Server.cpp Connection.cpp Request.cpp Response.cpp PollContainer.cpp ConfigParser.cpp
 OBJS=	$(FILES:.cpp=.o)
 
 all:	$(NAME)
