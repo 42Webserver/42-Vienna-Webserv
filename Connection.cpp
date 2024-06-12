@@ -52,7 +52,7 @@ int Connection::getSocketFd(void) const
 	return (m_clientSocket);
 }
 
-int Connection::reciveRequestRaw(void)
+int Connection::receiveRequestRaw(void)
 {
 	try
 	{
@@ -65,6 +65,7 @@ int Connection::reciveRequestRaw(void)
 		m_request = Request(m_head, m_body, m_clientSocket);
 		m_response = Response(m_request);
 		m_response.createResponseMessage();
+		std::cout << "Head:\n" << m_head << "\nBody:\n" << m_body << '\n';
 	}
 	catch(const std::exception& e)
 	{

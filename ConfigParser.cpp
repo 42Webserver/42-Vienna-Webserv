@@ -374,7 +374,7 @@ void	ConfigParser::printData(std::vector <struct subserver> data)
 	for (size_t i = 0; i < data.size(); i++)
 	{
 		std::cout << "Server number " << i << std::endl;
-		for (std::map<std::string, std::vector<std::string> > ::iterator it = data.at(i).server.begin(); it != data.at(i).server.end(); ++it)
+		for (std::map<std::string, std::vector<std::string> > ::iterator it = data.at(i).serverConfig.begin(); it != data.at(i).serverConfig.end(); ++it)
 		{
 			std::cout << "	Key: " << it->first << " | value: ";
 			for (size_t i = 0; i < it->second.size(); i++)
@@ -385,10 +385,10 @@ void	ConfigParser::printData(std::vector <struct subserver> data)
 		}
 		std::cout << "Location: \n";
 
-		for (size_t j = 0; j < data.at(i).locations.size(); j++)
+		for (size_t j = 0; j < data.at(i).locationConfigs.size(); j++)
 		{
 			std::cout << "Location number: " << j << std::endl;
-			for (std::map<std::string, std::vector<std::string> > ::iterator it = data.at(i).locations.at(j).begin(); it != data.at(i).locations.at(j).end(); ++it)
+			for (std::map<std::string, std::vector<std::string> > ::iterator it = data.at(i).locationConfigs.at(j).begin(); it != data.at(i).locationConfigs.at(j).end(); ++it)
 			{
 				std::cout << "		Key: " << it->first << " | value: ";
 				for (size_t j = 0; j < it->second.size(); j++)
@@ -438,7 +438,7 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 		i++;
 	}
 	updateLocation(location, newSubserver);
-	newSubserver.locations.push_back(location);
+	newSubserver.locationConfigs.push_back(location);
 	return (true);
 }
 
@@ -463,8 +463,8 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 		i++;
 		value.push_back(tokens.at(i));
 		checkValue(tokens.at(i - 1), value);
-		if (newSubserver.server[tokens.at(i - 1)].empty())
-			newSubserver.server[tokens.at(i - 1)] = value;
+		if (newSubserver.serverConfig[tokens.at(i - 1)].empty())
+			newSubserver.serverConfig[tokens.at(i - 1)] = value;
 		if (tokens.at(++i) != ";")
 			throw std::runtime_error("Error: config-file: Two many arguments for key [serverscope]");
 	}
@@ -476,8 +476,8 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 		while (tokens.at(i) != ";")
 			value.push_back(tokens.at(i++));
 		checkValue(tokens.at(i - value.size() - 1), value);
-		if (newSubserver.server[tokens.at(i - value.size() - 1)].empty())
-			newSubserver.server[tokens.at(i - value.size() - 1)] = value;
+		if (newSubserver.serverConfig[tokens.at(i - value.size() - 1)].empty())
+			newSubserver.serverConfig[tokens.at(i - value.size() - 1)] = value;
 	}
 }
 
@@ -500,7 +500,7 @@ void ConfigParser::safeData(std::vector<std::string> tokens)
 					else
 						continue;
 				}
-				if (newSubserver.server.find(tokens.at(i)) != newSubserver.server.end()) //add value
+				if (newSubserver.serverConfig.find(tokens.at(i)) != newSubserver.serverConfig.end()) //add value
 					addValue(tokens, newSubserver, i);
 				else if (tokens.at(i) == "location") 		//Add location
 					getLocation(newSubserver, tokens, i);
@@ -516,16 +516,16 @@ void ConfigParser::safeData(std::vector<std::string> tokens)
 
 void ConfigParser::initSubserver(struct subserver &subserver)
 {
-	subserver.server["listen"];
-	subserver.server["root"];
-	subserver.server["index"];
-	subserver.server["server_name"];
-	subserver.server["client_max_body_size"];
-	subserver.server["error_page"];
-	subserver.server["allowed_methods"];
-	subserver.server["autoindex"];
-	subserver.server["return"];
-	subserver.server["locations"];
+	subserver.serverConfig["listen"];
+	subserver.serverConfig["root"];
+	subserver.serverConfig["index"];
+	subserver.serverConfig["server_name"];
+	subserver.serverConfig["client_max_body_size"];
+	subserver.serverConfig["error_page"];
+	subserver.serverConfig["allowed_methods"];
+	subserver.serverConfig["autoindex"];
+	subserver.serverConfig["return"];
+	subserver.serverConfig["locations"];
 }
 
 void ConfigParser::updateLocation(std::map<std::string, std::vector<std::string> > &location, struct subserver newSubserver)
@@ -535,7 +535,7 @@ void ConfigParser::updateLocation(std::map<std::string, std::vector<std::string>
 	while (it != location.end())
 	{
 		if ((it)->second.empty())
-			it->second = newSubserver.server[it->first];
+			it->second = newSubserver.serverConfig[it->first];
 		it++;
 	}
 }
