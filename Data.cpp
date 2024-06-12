@@ -70,7 +70,7 @@ bool getLocation(struct subserver &newSubserver, std::vector<std::string> &token
 	return (true);
 }
 
-bool safeData(std::vector<std::string> tokens)
+std::vector<struct subserver> safeData(std::vector<std::string> tokens)
 {
 	std::vector<struct subserver> data;
 	for (size_t i = 0; i < tokens.size(); i++)
@@ -136,7 +136,7 @@ bool safeData(std::vector<std::string> tokens)
 	}
 	printData(data);
 	std::cout << "Number of subservers: " << data.size() << std::endl;
-	return (true);
+	return (data);
 }
 
 void initSubserver(struct subserver &subserver)
