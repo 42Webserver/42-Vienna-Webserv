@@ -209,15 +209,15 @@ void	Webserver::processLine(std::string& line, std::vector<std::string>& tokens)
 
 	else if (tokens.back() == ";")
 	{
-		std::string vorletztes;
+		std::string secondLast;
 
 		if (tokens.size() >= 2)
-			vorletztes = tokens.at(tokens.size() - 2);
+			secondLast = tokens.at(tokens.size() - 2);
 
-		if (vorletztes.empty())
+		if (secondLast.empty())
 			throw(std::runtime_error("Error: config-file: invalid line with semicolon."));
 
-		if (vorletztes == "http" || vorletztes == "Server" || vorletztes == "{" || vorletztes == "}")
+		if (secondLast == "http" || secondLast == "Server" || secondLast == "{" || secondLast == "}")
 			throw(std::runtime_error("Error: config-file: semicolon after special token (http / Server / { / })."));
 	}
 }
@@ -336,8 +336,69 @@ void	Webserver::readConfigFile(const std::string& file)
 	checkSyntax(tokens);
 	removeHttpScope(tokens);
 	sortConfigVector(tokens);
-	safeData(tokens);
+
+	this->m_subservers = safeData(tokens);
 
 	inFile.close();
 	exit(42);
+}
+
+void	Webserver::checkValueAutoindex(std::string& value)
+{
+	if (value != "on" && value != "off")
+		throw(std::runtime_error("Error: config-file: invalid value at key 'autoindex'."));
+}
+
+void	Webserver::checkValueClientMaxBodySize(std::string& value)
+{
+	if (value.find_first_not_of("0123456789") != std::string::npos)
+		throw(std::runtime_error("Error: config-file: invalid value at key 'client_max_body_size'."));
+}
+
+void	Webserver::checkValueRoot(std::string& value)
+{
+	if (value.at(0) != '/')
+		throw(std::runtime_error("Error: config-file: invalid value at key 'root'."));
+}
+
+void	Webserver::checkValueAllowedMethods(std::vector<std::string>& value)
+{
+	if (value.size() > 3)
+		throw(std::runtime_error("Error: config-file: too many values at key 'allowed_methods'."));
+
+	for (size_t i = 0; i < value.size(); ++i)
+	{
+		if (value.at(i) != "GET" && value.at(i) != "POST" && value.at(i) != "DELETE")
+			throw(std::runtime_error("Error: config-file: invalid value at key 'allowed_methods'."));
+		if (i == 1 && value.at(1) == value.at(0))
+			throw(std::runtime_error("Error: config-file: double value at key 'allowed_methods'."));
+		if (i == 2 && (value.at(2) == value.at(0) || value.at(2) == value.at(1)))
+			throw(std::runtime_error("Error: config-file: double value at key 'allowed_methods'."));
+	}
+}
+
+void	Webserver::checkValueReturn(std::vector<std::string>& value)
+{
+	if (value.size() > 2)
+		throw(std::runtime_error("Error: config-file: too many values at key 'return'."));
+
+	if (value.at(0).length() > 3 || value.at(0).find_first_not_of("0123456789") != std::string::npos)
+		throw(std::runtime_error("Error: config-file: invalid statuscode at key 'return'."));
+
+	if (value.size() == 2 && value.at(1).at(0) != '/')
+		throw(std::runtime_error("Error: config-file: invalid location at key 'return'."));
+}
+
+void	Webserver::checkValue(const std::string& key, std::vector<std::string>& value)
+{
+	if (key == "autoindex")
+		checkValueAutoindex(value.at(0));
+	if (key == "client_max_body_size")
+		checkValueClientMaxBodySize(value.at(0));
+	if (key == "root")
+		checkValueRoot(value.at(0));
+	if (key == "allowed_methods")
+		checkValueAllowedMethods(value);
+	if (key == "return")
+		checkValueReturn(value);
 }

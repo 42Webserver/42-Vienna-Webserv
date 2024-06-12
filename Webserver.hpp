@@ -13,9 +13,9 @@ class Webserver
 {
 private:
 
-
-	std::vector<Server>	m_servers;
-	PollContainer		m_polls;
+	std::vector<struct subserver>	m_subservers;
+	std::vector<Server>				m_servers;
+	PollContainer					m_polls;
 
 public:
 
@@ -36,6 +36,15 @@ public:
 	void	checkSyntax(std::vector<std::string>& tokens);
 	void	removeHttpScope(std::vector<std::string>& tokens);
 	void	sortConfigVector(std::vector<std::string>& tokens);
+
+	void	checkValue(const std::string& key, std::vector<std::string>& value);
+	void	checkValueAutoindex(std::string& value);
+	void	checkValueRoot(std::string& value);
+	void	checkValueClientMaxBodySize(std::string& value);
+	void	checkValueReturn(std::vector<std::string>& value);
+	void	checkValueAllowedMethods(std::vector<std::string>& value);
+
+
 
 	int	run();
 };
