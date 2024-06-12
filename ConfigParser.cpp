@@ -276,8 +276,6 @@ unsigned long ConfigParser::ipToL(std::string ip)
 
 void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 {
-	std::cout << "listen: " << value.at(0) << std::endl;
-
 	if (value.at(0).find_first_not_of("0123456789") == std::string::npos)
 	{
 		long	nb = std::atol(value.at(0).c_str());
@@ -286,8 +284,6 @@ void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 			throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
 		value.push_back(value.at(0));
 		value.at(0) = "0";
-		std::cout << "IP = "<< value.at(0) << " Port = " << value.at(1) << std::endl;
-
 		return;
 	}
 
@@ -298,9 +294,6 @@ void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 
 	std::string	ip = value.at(0).substr(0, last);
 	std::string	port = value.at(0).substr(last + 1, value.at(0).length() - last);
-
-	std::cout << "ip: " << ip << std::endl;
-	std::cout << "port: " << port << std::endl;
 
 	if (ip != "localhost" && ip != "[::]")
 	{
@@ -315,18 +308,13 @@ void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 
 		if (nb > std::numeric_limits<unsigned short>::max())
 			throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
+
 		if (ip == "localhost" || ip == "[::]")
 			value.at(0) = "0";
+
 		value.push_back(port);
-		std::cout << "IP = "<< value.at(0) << " Port = " << value.at(1) << std::endl;
 		return;
 	}
-
-	// 80 / 8080
-	// [::]:80
-	// localhost:80
-	// 10.0.0.1:80
-
 }
 
 void	ConfigParser::checkValueRoot(std::string& value)
