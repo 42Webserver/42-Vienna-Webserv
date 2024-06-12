@@ -252,6 +252,71 @@ void	ConfigParser::checkValueClientMaxBodySize(std::string& value)
 		throw(std::runtime_error("Error: config-file: invalid value at key 'client_max_body_size'."));
 }
 
+unsigned long ConfigParser::ipToL(std::string ip)
+{
+	std::string octet;
+	std::istringstream input(ip);
+	unsigned long result = 0;
+	unsigned long value;
+	int shiftSize = 24;
+	if (ip.find_first_not_of("0123456789.") != std::string::npos)
+		throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
+	while (std::getline(input, octet, '.') && shiftSize >= 0)
+	{
+    	if (octet.length() <= 0 || octet.length() > 3 || strtol(octet.c_str(), NULL, 10) > 255)
+			throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
+		value = strtol(octet.c_str(), NULL, 10);
+		result +=	value << shiftSize;
+		shiftSize -= 8;
+	}
+    if (shiftSize != -8)
+		throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
+	return (result);
+}
+
+void	ConfigParser::checkValueListen(std::vector<std::string>& value)
+{
+	if (value.at(0).find_first_not_of("0123456789") == std::string::npos)
+	{
+		long	nb = std::atol(value.at(0).c_str());
+
+		if (nb > std::numeric_limits<unsigned short>::max())
+			throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
+		value.push_back(value.at(0));
+		value.at(0) = "0";
+		return;
+	}
+
+	size_t	last = value.at(0).find_last_of(":");
+
+	if (last == std::string::npos)
+		throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
+
+	std::string	ip = value.at(0).substr(0, last);
+	std::string	port = value.at(0).substr(last + 1, value.at(0).length() - last);
+
+	if (ip != "localhost" && ip != "[::]")
+	{
+		std::stringstream ipStr;
+		ipStr << ipToL(ip);
+		value.at(0) = ipStr.str();
+	}
+
+	if (port.find_first_not_of("0123456789") == std::string::npos)
+	{
+		long	nb = std::atol(port.c_str());
+
+		if (nb > std::numeric_limits<unsigned short>::max())
+			throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
+
+		if (ip == "localhost" || ip == "[::]")
+			value.at(0) = "0";
+
+		value.push_back(port);
+		return;
+	}
+}
+
 void	ConfigParser::checkValueRoot(std::string& value)
 {
 	if (value.at(0) != '/')
@@ -298,6 +363,8 @@ void	ConfigParser::checkValue(const std::string& key, std::vector<std::string>& 
 		checkValueAllowedMethods(value);
 	if (key == "return")
 		checkValueReturn(value);
+	if (key == "listen")
+		checkValueListen(value);
 }
 
 // shit incoming
@@ -350,6 +417,7 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 			|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex")
 		{
 			value.push_back(tokens.at(++i));
+			checkValue(tokens.at(i - 1), value);
 			if (location[tokens.at(i - 1)].empty())
 				location[tokens.at(i - 1)] = value;
 			if (tokens.at(++i) != ";")
@@ -361,6 +429,7 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 			i++;
 			while (tokens.at(i) != ";")
 				value.push_back(tokens.at(i++));
+			checkValue(tokens.at(i - value.size() - 1), value);
 			if (location[tokens.at(i - value.size() - 1)].empty())
 				location[tokens.at(i - value.size() - 1)] = value;
 		}
@@ -393,6 +462,7 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 	{
 		i++;
 		value.push_back(tokens.at(i));
+		checkValue(tokens.at(i - 1), value);
 		if (newSubserver.server[tokens.at(i - 1)].empty())
 			newSubserver.server[tokens.at(i - 1)] = value;
 		if (tokens.at(++i) != ";")
@@ -405,6 +475,7 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 		i++;
 		while (tokens.at(i) != ";")
 			value.push_back(tokens.at(i++));
+		checkValue(tokens.at(i - value.size() - 1), value);
 		if (newSubserver.server[tokens.at(i - value.size() - 1)].empty())
 			newSubserver.server[tokens.at(i - value.size() - 1)] = value;
 	}

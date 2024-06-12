@@ -33,6 +33,10 @@ int	main(int argc, char **argv)
 
 	try
 	{
+/*         std::vector<std::string>    m_testvector;
+        m_testvector.push_back(".123.123.1:8080");
+        ConfigParser::checkValueListen(m_testvector);
+        exit(42); */
         Webserver webserv = Webserver(ConfigParser::parseConfig(configName));
         initStatusCodes();
 	    webserv.run();
