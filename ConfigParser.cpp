@@ -295,7 +295,7 @@ void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 	std::string	ip = value.at(0).substr(0, last);
 	std::string	port = value.at(0).substr(last + 1, value.at(0).length() - last);
 
-	if (ip != "localhost" && ip != "[::]")
+	if (ip != "localhost")
 	{
 		std::stringstream ipStr;
 		ipStr << ipToL(ip);
@@ -309,8 +309,8 @@ void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 		if (nb > std::numeric_limits<unsigned short>::max())
 			throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
 
-		if (ip == "localhost" || ip == "[::]")
-			value.at(0) = "0";
+		if (ip == "localhost")
+			value.at(0) = "2130706433";
 
 		value.push_back(port);
 		return;
