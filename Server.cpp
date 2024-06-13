@@ -27,11 +27,18 @@ void Server::addSubServer(const subserver &a_subServer)
 	m_subServers.push_back(a_subServer);
 }
 
-short Server::getPort(void) const
+u_int16_t Server::getPort(void) const
 {
 	if (m_subServers.size() == 0)
 		return (80);
 	return (m_subServers.at(0).getPort());
+}
+
+u_int64_t Server::getIp(void) const
+{
+	if (m_subServers.size() == 0)
+		return (0);
+	return (m_subServers.at(0).getIp());
 }
 
 int Server::initServerSocket()
@@ -80,7 +87,7 @@ int	Server::acceptNewConnection(int a_sockFd) //make to memeber
 	return (clientFd);
 }
 
-bool Server::operator==(int a_port) const
+bool Server::operator==(struct serveradress a_listen) const
 {
-	return (this->getPort() == a_port);
+	return (this->getPort() == a_listen.getPort() && this->getIp() == a_listen.getIp());
 }

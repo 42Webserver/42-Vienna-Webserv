@@ -29,14 +29,16 @@ public:
 
 	int	getServerSocket(void) const;
 
-	void	addSubServer(const struct subserver& a_subServer);
-	short	getPort(void) const;
+	void		addSubServer(const struct subserver& a_subServer);
+	u_int16_t	getPort(void) const;
+	u_int64_t	getIp(void) const;
+
 
 	int	initServerSocket();
 
 	int	acceptNewConnection(int a_sockFd);
 
-	bool	operator==(int a_port) const;
+	bool	operator==(struct serveradress a_listen) const;
 };
 
 #endif // !SERVER_HPP

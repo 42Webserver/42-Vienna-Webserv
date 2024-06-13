@@ -16,8 +16,8 @@ Webserver::Webserver(std::vector<struct subserver> subservers)
 	for (std::size_t i = 0; i < subservers.size(); i++)
 	{
 		std::cout << (m_servers.size() != 0 ? m_servers.at(0).getPort() : -1) << " | " << subservers.at(i).getPort() << '\n';
-		std::vector<Server>::iterator found = std::find(m_servers.begin(), m_servers.end(), subservers.at(i).getPort());
-		if (found == m_servers.end()) {
+		std::vector<Server>::iterator found = std::find(m_servers.begin(), m_servers.end(), subservers.at(i).getAdress());
+		if (found == m_servers.end()) { //servers can run on different ips but same port.
 			Server	temp;
 			temp.addSubServer(subservers.at(i));
 			m_servers.push_back(temp);
@@ -37,13 +37,14 @@ Webserver::Webserver(std::vector<struct subserver> subservers)
 	}
 }
 
-Webserver::Webserver(const Webserver& a_other) : m_servers(a_other.m_servers) {}
+Webserver::Webserver(const Webserver& a_other) : m_servers(a_other.m_servers), m_polls(a_other.m_polls) {}
 
 Webserver&	Webserver::operator=(const Webserver& a_other)
 {
 	if (this != &a_other)
 	{
 		m_servers = a_other.m_servers;
+		m_polls = a_other.m_polls;
 	}
 	return (*this);
 }
