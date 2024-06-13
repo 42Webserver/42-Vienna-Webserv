@@ -41,6 +41,11 @@ u_int64_t Server::getIp(void) const
 	return (m_subServers.at(0).getIp());
 }
 
+std::vector<struct subserver> Server::getSubServers() const
+{
+    return (m_subServers);
+}
+
 int Server::initServerSocket()
 {
 	if (m_subServers.size() == 0) {
