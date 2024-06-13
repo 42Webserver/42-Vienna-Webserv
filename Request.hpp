@@ -24,7 +24,7 @@ class Request
 		void    initMap(std::string head);
 		int		getClientSocket() const;
 		const 	std::string& getValue(const std::string& a_key);
-		std::string getRequestIp() const;
+		std::string getRequestHost() const;
 
 	private:
 		int									m_clientSocket;

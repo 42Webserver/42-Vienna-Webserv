@@ -88,13 +88,13 @@ const std::string &Request::getValue(const std::string &a_key)
 	return (m_requestHeader[a_key]);
 }
 
-std::string Request::getRequestIp() const
+std::string Request::getRequestHost() const
 {
 	std::string host;
 	if (m_requestHeader.find("Host") != m_requestHeader.end())
 	{
 		host = m_requestHeader.at("Host");
 		host = host.substr(1, host.find(':'));
-	}	
+	}
     return host;
 }
