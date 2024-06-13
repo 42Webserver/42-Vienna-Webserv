@@ -74,7 +74,7 @@ void Request::initMap(std::string head)
 		prevPos = pos;
 	}
 	// for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
-		// std::cout << "key = '" << it->first << "' value = " << it->second  << std::endl;
+	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
 
 
@@ -86,4 +86,15 @@ int Request::getClientSocket() const
 const std::string &Request::getValue(const std::string &a_key)
 {
 	return (m_requestHeader[a_key]);
+}
+
+std::string Request::getRequestIp() const
+{
+	std::string host;
+	if (m_requestHeader.find("Host") != m_requestHeader.end())
+	{
+		host = m_requestHeader.at("Host");
+		host = host.substr(1, host.find(':'));
+	}	
+    return host;
 }

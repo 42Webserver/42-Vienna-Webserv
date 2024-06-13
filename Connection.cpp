@@ -56,6 +56,7 @@ int Connection::receiveRequestRaw(void)
 {
 	try
 	{
+		//chunk body are missing
 		std::string remainder = readUntilSep(m_head, "\r\n\r\n");
 		if (!remainder.empty())
 		{
@@ -63,6 +64,8 @@ int Connection::receiveRequestRaw(void)
 			readUntilSep(m_body, "\r\n\r\n");
 		}
 		m_request = Request(m_head, m_body, m_clientSocket);
+		//getSubserver() => from server
+		m_request.getRequestIp();
 		m_response = Response(m_request);
 		m_response.createResponseMessage();
 		std::cout << "Head:\n" << m_head << "\nBody:\n" << m_body << '\n';
@@ -81,6 +84,12 @@ int Connection::sendResponse(void) const
 	const std::string&	response = m_response.getResponse();
 	// std::cout << "Response: " << response << '\n';
 	return (send(m_clientSocket, response.data(), response.size(), 0));
+}
+
+subserver Connection::getSubserver()
+{
+
+    return subserver();
 }
 
 bool Connection::operator==(const int a_fd) const

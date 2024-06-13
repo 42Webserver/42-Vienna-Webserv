@@ -41,6 +41,7 @@ public:
 	int	getSocketFd(void) const;
 	int	receiveRequestRaw(void);
 	int	sendResponse(void) const;
+	struct subserver getSubserver();
 
 
 	//debug
