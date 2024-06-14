@@ -38,7 +38,7 @@ void PollContainer::addServer(const Server& a_server)
 
 void PollContainer::addConnection(const Connection& a_connection)
 {
-	m_pollfds.push_back(newPollfd(a_connection.getSocketFd(), POLLIN | POLLERR | POLLNVAL));
+	m_pollfds.push_back(newPollfd(a_connection.getSocketFd(), POLLIN | POLLHUP | POLLERR | POLLNVAL));
 	m_connections.push_back(a_connection);
 }
 

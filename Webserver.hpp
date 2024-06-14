@@ -29,7 +29,7 @@ public:
 	Webserver& operator=(const Webserver& other);
 	~Webserver();
 
-	int	run();
+	int	runServer();
 };
 
 

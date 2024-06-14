@@ -146,3 +146,18 @@ bool	Request::getIsValid(void) const
 {
 	return (m_isValid);
 }
+
+bool Request::getValue(const std::string &a_key, std::string &a_returnValue) const
+{
+	std::map<std::string, std::string>::const_iterator found = m_requestHeader.find(a_key);
+	if (found != m_requestHeader.end()) {
+		a_returnValue = found->second;
+		return (true);
+	}
+	return (false);
+}
+
+void Request::setValue(const std::string &a_key, const std::string &a_val)
+{
+	m_requestHeader[a_key] = a_val;
+}

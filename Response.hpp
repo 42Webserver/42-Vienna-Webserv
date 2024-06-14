@@ -32,9 +32,14 @@ public:
 	Response& operator=(const Response& other);
 	~Response();
 
+	std::string const & getResponse() const;
+	void				getBody(std::string const & filename);
 	void				createResponseMessage();
-	void				sendErrorMsg(int const & a_error_code);
-	void				sendValidMsg(int const & a_error_code);
+
+private:
+
+	void				buildErrorMsg(int const & a_error_code);
+	void				buildValidMsg(int const & a_error_code);
 	int					checkMethod();
 	int					checkUri();
 	int					checkHttpVersion();

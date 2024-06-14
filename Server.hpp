@@ -37,7 +37,7 @@ public:
 
 	int	initServerSocket();
 
-	int	acceptNewConnection(int a_sockFd);
+	int	acceptNewConnection();
 
 	bool	operator==(struct serveradress a_listen) const;
 };

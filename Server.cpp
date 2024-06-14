@@ -89,11 +89,14 @@ int Server::initServerSocket()
 	return (sock);
 }
 
-int	Server::acceptNewConnection(int a_sockFd) //make to memeber
+/// @brief Accept a new client connection on the serverSocket.
+/// @param void
+/// @return Returns client socket file descriptor.
+int	Server::acceptNewConnection(void)
 {
 	struct sockaddr clientAdr;
 	socklen_t		addrlen = sizeof(struct sockaddr);
-	int clientFd = accept(a_sockFd, &clientAdr, &addrlen);
+	int clientFd = accept(m_serverSocket, &clientAdr, &addrlen);
 	if (clientFd == -1)
 	{
 		std::cerr << "Error: fatal, accept fail.\n";

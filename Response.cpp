@@ -59,36 +59,37 @@ void Response::createResponseMessage()
 	}
 	if ((error_code = checkHttpVersion()) > 0)
 	{
-		sendErrorMsg(error_code);
+		buildErrorMsg(error_code);
 		return ;
 	}
 	if ((error_code = checkUri()) > 0)
 	{
-		sendErrorMsg(error_code);
+		buildErrorMsg(error_code);
 		return ;
 	}
 	if ((error_code = checkMethod()) > 0)
 	{
-		sendErrorMsg(error_code);
+		buildErrorMsg(error_code);
 		return ;
 	}
 	if (error_code == 0)
 	{
-		sendValidMsg(200);
+		buildValidMsg(200);
 		return ;
 	}
 	//Read from file to string for uploading page!
 }
 
-void Response::sendValidMsg(int const & a_error_code)
+void Response::buildValidMsg(int const & a_error_code)
 {
 	getResponseHeader(a_error_code);
 	getBody("www/" + this->m_request.getValue("uri"));
 	// std::cout << m_responseMsg << '\n';
 }
 
-void Response::sendErrorMsg(int const & a_error_code)
+void Response::buildErrorMsg(int const & a_error_code)
 {
+	m_request.setValue("Connection", " closed"); //schabernack
 	getResponseHeader(a_error_code);
 	getBody("error/notFound.html");
 	// std::cout << m_responseMsg << '\n';
@@ -126,8 +127,8 @@ int Response::checkUri()
 	{
 		DIR* directory;
 		struct dirent *readDir;
-		std::string uri = m_request.getValue("uri");
-		uri = uri.substr(1, uri.length());
+		std::string uri = m_request.getValue("uri").substr(1);
+
 		if (uri.empty())
 			return (std::cerr << "Error: empty uri" << '\n', 400); //400 Bad Request
 		if (uri.length() > 256)
@@ -195,9 +196,9 @@ void Response::addDateAndTime(std::string &a_response_header)
 	std::time_t t = std::time(NULL);
     std::tm* now = std::localtime(&t);
 
-	char buffer[30];
+	char buffer[32];
 	a_response_header.append("Date: ");
-	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", now);
+	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S CEST", now);
 
 	a_response_header.append(buffer);
 	a_response_header.append("\r\n");
@@ -207,8 +208,12 @@ void Response::addServerConnection(std::string &a_response_header)
 {
 	//check if we are sending, more response message => keep-alive!
 	//else closed
-	a_response_header.append("Connection: closed");
-	a_response_header.append("\r\n");
+	std::string connValue;
+	if (m_request.getValue("Connection:", connValue))
+	{
+		a_response_header.append("Connection:" + m_request.getValue("Connection"));
+		a_response_header.append("\r\n");
+	}
 }
 
 std::string const &Response::getResponse() const
@@ -227,6 +232,10 @@ void Response::getBody(std::string const &filename)
 		return ;
 	}
 	body << input_file.rdbuf();
+	std::stringstream ss;
+	ss << "Content-Length: " << body.str().size();
+	m_responseMsg.insert(m_responseMsg.size() - 2, ss.str());
+	m_responseMsg.append("\r\n");
 	m_responseMsg.append(body.str());
 	m_responseMsg.append("\r\n");
 }

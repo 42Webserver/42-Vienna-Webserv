@@ -39,7 +39,7 @@ int	main(int argc, char **argv)
         exit(42); */
         Webserver webserv = Webserver(ConfigParser::parseConfig(configName));
         initStatusCodes();
-	    webserv.run();
+	    webserv.runServer();
 	}
 	catch(const std::exception& e)
 	{

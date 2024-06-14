@@ -22,6 +22,7 @@ private:
 	std::string	m_head;
 	std::string	m_body;
 
+	time_t		m_idleStart;
 
 	Response	m_response;
 	Request		m_request;
@@ -40,7 +41,9 @@ public:
 
 	int	getSocketFd(void) const;
 	int	receiveRequestRaw(void);
-	int	sendResponse(void) const;
+	int	sendResponse(void);
+
+	time_t	getIdleTime(void) const;
 
 
 	//debug
