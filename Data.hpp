@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <ostream>
 
+typedef std::map<std::string, std::vector<std::string> > t_config;
+
 struct serveradress
 {
 private:
@@ -27,6 +29,7 @@ struct subserver
 	u_int16_t		getPort(void) const;
 	u_int64_t		getIp(void) const;
 	serveradress	getAdress(void) const;
+	const t_config&	getValidConfig(const std::string& a_uri) const;
 };
 
 #endif // !DATA_H
