@@ -9,6 +9,8 @@
 #include <dirent.h>
 #include <ctime>
 #include "Request.hpp"
+#include "Data.hpp"
+#include "ConfigParser.hpp"
 
 
 /// global variable///
@@ -18,13 +20,14 @@ class Response
 {
 private:
 
-	std::string	m_responseMsg;
-	Request		m_request;
+	std::string			m_responseMsg;
+	Request				m_request;
+	struct subserver	m_subServer;
 
 public:
 
 	Response(void);
-	Response(const Request& a_request);
+	Response(const Request& a_request, const subserver& a_subserver);
 	Response(const Response& other);
 	Response& operator=(const Response& other);
 	~Response();

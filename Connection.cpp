@@ -2,7 +2,7 @@
 
 Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket) 
 {
-	std::cout << "New connection on fd: " << m_clientSocket << '\n';
+	// std::cout << "New connection on fd: " << m_clientSocket << '\n';
 	m_idleStart = std::time(NULL);
 }
 
@@ -58,12 +58,13 @@ int Connection::getSocketFd(void) const
 	return (m_clientSocket);
 }
 
-int Connection::reciveRequestRaw(void)
+int Connection::receiveRequestRaw(void)
 {
 	m_head.clear();
 	m_body.clear();
 	try
 	{
+		//chunk body are missing
 		std::string remainder = readUntilSep(m_head, "\r\n\r\n");
 		if (!remainder.empty())
 		{
@@ -74,8 +75,10 @@ int Connection::reciveRequestRaw(void)
 			return (1);
 		std::cout << "Request:\n" << "Head:\n" << m_head << "\nBody:\n" << (m_body.size() > 15 ? m_body.substr(0, 15) + "...\n[ ... ]" : m_body) << '\n';
 		m_request = Request(m_head, m_body, m_clientSocket);
-		m_response = Response(m_request);
+		//getSubserver() => from server
+		m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()));
 		m_response.createResponseMessage();
+		std::cout << "Head:\n" << m_head << "\nBody:\n" << m_body << '\n';
 	}
 	catch(const std::exception& e)
 	{

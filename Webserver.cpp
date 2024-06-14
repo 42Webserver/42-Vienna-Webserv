@@ -2,12 +2,6 @@
 
 Webserver::Webserver(void)
 {
-	Server testSrvr;
-	if (testSrvr.initServerSocket(INADDR_ANY, 8080) != -1)
-	{
-		m_servers.push_back(testSrvr);
-		m_polls.addServer(testSrvr);
-	}
 	// if (testSrvr.initServerSocket(INADDR_ANY, 8090) != -1)
 	// {
 	// 	m_servers.push_back(testSrvr);
@@ -17,13 +11,40 @@ Webserver::Webserver(void)
 	// 	std::cerr << "fail port 8090" << '\n';
 }
 
-Webserver::Webserver(const Webserver& a_other) : m_servers(a_other.m_servers) {}
+Webserver::Webserver(std::vector<struct subserver> subservers)
+{
+	for (std::size_t i = 0; i < subservers.size(); i++)
+	{
+		std::cout << (m_servers.size() != 0 ? m_servers.at(0).getPort() : -1) << " | " << subservers.at(i).getPort() << '\n';
+		std::vector<Server>::iterator found = std::find(m_servers.begin(), m_servers.end(), subservers.at(i).getAdress());
+		if (found == m_servers.end()) { //servers can run on different ips but same port.
+			Server	temp;
+			temp.addSubServer(subservers.at(i));
+			m_servers.push_back(temp);
+			std::cout << "Add new server with subserver port:" << temp.getPort() << "\n";
+		} else {
+			found->addSubServer(subservers.at(i));
+			std::cout << "Add new subserver\n";
+		}
+		// m_servers[subservers.at(i).getPort()].addSubServer(subservers.at(i));
+		// std::cout << "Adding subserver: " << subservers.at(i).getPort() << '\n';
+	}
+	for (std::vector<Server>::iterator it = m_servers.begin(); it != m_servers.end(); it++)
+	{
+		it->initServerSocket();
+		m_polls.addServer(*it);
+		std::cout << "Init server, and add to Pollcontainer\n";
+	}
+}
+
+Webserver::Webserver(const Webserver& a_other) : m_servers(a_other.m_servers), m_polls(a_other.m_polls) {}
 
 Webserver&	Webserver::operator=(const Webserver& a_other)
 {
 	if (this != &a_other)
 	{
 		m_servers = a_other.m_servers;
+		m_polls = a_other.m_polls;
 	}
 	return (*this);
 }
@@ -128,6 +149,11 @@ int Webserver::pollClients(void)
 int	Webserver::runServer()
 {
 	int	pollRet = 0;
+	if (m_servers.size() == 0)
+	{
+		std::cerr << "NO servers\n";
+		return (1);
+	}
 	while (pollRet != -1)
 	{
 		pollRet = poll(m_polls.getPollfds().data(), m_polls.getPollfds().size(), 100);

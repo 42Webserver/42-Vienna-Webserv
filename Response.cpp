@@ -4,8 +4,32 @@ Response::Response(void)
 {
 }
 
-Response::Response(const Request& a_request) : m_request(a_request)
+Response::Response(const Request& a_request, const subserver& a_subserver) : m_request(a_request), m_subServer(a_subserver)
 {
+	for (std::map<std::string, std::vector<std::string> > ::iterator it = m_subServer.serverConfig.begin(); it != m_subServer.serverConfig.end(); ++it)
+		{
+			std::cout << "	Key: " << it->first << " | value: ";
+			for (size_t i = 0; i < it->second.size(); i++)
+			{
+				std::cout << it->second.at(i) << ", ";
+			}
+			std::cout<< std::endl;
+		}
+		std::cout << "Location: \n";
+
+		for (size_t j = 0; j < m_subServer.locationConfigs.size(); j++)
+		{
+			std::cout << "Location number: " << j << std::endl;
+			for (std::map<std::string, std::vector<std::string> > ::iterator it = m_subServer.locationConfigs.at(j).begin(); it != m_subServer.locationConfigs.at(j).end(); ++it)
+			{
+				std::cout << "		Key: " << it->first << " | value: ";
+				for (size_t j = 0; j < it->second.size(); j++)
+				{
+					std::cout << it->second.at(j) << ", ";
+				}
+				std::cout<< std::endl;
+			}
+		}
 }
 
 Response::Response(const Response &other)
@@ -19,6 +43,7 @@ Response &Response::operator=(const Response &other)
 	{
 		m_request = other.m_request;
 		m_responseMsg = other.m_responseMsg;
+		m_subServer = other.m_subServer;
 	}
 	return (*this);
 }

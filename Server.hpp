@@ -1,6 +1,7 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
+#include <map>
 #include <vector>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -10,14 +11,15 @@
 #include <poll.h>
 #include <unistd.h>
 #include <algorithm>
+#include "Data.hpp"
 
 class Server
 {
 private:
 
-	int						m_serverSocket;
-	sockaddr_in				m_serverAddress;
-
+	int									m_serverSocket;
+	sockaddr_in							m_serverAddress;
+	std::vector<struct subserver>		m_subServers;
 
 public:
 	Server(void);
@@ -27,9 +29,17 @@ public:
 
 	int	getServerSocket(void) const;
 
-	int	initServerSocket(int a_ip, int a_port);
+	void		addSubServer(const struct subserver& a_subServer);
+	u_int16_t	getPort(void) const;
+	u_int64_t	getIp(void) const;
 
-	int	acceptNewConnection(void);
+	const struct subserver&	getSubServer(const std::string& a_hostname) const;
+
+	int	initServerSocket();
+
+	int	acceptNewConnection(int a_sockFd);
+
+	bool	operator==(struct serveradress a_listen) const;
 };
 
 #endif // !SERVER_HPP
