@@ -40,7 +40,7 @@ public:
 	bool		operator==(const int a_fd) const;
 
 	int	getSocketFd(void) const;
-	int	reciveRequestRaw(void);
+	int	receiveRequestRaw(void);
 	int	sendResponse(void);
 
 	time_t	getIdleTime(void) const;

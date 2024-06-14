@@ -113,7 +113,7 @@ int Webserver::pollClients(void)
 		if (m_polls.getPollfdsAt(i).revents & POLLIN)
 		{
 			std::cout << "\033[92mDo read/accept request.\n\033[39m";
-			int ret = m_polls.getConnection(i).reciveRequestRaw();
+			int ret = m_polls.getConnection(i).receiveRequestRaw();
 			if (ret == 1){
 				std::cout << "\033[91m" << "recv == 0, close connection?\n\033[39m";
 				m_polls.removeConnection(i);

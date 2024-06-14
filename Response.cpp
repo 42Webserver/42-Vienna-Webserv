@@ -57,35 +57,35 @@ void Response::createResponseMessage()
 	int error_code;
 	if ((error_code = checkMethod()) > 0)
 	{
-		sendErrorMsg(error_code);
+		buildErrorMsg(error_code);
 		return ;
 	}
 	if ((error_code = checkUri()) > 0)
 	{
-		sendErrorMsg(error_code);
+		buildErrorMsg(error_code);
 		return ;
 	}
 	if ((error_code = checkHttpVersion()) > 0)
 	{
-		sendErrorMsg(error_code);
+		buildErrorMsg(error_code);
 		return ;
 	}
 	if (error_code == 0)
 	{
-		sendValidMsg(200);
+		buildValidMsg(200);
 		return ;
 	}
 	//Read from file to string for uploading page!
 }
 
-void Response::sendValidMsg(int const & a_error_code)
+void Response::buildValidMsg(int const & a_error_code)
 {
 	getResponseHeader(a_error_code);
 	getBody("www/" + this->m_request.getValue("uri"));
 	// std::cout << m_responseMsg << '\n';
 }
 
-void Response::sendErrorMsg(int const & a_error_code)
+void Response::buildErrorMsg(int const & a_error_code)
 {
 	m_request.setValue("Connection", " closed"); //schabernack
 	getResponseHeader(a_error_code);
@@ -111,7 +111,7 @@ int Response::checkUri()
 	{
 		DIR* directory;
 		struct dirent *readDir;
-		std::string uri = m_request.getValue("uri");
+		std::string uri = m_request.getValue("uri").substr(1);
 
 		if (uri.empty())
 			return (std::cerr << "Error: empty uri" << '\n', 400); //400 Bad Request
@@ -122,7 +122,7 @@ int Response::checkUri()
 			return (std::cerr << "Error: directory not found" << '\n', 500); //500 Internal Server
 		while ((readDir = readdir(directory)) != NULL)
 		{
-			if (m_request.getValue("uri") == readDir->d_name)
+			if (uri == readDir->d_name)
 			{
 				closedir(directory);
 				return (/* std::cout << "Filename found!!!!" << '\n', */ 0); //File found

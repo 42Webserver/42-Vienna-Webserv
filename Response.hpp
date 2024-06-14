@@ -32,9 +32,14 @@ public:
 	Response& operator=(const Response& other);
 	~Response();
 
+	std::string const & getResponse() const;
+	void				getBody(std::string const & filename);
+
+private:
+
 	void				createResponseMessage();
-	void				sendErrorMsg(int const & a_error_code);
-	void				sendValidMsg(int const & a_error_code);
+	void				buildErrorMsg(int const & a_error_code);
+	void				buildValidMsg(int const & a_error_code);
 	int					checkMethod();
 	int					checkUri();
 	int					checkHttpVersion();
@@ -43,8 +48,6 @@ public:
 	void				addServerName(std::string& a_response_header);
 	void				addDateAndTime(std::string& a_response_header);
 	void				addServerConnection(std::string& a_response_header);
-	std::string const & getResponse() const;
-	void				getBody(std::string const & filename);
 };
 
 #endif // !RESPONSE_HPP
