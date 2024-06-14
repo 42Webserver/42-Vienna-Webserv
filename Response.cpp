@@ -1,26 +1,11 @@
 #include "Response.hpp"
 
-Response::Response(void)
-{
-}
+Response::Response() {}
 
-Response::Response(const Request& a_request, const subserver& a_subserver) : m_request(a_request), m_subServer(a_subserver)
+Response::Response(const Request& a_request, const t_config& a_config) : m_request(a_request), m_config(a_config)
 {
-	for (std::map<std::string, std::vector<std::string> > ::iterator it = m_subServer.serverConfig.begin(); it != m_subServer.serverConfig.end(); ++it)
-		{
-			std::cout << "	Key: " << it->first << " | value: ";
-			for (size_t i = 0; i < it->second.size(); i++)
-			{
-				std::cout << it->second.at(i) << ", ";
-			}
-			std::cout<< std::endl;
-		}
-		std::cout << "Location: \n";
 
-		for (size_t j = 0; j < m_subServer.locationConfigs.size(); j++)
-		{
-			std::cout << "Location number: " << j << std::endl;
-			for (std::map<std::string, std::vector<std::string> > ::iterator it = m_subServer.locationConfigs.at(j).begin(); it != m_subServer.locationConfigs.at(j).end(); ++it)
+			for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
 			{
 				std::cout << "		Key: " << it->first << " | value: ";
 				for (size_t j = 0; j < it->second.size(); j++)
@@ -29,7 +14,6 @@ Response::Response(const Request& a_request, const subserver& a_subserver) : m_r
 				}
 				std::cout<< std::endl;
 			}
-		}
 }
 
 Response::Response(const Response &other)
@@ -43,7 +27,7 @@ Response &Response::operator=(const Response &other)
 	{
 		m_request = other.m_request;
 		m_responseMsg = other.m_responseMsg;
-		m_subServer = other.m_subServer;
+		m_config = other.m_config;
 	}
 	return (*this);
 }
@@ -52,10 +36,28 @@ Response::~Response()
 {
 }
 
+//check is Request is valid? => if (false ) ? badRequest : weiter
+//check httpVersion! 
+//check check and set uri!
+//check method
+//get Method
+// check if return => if (true) ? return statuscode and redirection with key Location:
+// check valid root
+//	check autoindex if (true) ? root => displayen directory tree : send index
+// send index: file 
+
+
+
+
 void Response::createResponseMessage()
 {
 	int error_code;
-	if ((error_code = checkMethod()) > 0)
+	if (!m_request.getIsValid())
+	{
+		sendErrorMsg(400);
+		return ;
+	}
+	if ((error_code = checkHttpVersion()) > 0)
 	{
 		sendErrorMsg(error_code);
 		return ;
@@ -65,7 +67,7 @@ void Response::createResponseMessage()
 		sendErrorMsg(error_code);
 		return ;
 	}
-	if ((error_code = checkHttpVersion()) > 0)
+	if ((error_code = checkMethod()) > 0)
 	{
 		sendErrorMsg(error_code);
 		return ;
@@ -104,14 +106,28 @@ int Response::checkMethod()
 		return (405); //Errorcode Method not Found
 }
 
+bool Response::isMethodAllowed(const std::string& requestMethod)
+{
+	if (requestMethod != "GET" && requestMethod != "POST" && requestMethod != "DELETE")
+		return false;
+	// for (size_t i = 0; i < m_subServer.; i++)
+	// {
+	// 	/* code */
+	// }
+	return (true);
+}
+
 int Response::checkUri()
 {
+	if (!isMethodAllowed(m_request.getValue("method")))
+		return (std::cerr << "Error: Method not allowed" << '\n', 405);
+
 	if (m_request.getValue("method") == "GET")
 	{
 		DIR* directory;
 		struct dirent *readDir;
 		std::string uri = m_request.getValue("uri");
-
+		uri = uri.substr(1, uri.length());
 		if (uri.empty())
 			return (std::cerr << "Error: empty uri" << '\n', 400); //400 Bad Request
 		if (uri.length() > 256)
@@ -121,7 +137,7 @@ int Response::checkUri()
 			return (std::cerr << "Error: directory not found" << '\n', 500); //500 Internal Server
 		while ((readDir = readdir(directory)) != NULL)
 		{
-			if (m_request.getValue("uri") == readDir->d_name)
+			if (uri == readDir->d_name)
 			{
 				closedir(directory);
 				return (/* std::cout << "Filename found!!!!" << '\n', */ 0); //File found
@@ -135,6 +151,7 @@ int Response::checkUri()
 
 int Response::checkHttpVersion()
 {
+
     if (m_request.getValue("http_version") != "HTTP/1.1")
 		return (505); // 505 Version not supported
 	return 0;
@@ -213,3 +230,10 @@ void Response::getBody(std::string const &filename)
 	m_responseMsg.append(body.str());
 	m_responseMsg.append("\r\n");
 }
+
+/* std::vector<std::string> Response::getMethodsFromSubServer()
+{
+	if (m_subServer.find("allowed_methods"))
+    return std::vector<std::string>();
+}
+ */

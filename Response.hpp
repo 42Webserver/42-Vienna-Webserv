@@ -22,12 +22,12 @@ private:
 
 	std::string			m_responseMsg;
 	Request				m_request;
-	struct subserver	m_subServer;
+	t_config			m_config;
 
 public:
 
 	Response(void);
-	Response(const Request& a_request, const subserver& a_subserver);
+	Response(const Request& a_request, const t_config& a_subserver);
 	Response(const Response& other);
 	Response& operator=(const Response& other);
 	~Response();
@@ -45,6 +45,8 @@ public:
 	void				addServerConnection(std::string& a_response_header);
 	std::string const & getResponse() const;
 	void				getBody(std::string const & filename);
+	std::vector<std::string> getMethodsFromSubServer();
+	bool				isMethodAllowed(const std::string& requestMethod);
 };
 
 #endif // !RESPONSE_HPP
