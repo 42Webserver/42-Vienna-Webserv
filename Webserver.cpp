@@ -79,33 +79,34 @@ int Webserver::pollClients(void)
 		std::cout << m_polls.getPollfdsAt(i);
 		if (m_polls.getPollfdsAt(i).revents & POLLHUP)
 		{
-			std::cout << "Socket hang-up.\n";
+			std::cout << "\033[94mSocket hang-up.\n\033[39m";
 			m_polls.removeConnection(i--);
 			continue;
 		}
-		if (m_polls.getPollfdsAt(i).revents & POLLERR)
+		if (m_polls.getPollfdsAt(i).revents & (POLLERR | POLLNVAL))
 		{
-			std::cerr << "Socket error: \n" << m_polls.getPollfdsAt(i);
-			m_polls.removeConnection(i--);
-			continue;
-		}
-		if (m_polls.getPollfdsAt(i).revents & POLLNVAL)
-		{
-			std::cerr << "Invalid request: socket not open.\n";
+			std::cerr << "\033[91mSocket error: \n" << m_polls.getPollfdsAt(i) << "\033[39m";
 			m_polls.removeConnection(i--);
 			continue;
 		}
 		if (m_polls.getPollfdsAt(i).revents & POLLIN)
 		{
-			std::cout << "Do read/accept request.\n";
-			if (m_polls.getConnection(i).reciveRequestRaw() == -1)
+			std::cout << "\033[92mDo read/accept request.\n\033[39m";
+			int ret = m_polls.getConnection(i).reciveRequestRaw();
+			if (ret == 1){
+				std::cout << "\033[91m" << "recv == 0, close connection?\n\033[39m";
+				m_polls.removeConnection(i);
+				continue;
+			} if (ret == -1) {
 				std::cerr << "Mal schaun\n";
+				exit(42);
+			}
 			m_polls.getPollfdsAt(i).events ^= POLLOUT;
 			m_polls.getPollfdsAt(i).events ^= POLLIN;
 		}
 		if (m_polls.getPollfdsAt(i).revents & POLLOUT)
 		{
-			std::cout << "Pollout triggered\n";
+			std::cout << "\033[92mPollout triggered\n\033[39m";
 			if (m_polls.getConnection(i).sendResponse() == -1)
 				std::cerr << "Error: send\n";
 			// close(m_polls.getPollfdsAt(i).fd);
@@ -113,6 +114,11 @@ int Webserver::pollClients(void)
 			// continue ;						//?
 			m_polls.getPollfdsAt(i).events ^= POLLIN;
 			m_polls.getPollfdsAt(i).events ^= POLLOUT;
+		}
+		if (m_polls.getConnection(i).getIdleTime() > 1) {
+			std::cout << "\033[32m>>> Client time out <<<\n\033[39m";
+			m_polls.removeConnection(i);
+			continue;
 		}
 		m_polls.getPollfdsAt(i).revents = 0;
 	}
@@ -124,13 +130,23 @@ int	Webserver::runServer()
 	int	pollRet = 0;
 	while (pollRet != -1)
 	{
-		pollRet = poll(m_polls.getPollfds().data(), m_polls.getPollfds().size(), -1);
+		pollRet = poll(m_polls.getPollfds().data(), m_polls.getPollfds().size(), 100);
 		if (pollRet == -1)
 			std::cerr << "Error: poll error.\n";
-		else if (pollRet == 0)
-			std::cout << "Poll timeout\n";
+		else if (pollRet == 0) {
+			std::cout << "\033[96m" << "Poll timeout\n\033[39m";
+			for (std::size_t i = m_polls.getPollfds().size() - 1; i >= m_servers.size(); i--)
+			{
+				if (m_polls.getConnection(i).getIdleTime() > 1) {
+					std::cout << "\033[32m>>> Client time out <<<\n\033[39m";
+					m_polls.removeConnection(i);
+					continue;
+				}
+			}
+		}
 		else
 		{
+			std::cout << "\033[33m" << pollRet << " Poll(s) triggered\n" << "\033[39m";
 			if (pollServers() == -1)
 			{
 				std::cerr << "Poll server error\n";

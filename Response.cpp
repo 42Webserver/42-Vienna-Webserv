@@ -57,14 +57,15 @@ void Response::sendValidMsg(int const & a_error_code)
 {
 	getResponseHeader(a_error_code);
 	getBody("www/" + this->m_request.getValue("uri"));
-	std::cout << m_responseMsg << '\n';
+	// std::cout << m_responseMsg << '\n';
 }
 
 void Response::sendErrorMsg(int const & a_error_code)
 {
+	m_request.setValue("Connection", " closed"); //schabernack
 	getResponseHeader(a_error_code);
 	getBody("error/notFound.html");
-	std::cout << m_responseMsg << '\n';
+	// std::cout << m_responseMsg << '\n';
 }
 
 int Response::checkMethod()
@@ -165,8 +166,12 @@ void Response::addServerConnection(std::string &a_response_header)
 {
 	//check if we are sending, more response message => keep-alive!
 	//else closed
-	a_response_header.append("Connection:" + m_request.getValue("Connection"));
-	a_response_header.append("\r\n");
+	std::string connValue;
+	if (m_request.getValue("Connection:", connValue))
+	{
+		a_response_header.append("Connection:" + m_request.getValue("Connection"));
+		a_response_header.append("\r\n");
+	}
 }
 
 std::string const &Response::getResponse() const

@@ -24,6 +24,8 @@ class Request
 		void    initMap(std::string head);
 		int		getClientSocket() const;
 		const 	std::string& getValue(const std::string& a_key);
+		bool	getValue(const std::string& a_key, std::string& a_returnValue) const;
+		void	setValue(const std::string& a_key, const std::string& a_val);
 
 	private:
 		int									m_clientSocket;
