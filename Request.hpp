@@ -28,6 +28,8 @@ class Request
 		const 	std::string& getValue(const std::string& a_key);
 		std::string getRequestHost() const;
 
+		bool		getIsValid(void) const;
+
 	private:
 		bool								m_isValid;
 		int									m_clientSocket;

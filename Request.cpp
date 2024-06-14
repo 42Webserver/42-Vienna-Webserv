@@ -145,3 +145,8 @@ std::string Request::getRequestHost() const
 	}
     return host;
 }
+
+bool	Request::getIsValid(void) const
+{
+	return (m_isValid);
+}
