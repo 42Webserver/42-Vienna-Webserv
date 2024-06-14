@@ -78,6 +78,11 @@ void Request::createKeyValuePair(std::string line)
 		if (pos != line.length() - 1)
 			value = line.substr(pos + 2, line.length());
 	}
+	else
+	{
+		m_isValid = false;
+		return;
+	}
 	m_requestHeader[key] = value;
 }
 
