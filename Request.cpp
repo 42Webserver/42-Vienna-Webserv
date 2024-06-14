@@ -88,8 +88,6 @@ void Request::createKeyValuePair(std::string line)
 
 void Request::initMap(std::string head)
 {
-	std::cout << "\n\n\n\nHEAAAAAAD: " << head << std::endl;
-
 	size_t	delimiter = head.find_first_of("\r\n");
 
 	if (delimiter == std::string::npos)
@@ -101,8 +99,6 @@ void Request::initMap(std::string head)
 
 	std::string headline = head.substr(0, delimiter);
 	std::string	remainder = head.substr(delimiter + 2, head.length() - delimiter);
-	std::cout << "\n\n\n\nHEAAAAAADLINE: " << headline << std::endl;
-	std::cout << "\n\n\n\nREMAINNNNNDER: " << remainder << std::endl;
 	getRequestLine(headline);
 
 
@@ -120,8 +116,8 @@ void Request::initMap(std::string head)
 		pos += 2;
 		prevPos = pos;
 	}
-	for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
-		std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
+	// for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
+	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
 
 
