@@ -70,6 +70,7 @@ void Request::createKeyValuePair(std::string line)
 	std::string	arg;
 	std::string	key;
 	std::string	value;
+
 	size_t pos = line.find(":");
 	if (pos != std::string::npos)
 	{
@@ -77,26 +78,6 @@ void Request::createKeyValuePair(std::string line)
 		if (pos != line.length() - 1)
 			value = line.substr(pos + 2, line.length());
 	}
-
-/* 	size_t	args = 0;
-	while (std::getline(input, arg, ' '))
-	{
-		if (args == 0)
-		{
-			if (arg.at(arg.length() - 1) != ':')
-				break;
-			key = arg.substr(0, arg.length() - 1);
-		}
-		else if (args == 1)
-			value = arg;
-		args++;
-	}
-	if (args != 2)
-	{
-		std::cout << "INVALID REQUEST KEY-VALUE-PAIR!!!" << std::endl;
-		m_isValid = false;
-		return;
-	} */
 	m_requestHeader[key] = value;
 }
 
@@ -122,8 +103,6 @@ void Request::initMap(std::string head)
 
 	if (!m_isValid)
 		return;
-
-	std::cout << "ICH BIMS' FLORI"<<std::endl;
 
 	std::string	line;
 	size_t		pos, prevPos = 0;
