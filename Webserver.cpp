@@ -15,16 +15,16 @@ Webserver::Webserver(std::vector<struct subserver> subservers)
 {
 	for (std::size_t i = 0; i < subservers.size(); i++)
 	{
-		std::cout << (m_servers.size() != 0 ? m_servers.at(0).getPort() : -1) << " | " << subservers.at(i).getPort() << '\n';
+		//std::cout << (m_servers.size() != 0 ? m_servers.at(0).getPort() : -1) << " | " << subservers.at(i).getPort() << '\n';
 		std::vector<Server>::iterator found = std::find(m_servers.begin(), m_servers.end(), subservers.at(i).getAdress());
 		if (found == m_servers.end()) { //servers can run on different ips but same port.
 			Server	temp;
 			temp.addSubServer(subservers.at(i));
 			m_servers.push_back(temp);
-			std::cout << "Add new server with subserver port:" << temp.getPort() << "\n";
+			//std::cout << "Add new server with subserver port:" << temp.getPort() << "\n";
 		} else {
 			found->addSubServer(subservers.at(i));
-			std::cout << "Add new subserver\n";
+			//std::cout << "Add new subserver\n";
 		}
 		// m_servers[subservers.at(i).getPort()].addSubServer(subservers.at(i));
 		// std::cout << "Adding subserver: " << subservers.at(i).getPort() << '\n';
@@ -33,7 +33,7 @@ Webserver::Webserver(std::vector<struct subserver> subservers)
 	{
 		it->initServerSocket();
 		m_polls.addServer(*it);
-		std::cout << "Init server, and add to Pollcontainer\n";
+		//std::cout << "Init server, and add to Pollcontainer\n";
 	}
 }
 
@@ -81,17 +81,17 @@ int Webserver::pollClients(void)
 {
 	for (std::size_t i = m_servers.size(); i < m_polls.getPollfds().size(); i++)
 	{
-		std::cout << "Socket " << m_polls.getPollfdsAt(i).fd << "	 events: " << m_polls.getPollfdsAt(i).revents << '\n';
+		//std::cout << "Socket " << m_polls.getPollfdsAt(i).fd << "	 events: " << m_polls.getPollfdsAt(i).revents << '\n';
 		if (m_polls.getPollfdsAt(i).revents & POLLIN)
 		{
-			std::cout << "Do read/accept request.\n";
+			//std::cout << "Do read/accept request.\n";
 			if (m_polls.getConnection(i).receiveRequestRaw() == -1)
 				std::cerr << "Mal schaun\n";
 			m_polls.getPollfdsAt(i).events |= POLLOUT;
 		}
 		if (m_polls.getPollfdsAt(i).revents & POLLOUT)
 		{
-			std::cout << "Pollout triggered\n";
+			//std::cout << "Pollout triggered\n";
 			if (m_polls.getConnection(i).sendResponse() == -1)
 				std::cerr << "Error: send\n";
 			m_polls.removeConnection(i--); 	//? Sicher
