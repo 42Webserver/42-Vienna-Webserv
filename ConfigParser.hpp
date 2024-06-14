@@ -38,6 +38,7 @@ private:
 	static void	checkValueRoot(std::string& value);
 	static void	checkValueReturn(std::vector<std::string>& value);
 	static void	checkValueAllowedMethods(std::vector<std::string>& value);
+	static void	checkErrorPage(std::vector<std::string>& value);
 	static unsigned long ipToL(std::string ip);
 
 	static void	safeData(std::vector<std::string> tokens);

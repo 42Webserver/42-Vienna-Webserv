@@ -351,6 +351,21 @@ void	ConfigParser::checkValueReturn(std::vector<std::string>& value)
 		throw(std::runtime_error("Error: config-file: invalid location at key 'return'."));
 }
 
+void	ConfigParser::checkErrorPage(std::vector<std::string>& value)
+{
+	if (value.size() < 2)
+		throw(std::runtime_error("Error: config-file: too few values at key 'error_page'."));
+
+	if (value.at(value.size() - 1).at(0) != '/')
+		throw(std::runtime_error("Error: config-file: invalid page at key 'error_page'."));
+
+	for (std::vector<std::string>::iterator it = value.begin(); it != value.end() - 1; ++it)
+	{
+		if ((*it).find_first_not_of("0123456789") != std::string::npos || (*it).length() > 3)
+			throw(std::runtime_error("Error: config-file: invalid error_code at key 'error_page'."));
+	}
+}
+
 void	ConfigParser::checkValue(const std::string& key, std::vector<std::string>& value)
 {
 	if (key == "autoindex")
@@ -365,6 +380,8 @@ void	ConfigParser::checkValue(const std::string& key, std::vector<std::string>& 
 		checkValueReturn(value);
 	if (key == "listen")
 		checkValueListen(value);
+	if (key == "error_page")
+		checkErrorPage(value);
 }
 
 // shit incoming
@@ -432,6 +449,8 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 			checkValue(tokens.at(i - value.size() - 1), value);
 			if (location[tokens.at(i - value.size() - 1)].empty())
 				location[tokens.at(i - value.size() - 1)] = value;
+			else if (tokens.at(i - value.size() - 1) == "error_page")
+				location[tokens.at(i - value.size() - 1)].insert(location[tokens.at(i - value.size() - 1)].end(), value.begin(), value.end());
 		}
 		else
 			throw std::runtime_error("Error: config-file: Trash not allowed [locationscope]");
@@ -478,6 +497,8 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 		checkValue(tokens.at(i - value.size() - 1), value);
 		if (newSubserver.serverConfig[tokens.at(i - value.size() - 1)].empty())
 			newSubserver.serverConfig[tokens.at(i - value.size() - 1)] = value;
+		else if (tokens.at(i - value.size() - 1) == "error_page")
+			newSubserver.serverConfig[tokens.at(i - value.size() - 1)].insert(newSubserver.serverConfig[tokens.at(i - value.size() - 1)].end(), value.begin(), value.end());
 	}
 }
 
@@ -534,8 +555,10 @@ void ConfigParser::updateLocation(std::map<std::string, std::vector<std::string>
 
 	while (it != location.end())
 	{
-		if ((it)->second.empty())
+		if (it->second.empty())
 			it->second = newSubserver.serverConfig[it->first];
+		else if (it->first == "error_page")
+			it->second.insert(it->second.end(), newSubserver.serverConfig[it->first].begin(), newSubserver.serverConfig[it->first].end());
 		it++;
 	}
 }
