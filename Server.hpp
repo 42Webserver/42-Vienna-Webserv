@@ -33,7 +33,7 @@ public:
 	u_int16_t	getPort(void) const;
 	u_int64_t	getIp(void) const;
 
-	std::vector<struct subserver> getSubServers() const;
+	const struct subserver&	getSubServer(const std::string& a_hostname) const;
 
 	int	initServerSocket();
 

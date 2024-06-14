@@ -65,7 +65,7 @@ int Connection::receiveRequestRaw(void)
 		}
 		m_request = Request(m_head, m_body, m_clientSocket);
 		//getSubserver() => from server
-		m_response = Response(m_request, getSubserver());
+		m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()));
 		m_response.createResponseMessage();
 		std::cout << "Head:\n" << m_head << "\nBody:\n" << m_body << '\n';
 	}
@@ -74,7 +74,6 @@ int Connection::receiveRequestRaw(void)
 		std::cerr << e.what() << '\n';
 		return (-1);
 	}
-
 	return (0);
 }
 
@@ -83,22 +82,6 @@ int Connection::sendResponse(void) const
 	const std::string&	response = m_response.getResponse();
 	// std::cout << "Response: " << response << '\n';
 	return (send(m_clientSocket, response.data(), response.size(), 0));
-}
-
-subserver Connection::getSubserver()
-{
-	for (size_t i = 0; i < m_server.getSubServers().size(); i++)
-	{
-		if (m_server.getSubServers().at(i).serverConfig.find("server_name") != m_server.getSubServers().at(i).serverConfig.end())
-		{
-			for (size_t j = 0; j < m_server.getSubServers().at(i).serverConfig.at("server_name").size(); j++)
-			{
-				if (m_server.getSubServers().at(i).serverConfig.at("server_name").at(j) == m_request.getRequestHost())
-					return (m_server.getSubServers().at(i));
-			}
-		}
-	}
-    return subserver(m_server.getSubServers().at(0));
 }
 
 bool Connection::operator==(const int a_fd) const
