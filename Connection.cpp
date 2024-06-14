@@ -65,9 +65,9 @@ int Connection::receiveRequestRaw(void)
 		}
 		m_request = Request(m_head, m_body, m_clientSocket);
 		//getSubserver() => from server
-		m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()));
+		m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
 		m_response.createResponseMessage();
-		std::cout << "Head:\n" << m_head << "\nBody:\n" << m_body << '\n';
+		// std::cout << "Head:\n" << m_head << "\nBody:\n" << m_body << '\n';
 	}
 	catch(const std::exception& e)
 	{
