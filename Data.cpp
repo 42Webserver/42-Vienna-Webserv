@@ -15,6 +15,16 @@ serveradress subserver::getAdress(void) const
 	return (serveradress(getIp(), getPort()));
 }
 
+const t_config &subserver::getValidConfig(const std::string& a_uri) const
+{
+	for (size_t i = 0; i < locationConfigs.size(); i++)
+	{
+		if (locationConfigs.at(i).at("name").at(0) == a_uri)
+			return (locationConfigs.at(i));
+	}
+	return (serverConfig);
+}
+
 u_int64_t serveradress::getIp(void) const
 {
 	return (ip);
