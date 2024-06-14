@@ -237,6 +237,8 @@ void	ConfigParser::readConfigFile(const std::string& file)
 	safeData(tokens);
 	printData(m_subservers);
 
+
+
 	inFile.close();
 }
 
@@ -502,6 +504,41 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 	}
 }
 
+static void addErrorPagesToMap(std::map<std::string, std::vector<std::string> >& config)
+{
+	std::map<std::string, std::vector<std::string> >::iterator	it;
+
+	if ((it = config.find("error_page")) == config.end())
+		return;
+
+	std::vector<std::string>	args = (*it).second;
+
+	size_t	pos = 0;
+	size_t	next = 0;
+	while (pos < args.size())
+	{
+		next = pos;
+		while (next < args.size() && args.at(next).at(0) != '/')
+			next++;
+		while (pos < next)
+		{
+			if (config[args.at(pos)].size() == 0)
+				config[args.at(pos)].push_back(args.at(next));
+			pos++;
+		}
+		pos++;
+	}
+	config.erase("error_page");
+}
+
+void	ConfigParser::setupErrorPages(struct subserver& subserver)
+{
+	addErrorPagesToMap(subserver.serverConfig);
+
+	for (size_t i = 0; i < subserver.locationConfigs.size(); ++i)
+		addErrorPagesToMap(subserver.locationConfigs.at(i));
+}
+
 void ConfigParser::safeData(std::vector<std::string> tokens)
 {
 	for (size_t i = 0; i < tokens.size(); i++)
@@ -528,6 +565,7 @@ void ConfigParser::safeData(std::vector<std::string> tokens)
 				else
 					throw std::runtime_error("Error: config-file: Trash not allowed [serverscope]");
 			}
+			setupErrorPages(newSubserver);
 			m_subservers.push_back(newSubserver);
 		}
 		else

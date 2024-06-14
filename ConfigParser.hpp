@@ -41,6 +41,8 @@ private:
 	static void	checkErrorPage(std::vector<std::string>& value);
 	static unsigned long ipToL(std::string ip);
 
+	static void	setupErrorPages(struct subserver& subserver);
+
 	static void	safeData(std::vector<std::string> tokens);
 	static void	initSubserver(struct subserver &subserver);
 	static void	initLocation(std::map<std::string, std::vector<std::string> > &location);
