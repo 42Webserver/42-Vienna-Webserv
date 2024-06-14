@@ -34,10 +34,10 @@ public:
 
 	std::string const & getResponse() const;
 	void				getBody(std::string const & filename);
+	void				createResponseMessage();
 
 private:
 
-	void				createResponseMessage();
 	void				buildErrorMsg(int const & a_error_code);
 	void				buildValidMsg(int const & a_error_code);
 	int					checkMethod();
