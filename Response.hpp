@@ -9,6 +9,8 @@
 #include <dirent.h>
 #include <ctime>
 #include "Request.hpp"
+#include "Data.hpp"
+#include "ConfigParser.hpp"
 
 
 /// global variable///
@@ -18,20 +20,27 @@ class Response
 {
 private:
 
-	std::string	m_responseMsg;
-	Request		m_request;
+	std::string			m_responseMsg;
+	Request				m_request;
+	t_config			m_config;
 
 public:
 
 	Response(void);
-	Response(const Request& a_request);
+	Response(const Request& a_request, const t_config& a_subserver);
 	Response(const Response& other);
 	Response& operator=(const Response& other);
 	~Response();
 
+	std::string const&	getResponse() const;
+	void				getBody(std::string const & filename);
 	void				createResponseMessage();
-	void				sendErrorMsg(int const & a_error_code);
-	void				sendValidMsg(int const & a_error_code);
+	std::vector<std::string> getMethodsFromSubServer();
+
+private:
+
+	void				buildErrorMsg(int const & a_error_code);
+	void				buildValidMsg(int const & a_error_code);
 	int					checkMethod();
 	int					checkUri();
 	int					checkHttpVersion();
@@ -40,8 +49,7 @@ public:
 	void				addServerName(std::string& a_response_header);
 	void				addDateAndTime(std::string& a_response_header);
 	void				addServerConnection(std::string& a_response_header);
-	std::string const & getResponse() const;
-	void				getBody(std::string const & filename);
+	bool				isMethodAllowed(const std::string& requestMethod);
 };
 
 #endif // !RESPONSE_HPP

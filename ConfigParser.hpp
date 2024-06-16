@@ -38,7 +38,10 @@ private:
 	static void	checkValueRoot(std::string& value);
 	static void	checkValueReturn(std::vector<std::string>& value);
 	static void	checkValueAllowedMethods(std::vector<std::string>& value);
+	static void	checkErrorPage(std::vector<std::string>& value);
 	static unsigned long ipToL(std::string ip);
+
+	static void	setupErrorPages(struct subserver& subserver);
 
 	static void	safeData(std::vector<std::string> tokens);
 	static void	initSubserver(struct subserver &subserver);
