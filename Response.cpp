@@ -54,7 +54,7 @@ void Response::createResponseMessage()
 	int error_code;
 	if (!m_request.getIsValid())
 	{
-		sendErrorMsg(400);
+		buildErrorMsg(400);
 		return ;
 	}
 	if ((error_code = checkHttpVersion()) > 0)
@@ -83,7 +83,7 @@ void Response::createResponseMessage()
 void Response::buildValidMsg(int const & a_error_code)
 {
 	getResponseHeader(a_error_code);
-	getBody("www/" + this->m_request.getValue("uri"));
+	getBody(m_config.at("root").at(0) + this->m_request.getValue("uri"));
 	// std::cout << m_responseMsg << '\n';
 }
 
@@ -209,9 +209,9 @@ void Response::addServerConnection(std::string &a_response_header)
 	//check if we are sending, more response message => keep-alive!
 	//else closed
 	std::string connValue;
-	if (m_request.getValue("Connection:", connValue))
+	if (m_request.getValue("Connection", connValue))
 	{
-		a_response_header.append("Connection:" + m_request.getValue("Connection"));
+		a_response_header.append("Connection: " + m_request.getValue("Connection"));
 		a_response_header.append("\r\n");
 	}
 }

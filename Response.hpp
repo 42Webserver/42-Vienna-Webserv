@@ -32,9 +32,10 @@ public:
 	Response& operator=(const Response& other);
 	~Response();
 
-	std::string const & getResponse() const;
+	std::string const&	getResponse() const;
 	void				getBody(std::string const & filename);
 	void				createResponseMessage();
+	std::vector<std::string> getMethodsFromSubServer();
 
 private:
 
@@ -48,9 +49,6 @@ private:
 	void				addServerName(std::string& a_response_header);
 	void				addDateAndTime(std::string& a_response_header);
 	void				addServerConnection(std::string& a_response_header);
-	std::string const & getResponse() const;
-	void				getBody(std::string const & filename);
-	std::vector<std::string> getMethodsFromSubServer();
 	bool				isMethodAllowed(const std::string& requestMethod);
 };
 
