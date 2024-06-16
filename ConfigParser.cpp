@@ -597,7 +597,6 @@ void ConfigParser::initSubserver(struct subserver &subserver)
 	subserver.serverConfig["allowed_methods"];
 	subserver.serverConfig["autoindex"];
 	subserver.serverConfig["return"];
-	subserver.serverConfig["locations"];
 }
 
 void ConfigParser::updateLocation(std::map<std::string, std::vector<std::string> > &location, struct subserver newSubserver)

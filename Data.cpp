@@ -1,4 +1,5 @@
 #include "Data.hpp"
+#include <iostream>
 
 u_int16_t	subserver::getPort(void) const 
 {
@@ -15,12 +16,21 @@ serveradress subserver::getAdress(void) const
 	return (serveradress(getIp(), getPort()));
 }
 
-const t_config &subserver::getValidConfig(const std::string& a_uri) const
+const t_config &subserver::getValidConfig(std::string a_uri)
 {
-	for (size_t i = 0; i < locationConfigs.size(); i++)
+	size_t pos;
+
+	while ((pos = a_uri.find_last_of("/")) != std::string::npos)
 	{
-		if (locationConfigs.at(i).at("name").at(0) == a_uri)
-			return (locationConfigs.at(i));
+		for (size_t i = 0; i < locationConfigs.size(); i++)
+		{
+			if (locationConfigs.at(i).at("name").at(0) == a_uri)
+				return locationConfigs.at(i);
+		}
+		if (pos + 1 == a_uri.length())
+			a_uri = a_uri.substr(0, pos);
+		else 
+			a_uri = a_uri.substr(0, pos + 1);
 	}
 	return (serverConfig);
 }

@@ -41,7 +41,7 @@ u_int64_t Server::getIp(void) const
 	return (m_subServers.at(0).getIp());
 }
 
-const subserver& Server::getSubServer(const std::string &a_hostname) const
+subserver& Server::getSubServer(const std::string &a_hostname)
 {
 	for (size_t i = 0; i < m_subServers.size(); i++)
 	{
