@@ -29,7 +29,7 @@ struct subserver
 	u_int16_t		getPort(void) const;
 	u_int64_t		getIp(void) const;
 	serveradress	getAdress(void) const;
-	const t_config&	getValidConfig(const std::string& a_uri) const;
+	const t_config&	getValidConfig(std::string a_uri);
 };
 
 #endif // !DATA_H
