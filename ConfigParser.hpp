@@ -42,6 +42,7 @@ private:
 	static unsigned long ipToL(std::string ip);
 
 	static void	setupErrorPages(struct subserver& subserver);
+	static void checkDuplicateLocations(struct subserver& subserver);
 
 	static void	safeData(std::vector<std::string> tokens);
 	static void	initSubserver(struct subserver &subserver);

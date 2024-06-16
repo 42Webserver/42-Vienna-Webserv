@@ -539,6 +539,18 @@ void	ConfigParser::setupErrorPages(struct subserver& subserver)
 		addErrorPagesToMap(subserver.locationConfigs.at(i));
 }
 
+void ConfigParser::checkDuplicateLocations(struct subserver& subserver)
+{
+	std::map<std::string, std::string>	used;
+
+	for (size_t i = 0; i < subserver.locationConfigs.size(); ++i)
+	{
+		if (used.find(subserver.locationConfigs.at(i).at("name").at(0)) != used.end())
+			throw std::runtime_error("Error: config-file: Duplicate locations");
+		used[subserver.locationConfigs.at(i).at("name").at(0)] = ".";
+	}
+}
+
 void ConfigParser::safeData(std::vector<std::string> tokens)
 {
 	for (size_t i = 0; i < tokens.size(); i++)
@@ -566,6 +578,7 @@ void ConfigParser::safeData(std::vector<std::string> tokens)
 					throw std::runtime_error("Error: config-file: Trash not allowed [serverscope]");
 			}
 			setupErrorPages(newSubserver);
+			checkDuplicateLocations(newSubserver);
 			m_subservers.push_back(newSubserver);
 		}
 		else
