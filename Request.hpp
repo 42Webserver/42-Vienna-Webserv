@@ -26,6 +26,7 @@ public:
 	void				setValue(const std::string& a_key, const std::string& a_val);
 	std::string			getRequestHost() const;
 	bool				getIsValid(void) const;
+	size_t				getContentLength() const;
 
 private:
 
@@ -33,9 +34,9 @@ private:
 	void	createKeyValuePair(std::string line);
 	void	initMap(std::string head);
 	bool								m_isValid;
+	std::string							m_body;
 	int									m_clientSocket;
 	std::map <std::string, std::string>	m_requestHeader;
-
 };
 
 #endif // !REQUEST_HPP

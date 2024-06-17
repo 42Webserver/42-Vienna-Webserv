@@ -11,7 +11,9 @@ Request &Request::operator=(const Request &other)
 {
 	if (this != &other)
 	{
-		m_requestHeader = other.m_requestHeader;
+		if (other.m_requestHeader.size())
+			m_requestHeader = other.m_requestHeader;
+		m_body.append(other.m_body);
 		m_isValid = other.m_isValid;
 	}
 	return (*this);
@@ -19,10 +21,10 @@ Request &Request::operator=(const Request &other)
 
 Request::~Request() {}
 
-Request::Request(std::string& head, std::string& body, int fd) : m_isValid(true), m_clientSocket(fd)
+Request::Request(std::string& head, std::string& body, int fd) : m_isValid(true), m_body(body), m_clientSocket(fd)
 {
-	(void)body;
-	initMap(head);
+	if (!head.empty())
+		initMap(head);
 }
 
 void Request::getRequestLine(std::string& line)
@@ -145,6 +147,17 @@ std::string Request::getRequestHost() const
 bool	Request::getIsValid(void) const
 {
 	return (m_isValid);
+}
+
+size_t Request::getContentLength() const
+{
+	std::map<std::string, std::string>::const_iterator found = m_requestHeader.find("Content-Length");
+	if (found != m_requestHeader.end())
+	{
+		//Maybe parse value, check for numbers!
+		return (strtol(found->second.c_str(), NULL, 10));		
+	}
+    return 0;
 }
 
 bool Request::getValue(const std::string &a_key, std::string &a_returnValue) const
