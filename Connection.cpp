@@ -98,7 +98,7 @@ int Connection::receiveRequestRaw(void)
 
 int Connection::sendResponse(void)
 {
-	const std::string&	response = m_response.getResponse();
+	const std::string	response = m_response.getResponse();
 	std::cout << "Response:\n" << response << '\n';
 	m_idleStart = std::time(NULL);
 	return (send(m_clientSocket, response.data(), response.size(), 0));
