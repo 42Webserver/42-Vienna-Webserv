@@ -67,7 +67,10 @@ int Connection::receiveRequestRaw(void)
 		//chunk body are missing
 		std::string remainder;
 		if (!m_chunked)
+		{
+			m_head.clear();
 			remainder = readUntilSep(m_head, "\r\n\r\n");
+		}
 		if (!remainder.empty() || m_chunked)
 		{
 			m_body.append(remainder);
@@ -99,7 +102,7 @@ int Connection::receiveRequestRaw(void)
 int Connection::sendResponse(void)
 {
 	const std::string	response = m_response.getResponse();
-	std::cout << "Response:\n" << response << '\n';
+	//std::cout << "Response:\n" << response << '\n';
 	m_idleStart = std::time(NULL);
 	return (send(m_clientSocket, response.data(), response.size(), 0));
 }
