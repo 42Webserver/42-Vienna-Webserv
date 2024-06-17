@@ -50,7 +50,7 @@ bool Response::getBody(std::string const &filename)
     std::ifstream input_file(filename.c_str());
     std::stringstream body;
 
-	std::cout << "Filename = " << filename << std::endl;
+	//std::cout << "Filename = " << filename << std::endl;
 
     if (!input_file.is_open() || !input_file.good())
     {
@@ -67,6 +67,7 @@ void Response::initStatusCodes()
 {
 	s_status_codes["200"] = "OK";
     s_status_codes["400"] = "Bad Request";
+	s_status_codes["403"] = "Forbidden";
     s_status_codes["404"] = "Not Found";
     s_status_codes["405"] = "Method Not Allowed";
     s_status_codes["414"] = "URI Too Long";
@@ -81,7 +82,14 @@ const std::string Response::getResponse() const
 	return (m_responseHeader + m_responseBody);
 }
 
-
+void Response::setValidMsg(const std::string &filepath)
+{
+	//std::cout << "URI = " <<  m_request.getValue("uri") << std::endl;
+	if (!getBody(filepath))
+		getResponseHeader("404");
+	else
+		getResponseHeader("200");
+}
 
 void Response::setErrorMsg(const int &a_status_code)
 {
@@ -95,7 +103,10 @@ void Response::setErrorMsg(const int &a_status_code)
 	{
 		std::string path;
 		if (!getBody(m_config["root"].at(0) + found->second.at(0)))
+		{
+			std::cout << "DEFAULT!"<<std::endl;
 			setDefaultErrorMsg("404");
+		}	
 	}	
 	//Read from custom error page!;
 	getResponseHeader(convert.str());
@@ -110,14 +121,104 @@ void Response::setDefaultErrorMsg(const std::string &a_status_code)
 	m_responseBody.append("</h1></html>\r\n");
 }
 
-	
+bool Response::checkAllowedMethod()
+{
+	for (size_t i = 0; i < m_config["allowed_methods"].size(); i++)
+	{
+		if (m_config["allowed_methods"].at(i) == m_request.getValue("method"))
+			return (true);
+	}
+	return (false);
+}
+
+int Response::checkHeaderline()
+{
+	if (m_request.getValue("http_version") != "HTTP/1.1")
+		return (505);
+	if (!checkAllowedMethod())
+		return (405);
+	return (0);
+}
+
+int Response::getValidFilePath(std::string &a_filepath)
+{
+    int    ret = isValidFile(a_filepath);
+    if (ret == 403)
+    {
+        std::string temp;
+        if (m_config.at("index").size())
+        {
+            temp = a_filepath + m_config.at("index").at(0);
+            ret = getValidFilePath(temp);
+            a_filepath = temp;
+            return (ret);
+        }
+        if (m_config.at("autoindex").size())
+        {
+            if (m_config.at("autoindex").at(0) == "on")
+            {
+                std::cout << "AUTOINDEX HIER HIN BITTE FLO!" << '\n';
+                return (0);
+            }
+        }
+    }
+    return (ret);
+}
+
+/// @brief 
+/// @param a_filepath 
+/// @return Returns 0 for file.
+///            Returns 403 for dir
+///         Returns 301 for dir when searching for file
+///         Returns 404 for no dir or file
+int Response::isValidFile(std::string &a_filepath)
+{
+    struct stat sb;
+    if (stat(a_filepath.c_str(), &sb) == 0)
+    {
+        if (S_ISREG(sb.st_mode))
+            return (0);
+        if (S_ISDIR(sb.st_mode))
+        {
+            if (a_filepath.size() > 0 && a_filepath.at(a_filepath.size() - 1) != '/')
+            {
+                a_filepath.push_back('/');
+                return (301);
+            }
+            return (403);
+        }
+    }
+    return (404);
+}
 
 void Response::createResponseMsg()
 {
+	int error_code;
+
 	if (!m_request.getIsValid())
+	{
 		setErrorMsg(400);
-	
-	setErrorMsg(404);
+		return ;
+	}
+	if ((error_code = checkHeaderline()))
+	{
+		setErrorMsg(405);
+		return ;
+	}
+	if (m_request.getValue("method") == "GET")
+	{
+		std::string filepath;
+		filepath.append(m_config["root"].at(0));
+		filepath.append(m_request.getValue("uri"));
+	 	if ((error_code = getValidFilePath(filepath)))
+		{
+			std::cout << "ALAAAARM! = " << error_code << std::endl;
+			setErrorMsg(error_code);	
+		}
+		else 
+			setValidMsg(filepath);
+		std::cout << "Filepath = " << filepath << std::endl;
+	}
 }
 
 //////////////////////+++++Response Header+++++++++++//////////////////////

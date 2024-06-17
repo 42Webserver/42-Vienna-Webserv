@@ -11,10 +11,10 @@
 #include "Request.hpp"
 #include "Data.hpp"
 #include "ConfigParser.hpp"
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
-
-/// global variable///
-extern std::map<std::string, std::string> g_status_codes;
 
 class Response
 {
@@ -31,10 +31,13 @@ private:
 	void	addDateAndTime(std::string &a_response_header);
 	void	setErrorMsg(const int &a_status_code);
 	void	setDefaultErrorMsg(const std::string &a_status_code);
+	void	setValidMsg(const std::string &filepath);
 	void	addContentLength(std::string &a_response_header);
 	int		checkHeaderline();
 	bool	getBody(std::string const &filename);
-
+	bool	checkAllowedMethod();
+	int		isValidFile(std::string &a_filepath);
+	int		getValidFilePath(std::string &a_filepath);
 public:
 
 	Response(void);
