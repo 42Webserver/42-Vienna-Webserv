@@ -32,24 +32,8 @@ public:
 	Response& operator=(const Response& other);
 	~Response();
 
-	std::string const&	getResponse() const;
-	void				getBody(std::string const & filename);
-	void				createResponseMessage();
-	std::vector<std::string> getMethodsFromSubServer();
-
 private:
 
-	void				buildErrorMsg(int const & a_error_code);
-	void				buildValidMsg(int const & a_error_code);
-	int					checkMethod();
-	int					checkUri();
-	int					checkHttpVersion();
-	void				getResponseHeader(int const & a_status_code);
-	void				addStatusLine(int const & a_status_code, std::string& a_reponse_header);
-	void				addServerName(std::string& a_response_header);
-	void				addDateAndTime(std::string& a_response_header);
-	void				addServerConnection(std::string& a_response_header);
-	bool				isMethodAllowed(const std::string& requestMethod);
 };
 
 #endif // !RESPONSE_HPP
