@@ -16,11 +16,11 @@ Response::Response(const Request& a_request, const t_config& a_config) : m_reque
 				}
 				std::cout<< std::endl;
 			} */
-			std::cout << "STATUS CODE =";
+/* 			std::cout << "STATUS CODE =";
 			for (std::map<std::string, std::string>::iterator it = s_status_codes.begin(); it != s_status_codes.end(); ++it)
 			{
 				std::cout << it->first + ": " + it->second + "\n";
-			}
+			} */
 			
 }
 
@@ -45,6 +45,24 @@ Response::~Response()
 {
 }
 
+bool Response::getBody(std::string const &filename)
+{
+    std::ifstream input_file(filename.c_str());
+    std::stringstream body;
+
+	std::cout << "Filename = " << filename << std::endl;
+
+    if (!input_file.is_open() || !input_file.good())
+    {
+        std::cerr << "Error: open error file" << '\n';
+        return (false);
+    }
+    body << input_file.rdbuf();
+    m_responseBody.append(body.str());
+    m_responseBody.append("\r\n");
+    return (true);
+}
+
 void Response::initStatusCodes()
 {
 	s_status_codes["200"] = "OK";
@@ -55,25 +73,32 @@ void Response::initStatusCodes()
     s_status_codes["500"] = "Internal Server Error";
     s_status_codes["505"] = "HTTP Version not supported";
 
-	s_status_codes["000"] = "LANDING PAGE!";
+	s_status_codes["0"] = "LANDING PAGE!";
 }
 
-const std::string &Response::getResponse() const
+const std::string Response::getResponse() const
 {
 	return (m_responseHeader + m_responseBody);
 }
 
 
 
-void Response::setErrorMsg(const std::string &a_status_code)
+void Response::setErrorMsg(const int &a_status_code)
 {
-	getResponseHeader(a_status_code);
-	std::map<std::string, std::vector<std::string> >::iterator found = m_config.find(a_status_code);
+	std::ostringstream convert; 
+
+	convert << a_status_code;
+	std::map<std::string, std::vector<std::string> >::iterator found = m_config.find(convert.str());
 	if (found == m_config.end())
-		setDefaultErrorMsg(a_status_code);
-	//else 
-		//readFromFile(found->second);
+		setDefaultErrorMsg(convert.str());
+	else 
+	{
+		std::string path;
+		if (!getBody(m_config["root"].at(0) + found->second.at(0)))
+			setDefaultErrorMsg("404");
+	}	
 	//Read from custom error page!;
+	getResponseHeader(convert.str());
 }
 
 void Response::setDefaultErrorMsg(const std::string &a_status_code)
@@ -90,9 +115,9 @@ void Response::setDefaultErrorMsg(const std::string &a_status_code)
 void Response::createResponseMsg()
 {
 	if (!m_request.getIsValid())
-		setErrorMsg("400");
+		setErrorMsg(400);
 	
-	setErrorMsg("404");
+	setErrorMsg(404);
 }
 
 //////////////////////+++++Response Header+++++++++++//////////////////////

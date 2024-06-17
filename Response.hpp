@@ -29,10 +29,11 @@ private:
 	void 	getResponseHeader(const std::string &a_status_code);
 	void	addStatusLine(const std::string &a_status_code, std::string& a_response_header);
 	void	addDateAndTime(std::string &a_response_header);
-	void	setErrorMsg(const std::string &a_status_code);
+	void	setErrorMsg(const int &a_status_code);
 	void	setDefaultErrorMsg(const std::string &a_status_code);
 	void	addContentLength(std::string &a_response_header);
-	
+	int		checkHeaderline();
+	bool	getBody(std::string const &filename);
 
 public:
 
@@ -42,7 +43,7 @@ public:
 	Response& operator=(const Response& other);
 	~Response();
 
-	const std::string&	getResponse() const;
+	const std::string	getResponse() const;
 	void	createResponseMsg();
 	static void initStatusCodes();
 
