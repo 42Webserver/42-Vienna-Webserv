@@ -20,9 +20,19 @@ class Response
 {
 private:
 
-	std::string			m_responseMsg;
-	Request				m_request;
-	t_config			m_config;
+	std::string									m_responseHeader;
+	std::string									m_responseBody;
+	Request										m_request;
+	t_config									m_config;
+	static std::map<std::string, std::string>	s_status_codes;
+
+	void 	getResponseHeader(const std::string &a_status_code);
+	void	addStatusLine(const std::string &a_status_code, std::string& a_response_header);
+	void	addDateAndTime(std::string &a_response_header);
+	void	setErrorMsg(const std::string &a_status_code);
+	void	setDefaultErrorMsg(const std::string &a_status_code);
+	void	addContentLength(std::string &a_response_header);
+	
 
 public:
 
@@ -32,7 +42,9 @@ public:
 	Response& operator=(const Response& other);
 	~Response();
 
-private:
+	const std::string&	getResponse() const;
+	void	createResponseMsg();
+	static void initStatusCodes();
 
 };
 
