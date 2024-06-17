@@ -70,20 +70,19 @@ int Connection::receiveRequestRaw(void)
 			remainder = readUntilSep(m_head, "\r\n\r\n");
 		if (!remainder.empty() || m_chunked)
 		{
-			std::cout << "HERE WE GO!" << std::endl;
 			m_body.append(remainder);
 			readUntilSep(m_body, "\r\n\r\n");
 		}
 		/* if (m_head.empty())
 			return (1); */
 			
-		std::cout << "Request:\n" << "Head:\n" << m_head << "\nBody:\n" << (m_body.size() > 15 ? m_body.substr(0, 15) + "...\n[ ... ]" : m_body) << '\n';
-		std::cout << "body_length = " << m_body.length() << std::endl;
+		//std::cout << "Request:\n" << "Head:\n" << m_head << "\nBody:\n" << (m_body.size() > 15 ? m_body.substr(0, 15) + "...\n[ ... ]" : m_body) << '\n';
+		//std::cout << "body_length = " << m_body.length() << std::endl;
 		m_request = Request(m_head, m_body, m_clientSocket);
 		if (m_request.getContentLength() == m_body.length())
 		{
 			m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
-			m_response.createResponseMessage();
+			m_response.createResponseMsg();
 		}
 		else 
 			m_chunked = true;
@@ -100,7 +99,7 @@ int Connection::receiveRequestRaw(void)
 int Connection::sendResponse(void)
 {
 	const std::string&	response = m_response.getResponse();
-	std::cout << "Response:\n" << (response.size() > 150 ? response.substr(0, 150) + "...\n[ ... ]" : response) << '\n';
+	std::cout << "Response:\n" << response << '\n';
 	m_idleStart = std::time(NULL);
 	return (send(m_clientSocket, response.data(), response.size(), 0));
 }
