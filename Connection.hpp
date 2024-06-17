@@ -23,7 +23,7 @@ private:
 	std::string	m_body;
 
 	time_t		m_idleStart;
-
+	bool		m_chunked;
 	Response	m_response;
 	Request		m_request;
 

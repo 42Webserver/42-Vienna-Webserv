@@ -1,13 +1,14 @@
 #include "Connection.hpp"
 
-Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket) 
+Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket), 
+m_chunked(false)
 {
 	// std::cout << "New connection on fd: " << m_clientSocket << '\n';
 	m_idleStart = std::time(NULL);
 }
 
 Connection::Connection(const Connection &a_other)
-	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_head(a_other.m_head), m_body(a_other.m_body), m_idleStart(std::time(NULL))  {}
+	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_head(a_other.m_head), m_body(a_other.m_body), m_idleStart(std::time(NULL)), m_chunked(a_other.m_chunked)  {}
 
 Connection &Connection::operator=(const Connection &a_other)
 {
@@ -18,6 +19,7 @@ Connection &Connection::operator=(const Connection &a_other)
 		m_body = a_other.m_body;
 		m_server = a_other.m_server;
 		m_idleStart = a_other.m_idleStart;
+		m_chunked = a_other.m_chunked;
 	}
 	return (*this);
 }
@@ -60,25 +62,31 @@ int Connection::getSocketFd(void) const
 
 int Connection::receiveRequestRaw(void)
 {
-	m_head.clear();
-	m_body.clear();
 	try
 	{
 		//chunk body are missing
-		std::string remainder = readUntilSep(m_head, "\r\n\r\n");
-		if (!remainder.empty())
+		std::string remainder;
+		if (!m_chunked)
+			remainder = readUntilSep(m_head, "\r\n\r\n");
+		if (!remainder.empty() || m_chunked)
 		{
+			std::cout << "HERE WE GO!" << std::endl;
 			m_body.append(remainder);
 			readUntilSep(m_body, "\r\n\r\n");
 		}
-		if (m_head.empty())
-			return (1);
+		/* if (m_head.empty())
+			return (1); */
+			
 		std::cout << "Request:\n" << "Head:\n" << m_head << "\nBody:\n" << (m_body.size() > 15 ? m_body.substr(0, 15) + "...\n[ ... ]" : m_body) << '\n';
+		std::cout << "body_length = " << m_body.length() << std::endl;
 		m_request = Request(m_head, m_body, m_clientSocket);
-		//getSubserver() => from server
-		m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
-		m_response.createResponseMessage();
-		// std::cout << "Head:\n" << m_head << "\nBody:\n" << m_body << '\n';
+		if (m_request.getContentLength() == m_body.length())
+		{
+			m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
+			m_response.createResponseMessage();
+		}
+		else 
+			m_chunked = true;
 	}
 	catch(const std::exception& e)
 	{
