@@ -222,7 +222,6 @@ void Response::createResponseMsg()
 		setErrorMsg(405);
 		return ;
 	}
-	
 	if (m_request.getValue("method") == "GET")
 	{
 		if (checkReturnResponse())
