@@ -274,7 +274,7 @@ void Response::createResponseMsg()
 			if (error_code == 301)
 			{
 				filepath.erase(0, m_config.at("root").at(0).length());
-				getResponseHeader("301", filepath);
+				getResponseHeader("301", filepath, "html");
 				return ;
 			}
 			std::cout << "ALAAAARM! = " << error_code << std::endl;
