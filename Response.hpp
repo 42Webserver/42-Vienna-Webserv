@@ -44,8 +44,6 @@ private:
 	bool		checkReturnResponse();
 	void		addRedirection(std::string &a_response_header, const std::string &redLoc);
 	void		addServerName(std::string &a_response_header);
-	static void	initStatusCodes();
-	static void	initContentType();
 
 public:
 
@@ -55,6 +53,8 @@ public:
 	Response& operator=(const Response& other);
 	~Response();
 
+	static void	initContentType();
+	static void	initStatusCodes();
 	const std::string	getResponse() const;
 	void	createResponseMsg();
 
