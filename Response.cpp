@@ -247,6 +247,7 @@ void Response::createResponseMsg()
 		filepath.append(m_config["root"].at(0));
 		filepath.append(m_request.getValue("uri"));
 	 	if ((error_code = getValidFilePath(filepath)))
+		{
 			if (error_code == 301)
 			{
 				filepath.erase(0, m_config.at("root").at(0).length());
@@ -255,6 +256,7 @@ void Response::createResponseMsg()
 			}
 			std::cout << "ALAAAARM! = " << error_code << std::endl;
 			setErrorMsg(error_code);	
+		}
 		else 
 			setValidMsg(filepath);
 		std::cout << "Filepath = " << filepath << std::endl;
