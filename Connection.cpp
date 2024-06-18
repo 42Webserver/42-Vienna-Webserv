@@ -64,7 +64,6 @@ int Connection::receiveRequestRaw(void)
 {
 	try
 	{
-		//chunk body are missing
 		std::string remainder;
 		if (!m_chunked)
 		{
@@ -76,11 +75,6 @@ int Connection::receiveRequestRaw(void)
 			m_body.append(remainder);
 			readUntilSep(m_body, "\r\n\r\n");
 		}
-		/* if (m_head.empty())
-			return (1); */
-			
-		//std::cout << "Request:\n" << "Head:\n" << m_head << "\nBody:\n" << (m_body.size() > 15 ? m_body.substr(0, 15) + "...\n[ ... ]" : m_body) << '\n';
-		//std::cout << "body_length = " << m_body.length() << std::endl;
 		m_request = Request(m_head, m_body, m_clientSocket);
 		if (m_request.getContentLength() == m_body.length())
 		{
