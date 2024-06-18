@@ -16,6 +16,8 @@
 #include <sys/types.h>
 
 
+#define SERVERNAME "Surfing in the web (Ubuntu)"
+
 class Response
 {
 private:
@@ -40,6 +42,7 @@ private:
 	int		getValidFilePath(std::string &a_filepath);
 	bool	checkReturnResponse();
 	void	addRedirection(std::string &a_response_header, const std::string &redLoc);
+	void	addServerName(std::string &a_response_header);
 
 public:
 
