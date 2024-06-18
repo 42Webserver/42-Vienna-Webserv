@@ -248,8 +248,11 @@ void Response::getResponseHeader(const std::string &a_status_code, const std::st
 {
 	std::string response_header;
 	addStatusLine(a_status_code, response_header);
+	addServerName(response_header);
 	addDateAndTime(response_header);
+	//Content-type!
 	addContentLength(response_header);
+	//Connection: keep-alive!
 	addRedirection(response_header, a_redirLoc);
 	response_header.append("\r\n");
 	m_responseHeader += response_header;
@@ -296,6 +299,13 @@ void Response::addRedirection(std::string &a_response_header, const std::string 
 		a_response_header.append(redLoc);
 		a_response_header.append("\r\n");
 	}	
+}
+
+void Response::addServerName(std::string &a_response_header)
+{
+	a_response_header.append("Server: ");
+	a_response_header.append(SERVERNAME);
+	a_response_header.append("\r\n");
 }
 //check is Request is valid? => if (false ) ? badRequest : weiter
 //check httpVersion! 
