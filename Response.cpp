@@ -66,6 +66,7 @@ bool Response::getBody(std::string const &filename)
 void Response::initStatusCodes()
 {
 	s_status_codes["200"] = "OK";
+	s_status_codes["301"] = "Moved Permanently";
     s_status_codes["400"] = "Bad Request";
 	s_status_codes["403"] = "Forbidden";
     s_status_codes["404"] = "Not Found";
@@ -86,9 +87,9 @@ void Response::setValidMsg(const std::string &filepath)
 {
 	//std::cout << "URI = " <<  m_request.getValue("uri") << std::endl;
 	if (!getBody(filepath))
-		getResponseHeader("404");
+		getResponseHeader("404", "");
 	else
-		getResponseHeader("200");
+		getResponseHeader("200", "");
 }
 
 void Response::setErrorMsg(const int &a_status_code)
@@ -109,7 +110,7 @@ void Response::setErrorMsg(const int &a_status_code)
 		}	
 	}	
 	//Read from custom error page!;
-	getResponseHeader(convert.str());
+	getResponseHeader(convert.str(), "");
 }
 
 void Response::setDefaultErrorMsg(const std::string &a_status_code)
@@ -191,6 +192,22 @@ int Response::isValidFile(std::string &a_filepath)
     return (404);
 }
 
+bool	Response::checkReturnResponse()
+{
+	if (m_config["return"].size())
+	{
+		if (m_config["return"].size() == 2)
+			getResponseHeader(m_config.at("return").at(0), m_config.at("return").at(1));
+		else 
+		{
+			setDefaultErrorMsg(m_config.at("return").at(0));
+			getResponseHeader(m_config.at("return").at(0), "");
+		}	
+		return (true);
+	}
+	return (false);
+}
+
 void Response::createResponseMsg()
 {
 	int error_code;
@@ -205,9 +222,13 @@ void Response::createResponseMsg()
 		setErrorMsg(405);
 		return ;
 	}
+	
 	if (m_request.getValue("method") == "GET")
 	{
+		if (checkReturnResponse())
+			return ;
 		std::string filepath;
+
 		filepath.append(m_config["root"].at(0));
 		filepath.append(m_request.getValue("uri"));
 	 	if ((error_code = getValidFilePath(filepath)))
@@ -223,13 +244,13 @@ void Response::createResponseMsg()
 
 //////////////////////+++++Response Header+++++++++++//////////////////////
 
-void Response::getResponseHeader(const std::string &a_status_code)
+void Response::getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc)
 {
 	std::string response_header;
-
 	addStatusLine(a_status_code, response_header);
 	addDateAndTime(response_header);
 	addContentLength(response_header);
+	addRedirection(response_header, a_redirLoc);
 	response_header.append("\r\n");
 	m_responseHeader += response_header;
 }
@@ -265,6 +286,16 @@ void Response::addContentLength(std::string &a_response_header)
 	a_response_header.append("Content-Length: ");
 	a_response_header.append(convert.str());
 	a_response_header.append("\r\n");
+}
+
+void Response::addRedirection(std::string &a_response_header, const std::string &redLoc)
+{
+	if (m_config["return"].size())
+	{
+		a_response_header.append("Location: ");
+		a_response_header.append(redLoc);
+		a_response_header.append("\r\n");
+	}	
 }
 //check is Request is valid? => if (false ) ? badRequest : weiter
 //check httpVersion! 

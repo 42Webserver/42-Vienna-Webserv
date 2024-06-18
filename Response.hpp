@@ -26,7 +26,7 @@ private:
 	t_config									m_config;
 	static std::map<std::string, std::string>	s_status_codes;
 
-	void 	getResponseHeader(const std::string &a_status_code);
+	void 	getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc);
 	void	addStatusLine(const std::string &a_status_code, std::string& a_response_header);
 	void	addDateAndTime(std::string &a_response_header);
 	void	setErrorMsg(const int &a_status_code);
@@ -38,6 +38,9 @@ private:
 	bool	checkAllowedMethod();
 	int		isValidFile(std::string &a_filepath);
 	int		getValidFilePath(std::string &a_filepath);
+	bool	checkReturnResponse();
+	void	addRedirection(std::string &a_response_header, const std::string &redLoc);
+
 public:
 
 	Response(void);
