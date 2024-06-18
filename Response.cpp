@@ -121,16 +121,11 @@ std::string Response::getFileType(const std::string &filepath)
 	if ((pos = filepath.find_last_of(".")) != std::string::npos)
 	{
 		if (pos < filepath.length())
-			print = filepath.substr(pos + 1, filepath.length());
-		//return (filepath.substr(pos, filepath.length()));
+			return (filepath.substr(pos + 1, filepath.length()));
 	}
-	else
-	{
-		print = "html";
-    	//return ("NOTHING");
-	}
-	std::cout << "ENDING = " << print << std::endl;
-	return (print);
+	else if (filepath.at(filepath.length() - 1) == '/')
+    	return ("html");
+	return ("NOTHING");
 }
 
 void Response::setErrorMsg(const int &a_status_code)
@@ -279,7 +274,6 @@ void Response::createResponseMsg()
 				getResponseHeader("301", filepath, "html");
 				return ;
 			}
-			std::cout << "ALAAAARM! = " << error_code << std::endl;
 			setErrorMsg(error_code);	
 		}
 		else 
