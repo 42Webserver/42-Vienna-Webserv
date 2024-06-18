@@ -43,6 +43,7 @@ private:
 	bool	checkReturnResponse();
 	void	addRedirection(std::string &a_response_header, const std::string &redLoc);
 	void	addServerName(std::string &a_response_header);
+	void	createAutoIndex(std::string &a_path);
 
 public:
 

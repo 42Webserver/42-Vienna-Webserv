@@ -7,15 +7,15 @@ Response::Response() {}
 Response::Response(const Request& a_request, const t_config& a_config) : m_request(a_request), m_config(a_config)
 {
 
-/* 			for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
-			{
-				std::cout << "		Key: " << it->first << " | value: ";
-				for (size_t j = 0; j < it->second.size(); j++)
-				{
-					std::cout << it->second.at(j) << ", ";
-				}
-				std::cout<< std::endl;
-			} */
+// /* 			for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
+// 			{
+// 				std::cout << "		Key: " << it->first << " | value: ";
+// 				for (size_t j = 0; j < it->second.size(); j++)
+// 				{
+// 					std::cout << it->second.at(j) << ", ";
+// 				}
+// 				std::cout<< std::endl;
+// 			} */
 /* 			std::cout << "STATUS CODE =";
 			for (std::map<std::string, std::string>::iterator it = s_status_codes.begin(); it != s_status_codes.end(); ++it)
 			{
@@ -56,8 +56,8 @@ bool Response::getBody(std::string const &filename)
     {
         std::cerr << "Error: open error file" << '\n';
         return (false);
-    }
-    body << input_file.rdbuf();
+	}
+	body << input_file.rdbuf();
     m_responseBody.append(body.str());
     m_responseBody.append("\r\n");
     return (true);
@@ -159,6 +159,7 @@ int Response::getValidFilePath(std::string &a_filepath)
             if (m_config.at("autoindex").at(0) == "on")
             {
                 std::cout << "AUTOINDEX HIER HIN BITTE FLO!" << '\n';
+				createAutoIndex(a_filepath);
                 return (0);
             }
         }
@@ -219,7 +220,7 @@ void Response::createResponseMsg()
 	}
 	if ((error_code = checkHeaderline()))
 	{
-		setErrorMsg(405);
+		setErrorMsg(error_code);
 		return ;
 	}
 	
@@ -233,6 +234,12 @@ void Response::createResponseMsg()
 		filepath.append(m_request.getValue("uri"));
 	 	if ((error_code = getValidFilePath(filepath)))
 		{
+			if (error_code == 301)
+			{
+				filepath.erase(0, m_config.at("root").at(0).length());
+				getResponseHeader("301", filepath);
+				return ;
+			}
 			std::cout << "ALAAAARM! = " << error_code << std::endl;
 			setErrorMsg(error_code);	
 		}
@@ -293,12 +300,10 @@ void Response::addContentLength(std::string &a_response_header)
 
 void Response::addRedirection(std::string &a_response_header, const std::string &redLoc)
 {
-	if (m_config["return"].size())
-	{
-		a_response_header.append("Location: ");
-		a_response_header.append(redLoc);
-		a_response_header.append("\r\n");
-	}	
+	
+	a_response_header.append("Location: ");
+	a_response_header.append(redLoc);
+	a_response_header.append("\r\n");
 }
 
 void Response::addServerName(std::string &a_response_header)
@@ -307,13 +312,31 @@ void Response::addServerName(std::string &a_response_header)
 	a_response_header.append(SERVERNAME);
 	a_response_header.append("\r\n");
 }
-//check is Request is valid? => if (false ) ? badRequest : weiter
-//check httpVersion! 
-//check check and set uri!
-//check method
-//get Method
-// check if return => if (true) ? return statuscode and redirection with key Location:
-// check valid root
+void Response::createAutoIndex(std::string &a_path)
+{
+	DIR* dir = opendir(a_path.c_str());
+	if (dir == NULL)
+		return ;
+	std::string uri = a_path;
+	std::string root = "/home/nsassenb/Documents/Core/42-Vienna-Webserv/www";
+	uri.erase(0, root.length());
+	m_responseBody.append("<!DOCTYPE html><body><h1>" + uri + "</h1><hr><div style=\"display: flex; flex-direction: column; justify-items: center; align-items: flex-begin;\">");
+	struct dirent* de;
+	while ((de = readdir(dir)) != NULL)
+	{
+		// std::cout << "\nName: " << de->d_name << "\nino: " << de->d_ino << "\noff: " << de->d_off << "\nreclen: " << de->d_reclen << "\ntype: " << (int)de->d_type << std::endl;
+		m_responseBody += "<a href=\"" + uri + de->d_name  + "\">" + de->d_name + (de->d_type == 4 ? "/" : "") + "</a>";
+	}
+	m_responseBody.append("</div><hr></body>\r\n");
+	std::cout << m_responseBody;
+	closedir(dir);
+}
+// check is Request is valid? => if (false ) ? badRequest : weiter
+// check httpVersion!
+// check check and set uri!
+// check method
+// get Method
+//  check if return => if (true) ? return statuscode and redirection with key Location:
+//  check valid root
 //	check autoindex if (true) ? root => displayen directory tree : send index
-// send index: file 
-
+//  send index: file
