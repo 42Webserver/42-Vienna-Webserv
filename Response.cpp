@@ -1,11 +1,13 @@
 #include "Response.hpp"
 
+std::map<std::string, std::string>	Response::s_status_codes;
+
 Response::Response() {}
 
 Response::Response(const Request& a_request, const t_config& a_config) : m_request(a_request), m_config(a_config)
 {
 
-			for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
+/* 			for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
 			{
 				std::cout << "		Key: " << it->first << " | value: ";
 				for (size_t j = 0; j < it->second.size(); j++)
@@ -13,7 +15,13 @@ Response::Response(const Request& a_request, const t_config& a_config) : m_reque
 					std::cout << it->second.at(j) << ", ";
 				}
 				std::cout<< std::endl;
-			}
+			} */
+/* 			std::cout << "STATUS CODE =";
+			for (std::map<std::string, std::string>::iterator it = s_status_codes.begin(); it != s_status_codes.end(); ++it)
+			{
+				std::cout << it->first + ": " + it->second + "\n";
+			} */
+			
 }
 
 Response::Response(const Response &other)
@@ -26,7 +34,8 @@ Response &Response::operator=(const Response &other)
 	if (this != &other)
 	{
 		m_request = other.m_request;
-		m_responseMsg = other.m_responseMsg;
+		m_responseHeader = other.m_responseHeader;
+		m_responseBody = other.m_responseBody;
 		m_config = other.m_config;
 	}
 	return (*this);
@@ -36,158 +45,226 @@ Response::~Response()
 {
 }
 
-//check is Request is valid? => if (false ) ? badRequest : weiter
-//check httpVersion! 
-//check check and set uri!
-//check method
-//get Method
-// check if return => if (true) ? return statuscode and redirection with key Location:
-// check valid root
-//	check autoindex if (true) ? root => displayen directory tree : send index
-// send index: file 
-
-
-
-
-void Response::createResponseMessage()
+bool Response::getBody(std::string const &filename)
 {
-	int error_code;
-	if (!m_request.getIsValid())
-	{
-		buildErrorMsg(400);
-		return ;
-	}
-	if ((error_code = checkHttpVersion()) > 0)
-	{
-		buildErrorMsg(error_code);
-		return ;
-	}
-	if ((error_code = checkUri()) > 0)
-	{
-		buildErrorMsg(error_code);
-		return ;
-	}
-	if ((error_code = checkMethod()) > 0)
-	{
-		buildErrorMsg(error_code);
-		return ;
-	}
-	if (error_code == 0)
-	{
-		buildValidMsg(200);
-		return ;
-	}
-	//Read from file to string for uploading page!
+    std::ifstream input_file(filename.c_str());
+    std::stringstream body;
+
+	//std::cout << "Filename = " << filename << std::endl;
+
+    if (!input_file.is_open() || !input_file.good())
+    {
+        std::cerr << "Error: open error file" << '\n';
+        return (false);
+    }
+    body << input_file.rdbuf();
+    m_responseBody.append(body.str());
+    m_responseBody.append("\r\n");
+    return (true);
 }
 
-void Response::buildValidMsg(int const & a_error_code)
+void Response::initStatusCodes()
 {
-	getResponseHeader(a_error_code);
-	getBody(m_config.at("root").at(0) + this->m_request.getValue("uri"));
-	// std::cout << m_responseMsg << '\n';
+	s_status_codes["200"] = "OK";
+	s_status_codes["301"] = "Moved Permanently";
+    s_status_codes["400"] = "Bad Request";
+	s_status_codes["403"] = "Forbidden";
+    s_status_codes["404"] = "Not Found";
+    s_status_codes["405"] = "Method Not Allowed";
+    s_status_codes["414"] = "URI Too Long";
+    s_status_codes["500"] = "Internal Server Error";
+    s_status_codes["505"] = "HTTP Version not supported";
+
+	s_status_codes["0"] = "LANDING PAGE!";
 }
 
-void Response::buildErrorMsg(int const & a_error_code)
+const std::string Response::getResponse() const
 {
-	m_request.setValue("Connection", " closed"); //schabernack
-	getResponseHeader(a_error_code);
-	getBody("error/notFound.html");
-	// std::cout << m_responseMsg << '\n';
+	return (m_responseHeader + m_responseBody);
 }
 
-int Response::checkMethod()
+void Response::setValidMsg(const std::string &filepath)
 {
-	std::string method = m_request.getValue("method");
-
-	if (method.empty())
-		return (405); //Something else if there is no method???
-	else if (method == "GET" || method == "POST" || method == "DELETE")
-		return 0;
+	//std::cout << "URI = " <<  m_request.getValue("uri") << std::endl;
+	if (!getBody(filepath))
+		getResponseHeader("404", "");
 	else
-		return (405); //Errorcode Method not Found
+		getResponseHeader("200", "");
 }
 
-bool Response::isMethodAllowed(const std::string& requestMethod)
+void Response::setErrorMsg(const int &a_status_code)
 {
-	if (requestMethod != "GET" && requestMethod != "POST" && requestMethod != "DELETE")
-		return false;
-	// for (size_t i = 0; i < m_subServer.; i++)
-	// {
-	// 	/* code */
-	// }
-	return (true);
-}
+	std::ostringstream convert; 
 
-int Response::checkUri()
-{
-	if (!isMethodAllowed(m_request.getValue("method")))
-		return (std::cerr << "Error: Method not allowed" << '\n', 405);
-
-	if (m_request.getValue("method") == "GET")
+	convert << a_status_code;
+	std::map<std::string, std::vector<std::string> >::iterator found = m_config.find(convert.str());
+	if (found == m_config.end())
+		setDefaultErrorMsg(convert.str());
+	else 
 	{
-		DIR* directory;
-		struct dirent *readDir;
-		std::string uri = m_request.getValue("uri").substr(1);
-
-		if (uri.empty())
-			return (std::cerr << "Error: empty uri" << '\n', 400); //400 Bad Request
-		if (uri.length() > 256)
-			return (std::cerr << "Error: Uri too long" << '\n', 414); //414 Uri too long
-		directory = opendir("www");
-		if (!directory)
-			return (std::cerr << "Error: directory not found" << '\n', 500); //500 Internal Server
-		while ((readDir = readdir(directory)) != NULL)
+		std::string path;
+		if (!getBody(m_config["root"].at(0) + found->second.at(0)))
 		{
-			if (uri == readDir->d_name)
-			{
-				closedir(directory);
-				return (/* std::cout << "Filename found!!!!" << '\n', */ 0); //File found
-			}
-		}
-		closedir(directory);
-		return (404); //File not found!
+			std::cout << "DEFAULT!"<<std::endl;
+			setDefaultErrorMsg("404");
+		}	
+	}	
+	//Read from custom error page!;
+	getResponseHeader(convert.str(), "");
+}
+
+void Response::setDefaultErrorMsg(const std::string &a_status_code)
+{
+	m_responseBody.append("<!DOCTYPE html><html><title>");
+	m_responseBody.append(s_status_codes[a_status_code]);
+	m_responseBody.append("</title><h1>");
+	m_responseBody.append(a_status_code + " " + s_status_codes[a_status_code]);
+	m_responseBody.append("</h1></html>\r\n");
+}
+
+bool Response::checkAllowedMethod()
+{
+	for (size_t i = 0; i < m_config["allowed_methods"].size(); i++)
+	{
+		if (m_config["allowed_methods"].at(i) == m_request.getValue("method"))
+			return (true);
 	}
+	return (false);
+}
+
+int Response::checkHeaderline()
+{
+	if (m_request.getValue("http_version") != "HTTP/1.1")
+		return (505);
+	if (!checkAllowedMethod())
+		return (405);
 	return (0);
 }
 
-int Response::checkHttpVersion()
+int Response::getValidFilePath(std::string &a_filepath)
 {
-
-    if (m_request.getValue("http_version") != "HTTP/1.1")
-		return (505); // 505 Version not supported
-	return 0;
+    int    ret = isValidFile(a_filepath);
+    if (ret == 403)
+    {
+        std::string temp;
+        if (m_config.at("index").size())
+        {
+            temp = a_filepath + m_config.at("index").at(0);
+            ret = getValidFilePath(temp);
+            a_filepath = temp;
+            return (ret);
+        }
+        if (m_config.at("autoindex").size())
+        {
+            if (m_config.at("autoindex").at(0) == "on")
+            {
+                std::cout << "AUTOINDEX HIER HIN BITTE FLO!" << '\n';
+                return (0);
+            }
+        }
+    }
+    return (ret);
 }
 
-void Response::getResponseHeader(int const & a_status_code)
+/// @brief 
+/// @param a_filepath 
+/// @return Returns 0 for file.
+///            Returns 403 for dir
+///         Returns 301 for dir when searching for file
+///         Returns 404 for no dir or file
+int Response::isValidFile(std::string &a_filepath)
+{
+    struct stat sb;
+    if (stat(a_filepath.c_str(), &sb) == 0)
+    {
+        if (S_ISREG(sb.st_mode))
+            return (0);
+        if (S_ISDIR(sb.st_mode))
+        {
+            if (a_filepath.size() > 0 && a_filepath.at(a_filepath.size() - 1) != '/')
+            {
+                a_filepath.push_back('/');
+                return (301);
+            }
+            return (403);
+        }
+    }
+    return (404);
+}
+
+bool	Response::checkReturnResponse()
+{
+	if (m_config["return"].size())
+	{
+		if (m_config["return"].size() == 2)
+			getResponseHeader(m_config.at("return").at(0), m_config.at("return").at(1));
+		else 
+		{
+			setDefaultErrorMsg(m_config.at("return").at(0));
+			getResponseHeader(m_config.at("return").at(0), "");
+		}	
+		return (true);
+	}
+	return (false);
+}
+
+void Response::createResponseMsg()
+{
+	int error_code;
+
+	if (!m_request.getIsValid())
+	{
+		setErrorMsg(400);
+		return ;
+	}
+	if ((error_code = checkHeaderline()))
+	{
+		setErrorMsg(405);
+		return ;
+	}
+	
+	if (m_request.getValue("method") == "GET")
+	{
+		if (checkReturnResponse())
+			return ;
+		std::string filepath;
+
+		filepath.append(m_config["root"].at(0));
+		filepath.append(m_request.getValue("uri"));
+	 	if ((error_code = getValidFilePath(filepath)))
+		{
+			std::cout << "ALAAAARM! = " << error_code << std::endl;
+			setErrorMsg(error_code);	
+		}
+		else 
+			setValidMsg(filepath);
+		std::cout << "Filepath = " << filepath << std::endl;
+	}
+}
+
+//////////////////////+++++Response Header+++++++++++//////////////////////
+
+void Response::getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc)
 {
 	std::string response_header;
-
 	addStatusLine(a_status_code, response_header);
-	addDateAndTime(response_header);
 	addServerName(response_header);
-	addServerConnection(response_header);
+	addDateAndTime(response_header);
+	//Content-type!
+	addContentLength(response_header);
+	//Connection: keep-alive!
+	addRedirection(response_header, a_redirLoc);
 	response_header.append("\r\n");
-	m_responseMsg += response_header;
+	m_responseHeader += response_header;
 }
 
-void	Response::addStatusLine(int const &a_status_code, std::string& a_response_header)
+void	Response::addStatusLine(const std::string &a_status_code, std::string& a_response_header)
 {
-	std::ostringstream convert;
-
-	convert << a_status_code;
 	a_response_header.append(m_request.getValue("http_version"));
 	a_response_header += ' ';
-	a_response_header.append(convert.str());
+	a_response_header.append(a_status_code);
 	a_response_header += ' ';
-	a_response_header.append(g_status_codes[convert.str()]);
-	a_response_header.append("\r\n");
-
-}
-
-void Response::addServerName(std::string &a_response_header)
-{
-	a_response_header.append("Server: ");
-	a_response_header.append("Webserver"); //set dynamic!
+	a_response_header.append(s_status_codes[a_status_code]);
 	a_response_header.append("\r\n");
 }
 
@@ -204,45 +281,39 @@ void Response::addDateAndTime(std::string &a_response_header)
 	a_response_header.append("\r\n");
 }
 
-void Response::addServerConnection(std::string &a_response_header)
+void Response::addContentLength(std::string &a_response_header)
 {
-	//check if we are sending, more response message => keep-alive!
-	//else closed
-	std::string connValue;
-	if (m_request.getValue("Connection", connValue))
+	std::ostringstream convert;
+
+	convert << m_responseBody.length();
+	a_response_header.append("Content-Length: ");
+	a_response_header.append(convert.str());
+	a_response_header.append("\r\n");
+}
+
+void Response::addRedirection(std::string &a_response_header, const std::string &redLoc)
+{
+	if (m_config["return"].size())
 	{
-		a_response_header.append("Connection: " + m_request.getValue("Connection"));
+		a_response_header.append("Location: ");
+		a_response_header.append(redLoc);
 		a_response_header.append("\r\n");
-	}
+	}	
 }
 
-std::string const &Response::getResponse() const
+void Response::addServerName(std::string &a_response_header)
 {
-	return (m_responseMsg);
+	a_response_header.append("Server: ");
+	a_response_header.append(SERVERNAME);
+	a_response_header.append("\r\n");
 }
+//check is Request is valid? => if (false ) ? badRequest : weiter
+//check httpVersion! 
+//check check and set uri!
+//check method
+//get Method
+// check if return => if (true) ? return statuscode and redirection with key Location:
+// check valid root
+//	check autoindex if (true) ? root => displayen directory tree : send index
+// send index: file 
 
-void Response::getBody(std::string const &filename)
-{
-	std::ifstream input_file(filename.c_str());
-	std::stringstream body;
-
-	if (!input_file.is_open() || !input_file.good())
-	{
-		std::cerr << "Error: open error file" << '\n';
-		return ;
-	}
-	body << input_file.rdbuf();
-	std::stringstream ss;
-	ss << "Content-Length: " << body.str().size();
-	m_responseMsg.insert(m_responseMsg.size() - 2, ss.str());
-	m_responseMsg.append("\r\n");
-	m_responseMsg.append(body.str());
-	m_responseMsg.append("\r\n");
-}
-
-/* std::vector<std::string> Response::getMethodsFromSubServer()
-{
-	if (m_subServer.find("allowed_methods"))
-    return std::vector<std::string>();
-}
- */

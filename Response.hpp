@@ -11,18 +11,38 @@
 #include "Request.hpp"
 #include "Data.hpp"
 #include "ConfigParser.hpp"
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 
-/// global variable///
-extern std::map<std::string, std::string> g_status_codes;
+#define SERVERNAME "Surfing in the web (Ubuntu)"
 
 class Response
 {
 private:
 
-	std::string			m_responseMsg;
-	Request				m_request;
-	t_config			m_config;
+	std::string									m_responseHeader;
+	std::string									m_responseBody;
+	Request										m_request;
+	t_config									m_config;
+	static std::map<std::string, std::string>	s_status_codes;
+
+	void 	getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc);
+	void	addStatusLine(const std::string &a_status_code, std::string& a_response_header);
+	void	addDateAndTime(std::string &a_response_header);
+	void	setErrorMsg(const int &a_status_code);
+	void	setDefaultErrorMsg(const std::string &a_status_code);
+	void	setValidMsg(const std::string &filepath);
+	void	addContentLength(std::string &a_response_header);
+	int		checkHeaderline();
+	bool	getBody(std::string const &filename);
+	bool	checkAllowedMethod();
+	int		isValidFile(std::string &a_filepath);
+	int		getValidFilePath(std::string &a_filepath);
+	bool	checkReturnResponse();
+	void	addRedirection(std::string &a_response_header, const std::string &redLoc);
+	void	addServerName(std::string &a_response_header);
 
 public:
 
@@ -32,24 +52,10 @@ public:
 	Response& operator=(const Response& other);
 	~Response();
 
-	std::string const&	getResponse() const;
-	void				getBody(std::string const & filename);
-	void				createResponseMessage();
-	std::vector<std::string> getMethodsFromSubServer();
+	const std::string	getResponse() const;
+	void	createResponseMsg();
+	static void initStatusCodes();
 
-private:
-
-	void				buildErrorMsg(int const & a_error_code);
-	void				buildValidMsg(int const & a_error_code);
-	int					checkMethod();
-	int					checkUri();
-	int					checkHttpVersion();
-	void				getResponseHeader(int const & a_status_code);
-	void				addStatusLine(int const & a_status_code, std::string& a_reponse_header);
-	void				addServerName(std::string& a_response_header);
-	void				addDateAndTime(std::string& a_response_header);
-	void				addServerConnection(std::string& a_response_header);
-	bool				isMethodAllowed(const std::string& requestMethod);
 };
 
 #endif // !RESPONSE_HPP

@@ -421,6 +421,13 @@ void	ConfigParser::printData(std::vector <struct subserver> data)
 	}
 }
 
+void	ConfigParser::allowAllMethods(std::vector<std::string> &value)
+{
+	value.push_back("GET");
+	value.push_back("POST");
+	value.push_back("DELETE");
+}
+
 bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::string> &tokens, size_t &i)
 {
 	std::map< std::string, std::vector<std::string> > location;
@@ -458,6 +465,8 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 			throw std::runtime_error("Error: config-file: Trash not allowed [locationscope]");
 		i++;
 	}
+	if (!newSubserver.serverConfig["allowed_methods"].size())
+		allowAllMethods(newSubserver.serverConfig["allowed_methods"]);
 	updateLocation(location, newSubserver);
 	newSubserver.locationConfigs.push_back(location);
 	return (true);
