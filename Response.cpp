@@ -68,6 +68,7 @@ void Response::initStatusCodes()
 {
 	s_status_codes["200"] = "OK";
 	s_status_codes["301"] = "Moved Permanently";
+	s_status_codes["302"] = "Found";
     s_status_codes["400"] = "Bad Request";
 	s_status_codes["403"] = "Forbidden";
     s_status_codes["404"] = "Not Found";
@@ -91,8 +92,6 @@ void Response::initContentType()
 	s_content_type["jpg"] = "image/jpeg";
 	s_content_type["js"] = "application/javascript";
 	s_content_type["txt"] = "text/plain";
-	s_content_type["htm"] = "text/html";
-
 }
 
 const std::string Response::getResponse() const
@@ -102,11 +101,11 @@ const std::string Response::getResponse() const
 
 void Response::setValidMsg(const std::string &filepath)
 {
-	//std::cout << "URI = " <<  m_request.getValue("uri") << std::endl;
 	if (!getBody(filepath))
-		getResponseHeader("404", "");
+		setErrorMsg(404);
 	else
 		getResponseHeader("200", "");
+	
 }
 
 void Response::setErrorMsg(const int &a_status_code)
@@ -116,18 +115,17 @@ void Response::setErrorMsg(const int &a_status_code)
 	convert << a_status_code;
 	std::map<std::string, std::vector<std::string> >::iterator found = m_config.find(convert.str());
 	if (found == m_config.end())
+	{
 		setDefaultErrorMsg(convert.str());
+		getResponseHeader(convert.str(), "");
+	}	
 	else 
 	{
-		std::string path;
-		if (!getBody(m_config["root"].at(0) + found->second.at(0)))
-		{
-			std::cout << "DEFAULT!"<<std::endl;
-			setDefaultErrorMsg("404");
-		}	
+		if (found->second.size() == 1)
+			getResponseHeader("302", found->second.at(0));
+		else
+			getResponseHeader("302", "");
 	}	
-	//Read from custom error page!;
-	getResponseHeader(convert.str(), "");
 }
 
 void Response::setDefaultErrorMsg(const std::string &a_status_code)
@@ -248,10 +246,7 @@ void Response::createResponseMsg()
 		filepath.append(m_config["root"].at(0));
 		filepath.append(m_request.getValue("uri"));
 	 	if ((error_code = getValidFilePath(filepath)))
-		{
-			std::cout << "ALAAAARM! = " << error_code << std::endl;
 			setErrorMsg(error_code);	
-		}
 		else 
 			setValidMsg(filepath);
 		std::cout << "Filepath = " << filepath << std::endl;
@@ -309,12 +304,9 @@ void Response::addContentLength(std::string &a_response_header)
 
 void Response::addRedirection(std::string &a_response_header, const std::string &redLoc)
 {
-	if (m_config["return"].size())
-	{
 		a_response_header.append("Location: ");
 		a_response_header.append(redLoc);
 		a_response_header.append("\r\n");
-	}	
 }
 
 void Response::addServerName(std::string &a_response_header)
