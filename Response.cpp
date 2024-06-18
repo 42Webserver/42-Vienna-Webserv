@@ -318,14 +318,24 @@ void Response::createAutoIndex(std::string &a_path)
 	if (dir == NULL)
 		return ;
 	std::string uri = a_path;
-	std::string root = "/home/nsassenb/Documents/Core/42-Vienna-Webserv/www";
-	uri.erase(0, root.length());
-	m_responseBody.append("<!DOCTYPE html><body><h1>" + uri + "</h1><hr><div style=\"display: flex; flex-direction: column; justify-items: center; align-items: flex-begin;\">");
-	struct dirent* de;
+	uri.erase(0,  m_config.at("root").at(0).length());
+	m_responseBody.append("<!DOCTYPE html><body><h1>Index of " + uri + "</h1><hr><div style=\"display: flex; flex-direction: column; justify-items: center; align-items: flex-begin;\">");
+	struct dirent* de = readdir(dir);
+	std::size_t start = m_responseBody.length();
+	std::size_t dirs = 0;
+	std::size_t files = 0;
 	while ((de = readdir(dir)) != NULL)
 	{
-		// std::cout << "\nName: " << de->d_name << "\nino: " << de->d_ino << "\noff: " << de->d_off << "\nreclen: " << de->d_reclen << "\ntype: " << (int)de->d_type << std::endl;
-		m_responseBody += "<a href=\"" + uri + de->d_name  + "\">" + de->d_name + (de->d_type == 4 ? "/" : "") + "</a>";
+		std::string temp;
+		if (de->d_type == DT_DIR) {
+			temp = "<a href=\"" + uri + de->d_name  + "/\">" + de->d_name + "/</a>";
+			m_responseBody.insert(start + dirs, temp);
+			dirs += temp.length();
+		} else {
+			temp = "<a href=\"" + uri + de->d_name  + "\">" + de->d_name + "</a>";
+			m_responseBody.insert(start + dirs + files, temp);
+			files += temp.length();
+		}
 	}
 	m_responseBody.append("</div><hr></body>\r\n");
 	std::cout << m_responseBody;
