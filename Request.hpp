@@ -16,7 +16,7 @@ public:
 
 	Request(void);
 	Request(const Request& other);
-	Request(std::string& head, std::string& body, int fd);
+	Request(std::string& head);
 	Request& operator=(const Request& other);
 	~Request();
 
@@ -27,6 +27,8 @@ public:
 	std::string			getRequestHost() const;
 	bool				getIsValid(void) const;
 	size_t				getContentLength() const;
+	void				addBody(const std::string& a_body);
+	bool				requestComplete(void) const;
 
 private:
 
@@ -35,7 +37,6 @@ private:
 	void	initMap(std::string head);
 	bool								m_isValid;
 	std::string							m_body;
-	int									m_clientSocket;
 	std::map <std::string, std::string>	m_requestHeader;
 };
 
