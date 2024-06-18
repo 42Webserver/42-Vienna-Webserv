@@ -26,6 +26,7 @@ int	main(int argc, char **argv)
         exit(42); */
         Webserver webserv = Webserver(ConfigParser::parseConfig(configName));
         Response::initStatusCodes();
+		Response::initContentType();
 	    webserv.runServer();
 	}
 	catch(const std::exception& e)
