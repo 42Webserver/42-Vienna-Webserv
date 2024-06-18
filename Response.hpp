@@ -29,7 +29,7 @@ private:
 	static std::map<std::string, std::string>	s_status_codes;
 	static std::map<std::string, std::string>	s_content_type;
 
-	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc);
+	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
 	void		addStatusLine(const std::string &a_status_code, std::string& a_response_header);
 	void		addDateAndTime(std::string &a_response_header);
 	void		setErrorMsg(const int &a_status_code);
@@ -44,6 +44,8 @@ private:
 	bool		checkReturnResponse();
 	void		addRedirection(std::string &a_response_header, const std::string &redLoc);
 	void		addServerName(std::string &a_response_header);
+	void		addContentType(std::string &a_response_header, const std::string &a_content_type);
+	std::string	getFileType(const std::string &filepath);
 
 public:
 

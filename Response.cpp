@@ -91,7 +91,10 @@ void Response::initContentType()
 	s_content_type["jpeg"] = "image/jpeg";
 	s_content_type["jpg"] = "image/jpeg";
 	s_content_type["js"] = "application/javascript";
-	s_content_type["txt"] = "text/plain";
+	s_content_type["ico"] = "image/x-icon";
+	s_content_type["png"] = "image/png";
+	s_content_type["webp"] = "image/webp";
+
 }
 
 const std::string Response::getResponse() const
@@ -104,8 +107,27 @@ void Response::setValidMsg(const std::string &filepath)
 	if (!getBody(filepath))
 		setErrorMsg(404);
 	else
-		getResponseHeader("200", "");
+		getResponseHeader("200", "", getFileType(filepath));
 	
+}
+
+std::string Response::getFileType(const std::string &filepath)
+{
+	size_t pos;
+	std::string print;
+	if ((pos = filepath.find_last_of(".")) != std::string::npos)
+	{
+		if (pos < filepath.length())
+			print = filepath.substr(pos + 1, filepath.length());
+		//return (filepath.substr(pos, filepath.length()));
+	}
+	else
+	{
+		print = "NOTHING";
+    	//return ("NOTHING");
+	}
+	std::cout << "ENDING = " << print << std::endl;
+	return (print);
 }
 
 void Response::setErrorMsg(const int &a_status_code)
@@ -117,14 +139,14 @@ void Response::setErrorMsg(const int &a_status_code)
 	if (found == m_config.end())
 	{
 		setDefaultErrorMsg(convert.str());
-		getResponseHeader(convert.str(), "");
+		getResponseHeader(convert.str(), "", "html");
 	}	
 	else 
 	{
 		if (found->second.size() == 1)
-			getResponseHeader("302", found->second.at(0));
+			getResponseHeader("302", found->second.at(0), "html");
 		else
-			getResponseHeader("302", "");
+			getResponseHeader("302", "", getFileType(found->second.at(1)));
 	}	
 }
 
@@ -181,7 +203,7 @@ int Response::getValidFilePath(std::string &a_filepath)
     return (ret);
 }
 
-/// @brief 
+// @brief 
 /// @param a_filepath 
 /// @return Returns 0 for file.
 ///            Returns 403 for dir
@@ -212,11 +234,12 @@ bool	Response::checkReturnResponse()
 	if (m_config["return"].size())
 	{
 		if (m_config["return"].size() == 2)
-			getResponseHeader(m_config.at("return").at(0), m_config.at("return").at(1));
+			//setErrorMsg(); send error page! ! ! !
+			getResponseHeader(m_config.at("return").at(0), m_config.at("return").at(1), "html");
 		else 
 		{
 			setDefaultErrorMsg(m_config.at("return").at(0));
-			getResponseHeader(m_config.at("return").at(0), "");
+			getResponseHeader(m_config.at("return").at(0), "", "html");
 		}	
 		return (true);
 	}
@@ -249,19 +272,19 @@ void Response::createResponseMsg()
 			setErrorMsg(error_code);	
 		else 
 			setValidMsg(filepath);
-		std::cout << "Filepath = " << filepath << std::endl;
 	}
 }
 
 //////////////////////+++++Response Header+++++++++++//////////////////////
 
-void Response::getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc)
+void Response::getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type)
 {
 	std::string response_header;
 	addStatusLine(a_status_code, response_header);
 	addServerName(response_header);
 	addDateAndTime(response_header);
 	//Content-type!
+	addContentType(response_header, a_content_type);
 	addContentLength(response_header);
 	//Connection: keep-alive!
 	addRedirection(response_header, a_redirLoc);
@@ -315,6 +338,19 @@ void Response::addServerName(std::string &a_response_header)
 	a_response_header.append(SERVERNAME);
 	a_response_header.append("\r\n");
 }
+
+void Response::addContentType(std::string &a_response_header, const std::string &a_content_type)
+{
+	a_response_header.append("Content-Type: ");
+	if (s_content_type.find(a_content_type) != s_content_type.end())
+		a_response_header.append(s_content_type[a_content_type]);
+	else 
+		a_response_header.append("text/plain");
+	a_response_header.append("\r\n");
+}
+
+
+
 //check is Request is valid? => if (false ) ? badRequest : weiter
 //check httpVersion! 
 //check check and set uri!
