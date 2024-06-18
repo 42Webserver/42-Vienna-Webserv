@@ -1,6 +1,7 @@
 #include "Response.hpp"
 
 std::map<std::string, std::string>	Response::s_status_codes;
+std::map<std::string, std::string>	Response::s_content_type;
 
 Response::Response() {}
 
@@ -67,6 +68,7 @@ void Response::initStatusCodes()
 {
 	s_status_codes["200"] = "OK";
 	s_status_codes["301"] = "Moved Permanently";
+	s_status_codes["302"] = "Found";
     s_status_codes["400"] = "Bad Request";
 	s_status_codes["403"] = "Forbidden";
     s_status_codes["404"] = "Not Found";
@@ -78,6 +80,20 @@ void Response::initStatusCodes()
 	s_status_codes["0"] = "LANDING PAGE!";
 }
 
+void Response::initContentType()
+{
+	s_content_type["htm"] = "text/html";
+	s_content_type["html"] = "text/html";
+	s_content_type["shtml"] = "text/html";
+	s_content_type["css"] = "text/css";
+	s_content_type["xml"] = "text/xml";
+	s_content_type["gif"] = "image/gif";
+	s_content_type["jpeg"] = "image/jpeg";
+	s_content_type["jpg"] = "image/jpeg";
+	s_content_type["js"] = "application/javascript";
+	s_content_type["txt"] = "text/plain";
+}
+
 const std::string Response::getResponse() const
 {
 	return (m_responseHeader + m_responseBody);
@@ -85,11 +101,11 @@ const std::string Response::getResponse() const
 
 void Response::setValidMsg(const std::string &filepath)
 {
-	//std::cout << "URI = " <<  m_request.getValue("uri") << std::endl;
 	if (!getBody(filepath))
-		getResponseHeader("404", "");
+		setErrorMsg(404);
 	else
 		getResponseHeader("200", "");
+	
 }
 
 void Response::setErrorMsg(const int &a_status_code)
@@ -99,18 +115,17 @@ void Response::setErrorMsg(const int &a_status_code)
 	convert << a_status_code;
 	std::map<std::string, std::vector<std::string> >::iterator found = m_config.find(convert.str());
 	if (found == m_config.end())
+	{
 		setDefaultErrorMsg(convert.str());
+		getResponseHeader(convert.str(), "");
+	}	
 	else 
 	{
-		std::string path;
-		if (!getBody(m_config["root"].at(0) + found->second.at(0)))
-		{
-			std::cout << "DEFAULT!"<<std::endl;
-			setDefaultErrorMsg("404");
-		}	
+		if (found->second.size() == 1)
+			getResponseHeader("302", found->second.at(0));
+		else
+			getResponseHeader("302", "");
 	}	
-	//Read from custom error page!;
-	getResponseHeader(convert.str(), "");
 }
 
 void Response::setDefaultErrorMsg(const std::string &a_status_code)
@@ -223,7 +238,6 @@ void Response::createResponseMsg()
 		setErrorMsg(error_code);
 		return ;
 	}
-	
 	if (m_request.getValue("method") == "GET")
 	{
 		if (checkReturnResponse())
@@ -233,7 +247,6 @@ void Response::createResponseMsg()
 		filepath.append(m_config["root"].at(0));
 		filepath.append(m_request.getValue("uri"));
 	 	if ((error_code = getValidFilePath(filepath)))
-		{
 			if (error_code == 301)
 			{
 				filepath.erase(0, m_config.at("root").at(0).length());
@@ -242,7 +255,6 @@ void Response::createResponseMsg()
 			}
 			std::cout << "ALAAAARM! = " << error_code << std::endl;
 			setErrorMsg(error_code);	
-		}
 		else 
 			setValidMsg(filepath);
 		std::cout << "Filepath = " << filepath << std::endl;
@@ -300,7 +312,6 @@ void Response::addContentLength(std::string &a_response_header)
 
 void Response::addRedirection(std::string &a_response_header, const std::string &redLoc)
 {
-	
 	a_response_header.append("Location: ");
 	a_response_header.append(redLoc);
 	a_response_header.append("\r\n");

@@ -587,7 +587,7 @@ void ConfigParser::safeData(std::vector<std::string> tokens)
 					throw std::runtime_error("Error: config-file: Trash not allowed [serverscope]");
 			}
 			if (!newSubserver.serverConfig["allowed_methods"].size())
-					allowAllMethods(newSubserver.serverConfig["allowed_methods"]);
+				allowAllMethods(newSubserver.serverConfig["allowed_methods"]);
 			setupErrorPages(newSubserver);
 			checkDuplicateLocations(newSubserver);
 			m_subservers.push_back(newSubserver);
