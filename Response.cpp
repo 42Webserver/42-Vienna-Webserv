@@ -48,9 +48,10 @@ Response::~Response()
 
 bool Response::getBody(std::string const &filename)
 {
+	if (!m_responseBody.empty())
+		return true;
     std::ifstream input_file(filename.c_str());
     std::stringstream body;
-
 	//std::cout << "Filename = " << filename << std::endl;
 
     if (!input_file.is_open() || !input_file.good())
@@ -61,6 +62,7 @@ bool Response::getBody(std::string const &filename)
 	body << input_file.rdbuf();
     m_responseBody.append(body.str());
     m_responseBody.append("\r\n");
+	input_file.close();
     return (true);
 }
 
@@ -104,6 +106,7 @@ const std::string Response::getResponse() const
 
 void Response::setValidMsg(const std::string &filepath)
 {
+	std::cout << "file	path	 = " << filepath << std::endl;
 	if (!getBody(filepath))
 		setErrorMsg(404);
 	else
@@ -123,7 +126,7 @@ std::string Response::getFileType(const std::string &filepath)
 	}
 	else
 	{
-		print = "NOTHING";
+		print = "html";
     	//return ("NOTHING");
 	}
 	std::cout << "ENDING = " << print << std::endl;
@@ -195,7 +198,6 @@ int Response::getValidFilePath(std::string &a_filepath)
         {
             if (m_config.at("autoindex").at(0) == "on")
             {
-                std::cout << "AUTOINDEX HIER HIN BITTE FLO!" << '\n';
 				createAutoIndex(a_filepath);
                 return (0);
             }
@@ -234,8 +236,8 @@ bool	Response::checkReturnResponse()
 {
 	if (m_config["return"].size())
 	{
-		if (m_config["return"].size() == 2)
 			//setErrorMsg(); send error page! ! ! !
+		if (m_config["return"].size() == 2)
 			getResponseHeader(m_config.at("return").at(0), m_config.at("return").at(1), "html");
 		else 
 		{
@@ -311,7 +313,6 @@ void Response::createAutoIndex(std::string &a_path)
 		}
 	}
 	m_responseBody.append("</div><hr></body>\r\n");
-	std::cout << m_responseBody;
 	closedir(dir);
 }
 
