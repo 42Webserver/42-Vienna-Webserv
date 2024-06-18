@@ -78,7 +78,6 @@ int Connection::receiveRequestRaw(void)
 			readUntilSep(m_body, "\r\n\r\n");
 			m_request.addBody(m_body);
 		}
-		std::cout << "Complete?: " << m_request.requestComplete() << '\n';
 		if (m_request.requestComplete())
 		{
 			m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
