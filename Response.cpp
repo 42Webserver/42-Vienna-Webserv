@@ -8,15 +8,15 @@ Response::Response() {}
 Response::Response(const Request& a_request, const t_config& a_config) : m_request(a_request), m_config(a_config)
 {
 
-/* 			for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
-			{
-				std::cout << "		Key: " << it->first << " | value: ";
-				for (size_t j = 0; j < it->second.size(); j++)
-				{
-					std::cout << it->second.at(j) << ", ";
-				}
-				std::cout<< std::endl;
-			} */
+// /* 			for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
+// 			{
+// 				std::cout << "		Key: " << it->first << " | value: ";
+// 				for (size_t j = 0; j < it->second.size(); j++)
+// 				{
+// 					std::cout << it->second.at(j) << ", ";
+// 				}
+// 				std::cout<< std::endl;
+// 			} */
 /* 			std::cout << "STATUS CODE =";
 			for (std::map<std::string, std::string>::iterator it = s_status_codes.begin(); it != s_status_codes.end(); ++it)
 			{
@@ -57,8 +57,8 @@ bool Response::getBody(std::string const &filename)
     {
         std::cerr << "Error: open error file" << '\n';
         return (false);
-    }
-    body << input_file.rdbuf();
+	}
+	body << input_file.rdbuf();
     m_responseBody.append(body.str());
     m_responseBody.append("\r\n");
     return (true);
@@ -196,6 +196,7 @@ int Response::getValidFilePath(std::string &a_filepath)
             if (m_config.at("autoindex").at(0) == "on")
             {
                 std::cout << "AUTOINDEX HIER HIN BITTE FLO!" << '\n';
+				createAutoIndex(a_filepath);
                 return (0);
             }
         }
@@ -257,7 +258,7 @@ void Response::createResponseMsg()
 	}
 	if ((error_code = checkHeaderline()))
 	{
-		setErrorMsg(405);
+		setErrorMsg(error_code);
 		return ;
 	}
 	if (m_request.getValue("method") == "GET")
@@ -269,10 +270,49 @@ void Response::createResponseMsg()
 		filepath.append(m_config["root"].at(0));
 		filepath.append(m_request.getValue("uri"));
 	 	if ((error_code = getValidFilePath(filepath)))
+		{
+			if (error_code == 301)
+			{
+				filepath.erase(0, m_config.at("root").at(0).length());
+				getResponseHeader("301", filepath);
+				return ;
+			}
+			std::cout << "ALAAAARM! = " << error_code << std::endl;
 			setErrorMsg(error_code);	
+		}
 		else 
 			setValidMsg(filepath);
 	}
+}
+
+void Response::createAutoIndex(std::string &a_path)
+{
+	DIR* dir = opendir(a_path.c_str());
+	if (dir == NULL)
+		return ;
+	std::string uri = a_path;
+	uri.erase(0,  m_config.at("root").at(0).length());
+	m_responseBody.append("<!DOCTYPE html><body><h1>Index of " + uri + "</h1><hr><div style=\"display: flex; flex-direction: column; justify-items: center; align-items: flex-begin;\">");
+	struct dirent* de = readdir(dir);
+	std::size_t start = m_responseBody.length();
+	std::size_t dirs = 0;
+	std::size_t files = 0;
+	while ((de = readdir(dir)) != NULL)
+	{
+		std::string temp;
+		if (de->d_type == DT_DIR) {
+			temp = "<a href=\"" + uri + de->d_name  + "/\">" + de->d_name + "/</a>";
+			m_responseBody.insert(start + dirs, temp);
+			dirs += temp.length();
+		} else {
+			temp = "<a href=\"" + uri + de->d_name  + "\">" + de->d_name + "</a>";
+			m_responseBody.insert(start + dirs + files, temp);
+			files += temp.length();
+		}
+	}
+	m_responseBody.append("</div><hr></body>\r\n");
+	std::cout << m_responseBody;
+	closedir(dir);
 }
 
 //////////////////////+++++Response Header+++++++++++//////////////////////
@@ -327,9 +367,9 @@ void Response::addContentLength(std::string &a_response_header)
 
 void Response::addRedirection(std::string &a_response_header, const std::string &redLoc)
 {
-		a_response_header.append("Location: ");
-		a_response_header.append(redLoc);
-		a_response_header.append("\r\n");
+	a_response_header.append("Location: ");
+	a_response_header.append(redLoc);
+	a_response_header.append("\r\n");
 }
 
 void Response::addServerName(std::string &a_response_header)
@@ -350,14 +390,12 @@ void Response::addContentType(std::string &a_response_header, const std::string 
 }
 
 
-
-//check is Request is valid? => if (false ) ? badRequest : weiter
-//check httpVersion! 
-//check check and set uri!
-//check method
-//get Method
-// check if return => if (true) ? return statuscode and redirection with key Location:
-// check valid root
+// check is Request is valid? => if (false ) ? badRequest : weiter
+// check httpVersion!
+// check check and set uri!
+// check method
+// get Method
+//  check if return => if (true) ? return statuscode and redirection with key Location:
+//  check valid root
 //	check autoindex if (true) ? root => displayen directory tree : send index
-// send index: file 
-
+//  send index: file

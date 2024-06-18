@@ -46,6 +46,8 @@ private:
 	void		addServerName(std::string &a_response_header);
 	void		addContentType(std::string &a_response_header, const std::string &a_content_type);
 	std::string	getFileType(const std::string &filepath);
+  void    createAutoIndex(std::string &a_path);
+
 
 public:
 
