@@ -27,22 +27,25 @@ private:
 	Request										m_request;
 	t_config									m_config;
 	static std::map<std::string, std::string>	s_status_codes;
+	static std::map<std::string, std::string>	s_content_type;
 
-	void 	getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc);
-	void	addStatusLine(const std::string &a_status_code, std::string& a_response_header);
-	void	addDateAndTime(std::string &a_response_header);
-	void	setErrorMsg(const int &a_status_code);
-	void	setDefaultErrorMsg(const std::string &a_status_code);
-	void	setValidMsg(const std::string &filepath);
-	void	addContentLength(std::string &a_response_header);
-	int		checkHeaderline();
-	bool	getBody(std::string const &filename);
-	bool	checkAllowedMethod();
-	int		isValidFile(std::string &a_filepath);
-	int		getValidFilePath(std::string &a_filepath);
-	bool	checkReturnResponse();
-	void	addRedirection(std::string &a_response_header, const std::string &redLoc);
-	void	addServerName(std::string &a_response_header);
+	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc);
+	void		addStatusLine(const std::string &a_status_code, std::string& a_response_header);
+	void		addDateAndTime(std::string &a_response_header);
+	void		setErrorMsg(const int &a_status_code);
+	void		setDefaultErrorMsg(const std::string &a_status_code);
+	void		setValidMsg(const std::string &filepath);
+	void		addContentLength(std::string &a_response_header);
+	int			checkHeaderline();
+	bool		getBody(std::string const &filename);
+	bool		checkAllowedMethod();
+	int			isValidFile(std::string &a_filepath);
+	int			getValidFilePath(std::string &a_filepath);
+	bool		checkReturnResponse();
+	void		addRedirection(std::string &a_response_header, const std::string &redLoc);
+	void		addServerName(std::string &a_response_header);
+	static void	initStatusCodes();
+	static void	initContentType();
 
 public:
 
@@ -54,7 +57,6 @@ public:
 
 	const std::string	getResponse() const;
 	void	createResponseMsg();
-	static void initStatusCodes();
 
 };
 

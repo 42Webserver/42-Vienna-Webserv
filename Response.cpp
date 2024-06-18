@@ -1,6 +1,7 @@
 #include "Response.hpp"
 
 std::map<std::string, std::string>	Response::s_status_codes;
+std::map<std::string, std::string>	Response::s_content_type;
 
 Response::Response() {}
 
@@ -76,6 +77,22 @@ void Response::initStatusCodes()
     s_status_codes["505"] = "HTTP Version not supported";
 
 	s_status_codes["0"] = "LANDING PAGE!";
+}
+
+void Response::initContentType()
+{
+	s_content_type["htm"] = "text/html";
+	s_content_type["html"] = "text/html";
+	s_content_type["shtml"] = "text/html";
+	s_content_type["css"] = "text/css";
+	s_content_type["xml"] = "text/xml";
+	s_content_type["gif"] = "image/gif";
+	s_content_type["jpeg"] = "image/jpeg";
+	s_content_type["jpg"] = "image/jpeg";
+	s_content_type["js"] = "application/javascript";
+	s_content_type["txt"] = "text/plain";
+	s_content_type["htm"] = "text/html";
+
 }
 
 const std::string Response::getResponse() const
