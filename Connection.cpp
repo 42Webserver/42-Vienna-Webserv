@@ -69,14 +69,17 @@ int Connection::receiveRequestRaw(void)
 		{
 			m_head.clear();
 			remainder = readUntilSep(m_head, "\r\n\r\n");
+			m_request = Request(m_head);
 		}
 		if (!remainder.empty() || m_chunked)
 		{
+			m_body.clear();
 			m_body.append(remainder);
 			readUntilSep(m_body, "\r\n\r\n");
+			m_request.addBody(m_body);
 		}
-		m_request = Request(m_head, m_body, m_clientSocket);
-		if (m_request.getContentLength() == m_body.length())
+		std::cout << "Complete?: " << m_request.requestComplete() << '\n';
+		if (m_request.requestComplete())
 		{
 			m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
 			m_response.createResponseMsg();

@@ -11,9 +11,8 @@ Request &Request::operator=(const Request &other)
 {
 	if (this != &other)
 	{
-		if (other.m_requestHeader.size())
+		if (!other.m_requestHeader.empty())
 			m_requestHeader = other.m_requestHeader;
-		m_body.append(other.m_body);
 		m_isValid = other.m_isValid;
 	}
 	return (*this);
@@ -21,10 +20,9 @@ Request &Request::operator=(const Request &other)
 
 Request::~Request() {}
 
-Request::Request(std::string& head, std::string& body, int fd) : m_isValid(true), m_body(body), m_clientSocket(fd)
+Request::Request(std::string& head) : m_isValid(true)
 {
-	if (!head.empty())
-		initMap(head);
+	initMap(head);
 }
 
 void Request::getRequestLine(std::string& line)
@@ -108,7 +106,7 @@ void Request::initMap(std::string head)
 		return;
 
 	std::string	line;
-	size_t		pos, prevPos = 0;
+	size_t		pos = 0, prevPos = 0;
 	while ((m_isValid && (pos = remainder.find("\r\n", pos)) != std::string::npos))
 	{
 		line = remainder.substr(prevPos, pos - prevPos);
@@ -120,12 +118,6 @@ void Request::initMap(std::string head)
 	}
 	// for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
 	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
-}
-
-
-int Request::getClientSocket() const
-{
-	return (m_clientSocket);
 }
 
 const std::string &Request::getValue(const std::string &a_key)
@@ -158,6 +150,16 @@ size_t Request::getContentLength() const
 		return (strtol(found->second.c_str(), NULL, 10));		
 	}
     return 0;
+}
+
+void Request::addBody(const std::string &a_body)
+{
+	m_body.append(a_body);
+}
+
+bool Request::requestComplete(void) const
+{
+	return (getContentLength() == m_body.length());
 }
 
 bool Request::getValue(const std::string &a_key, std::string &a_returnValue) const
