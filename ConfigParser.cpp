@@ -349,8 +349,8 @@ void	ConfigParser::checkValueReturn(std::vector<std::string>& value)
 	if (value.at(0).length() > 3 || value.at(0).find_first_not_of("0123456789") != std::string::npos)
 		throw(std::runtime_error("Error: config-file: invalid statuscode at key 'return'."));
 
-	if (value.size() == 2 && value.at(1).at(0) != '/')
-		throw(std::runtime_error("Error: config-file: invalid location at key 'return'."));
+	/* if (value.size() == 2 && value.at(1).at(0) != '/')
+		throw(std::runtime_error("Error: config-file: invalid location at key 'return'.")); */
 }
 
 void	ConfigParser::checkErrorPage(std::vector<std::string>& value)
