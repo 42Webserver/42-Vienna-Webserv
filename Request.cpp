@@ -14,6 +14,7 @@ Request &Request::operator=(const Request &other)
 		if (!other.m_requestHeader.empty())
 			m_requestHeader = other.m_requestHeader;
 		m_isValid = other.m_isValid;
+		m_body = other.m_body;
 	}
 	return (*this);
 }
@@ -160,6 +161,11 @@ void Request::addBody(const std::string &a_body)
 bool Request::requestComplete(void) const
 {
 	return (getContentLength() == m_body.length());
+}
+
+const std::string &Request::getBody()
+{
+	return (m_body);
 }
 
 bool Request::getValue(const std::string &a_key, std::string &a_returnValue) const

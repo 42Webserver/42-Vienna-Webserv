@@ -29,7 +29,7 @@ public:
 	size_t				getContentLength() const;
 	void				addBody(const std::string& a_body);
 	bool				requestComplete(void) const;
-
+	const std::string&	getBody();	
 private:
 
 	void	getRequestLine(std::string& line);
