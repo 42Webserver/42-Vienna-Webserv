@@ -7,16 +7,16 @@ Response::Response() {}
 
 Response::Response(const Request& a_request, const t_config& a_config) : m_request(a_request), m_config(a_config)
 {
-
-// /* 			for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
-// 			{
-// 				std::cout << "		Key: " << it->first << " | value: ";
-// 				for (size_t j = 0; j < it->second.size(); j++)
-// 				{
-// 					std::cout << it->second.at(j) << ", ";
-// 				}
-// 				std::cout<< std::endl;
-// 			} */
+	// std::cout << "HEEEEREEEEEEEEEEEEEE: " << m_request.getValue("method") << " " << m_request.getValue("uri") << '\n';
+	// 		for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
+	// 		{
+	// 			std::cout << "		Key: " << it->first << " | value: ";
+	// 			for (size_t j = 0; j < it->second.size(); j++)
+	// 			{
+	// 				std::cout << it->second.at(j) << ", ";
+	// 			}
+	// 			std::cout<< std::endl;
+	// 		}
 /* 			std::cout << "STATUS CODE =";
 			for (std::map<std::string, std::string>::iterator it = s_status_codes.begin(); it != s_status_codes.end(); ++it)
 			{
@@ -279,6 +279,16 @@ void Response::createResponseMsg()
 		else 
 			setValidMsg(filepath);
 	}
+	else if (m_request.getValue("method") == "POST")
+	{
+		if (checkReturnResponse())
+			return ;
+	}
+}
+
+void Response::clearBody()
+{
+	m_responseBody.clear();
 }
 
 void Response::createAutoIndex(std::string &a_path)

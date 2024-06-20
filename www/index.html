@@ -10,7 +10,10 @@
 			<img src="bild.jpg" />
 		</div>
 
-		<input type="file">
+		<form method="post" enctype="multipart/form-data" action="/upload">
+			<input type="file" title="file" id="file" name="file">
+			<button type="submit">Upload</button>
+		</form>
 	</body>
 	<script type='text/javascript' src='main.js'></script>
 </html>

@@ -61,6 +61,7 @@ public:
 	static void	initStatusCodes();
 	const std::string	getResponse() const;
 	void	createResponseMsg();
+	void	clearBody();
 
 };
 

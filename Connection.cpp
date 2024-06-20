@@ -32,18 +32,15 @@ std::string	Connection::readUntilSep(std::string& a_ouput, const std::string& a_
 	std::size_t	sepPos = std::string::npos;
 	std::string	remainder;
 	int			recvRet = 0;
-	bool		first = true;
 
 	do
 	{
 		recvRet = recv(m_clientSocket, buffer, BUFFER_SIZE, 0);
-		if (recvRet == 0 && first)
-			return (std::string());
 		if (recvRet == -1)
 			throw (std::runtime_error("Error: recv bad socket?"));
 		a_ouput.append(buffer, recvRet);
-		sepPos = a_ouput.find(a_seperator);
-		first = false;
+		if (!a_seperator.empty())
+			sepPos = a_ouput.find(a_seperator);
 		// std::cout << "Condition1: " << (recvRet == BUFFER_SIZE) << " Conditon2: " << (sepPos == std::string::npos) << '\n';
 	} while (recvRet == BUFFER_SIZE && sepPos == std::string::npos);
 
@@ -69,19 +66,22 @@ int Connection::receiveRequestRaw(void)
 		{
 			m_head.clear();
 			remainder = readUntilSep(m_head, "\r\n\r\n");
+			std::cout << remainder << " | " << m_head << '\n';
 			m_request = Request(m_head);
 		}
 		if (!remainder.empty() || m_chunked)
 		{
 			m_body.clear();
 			m_body.append(remainder);
-			readUntilSep(m_body, "\r\n\r\n");
+			readUntilSep(m_body, "");
+			std::cout << "Bod: " << m_body << '\n';
 			m_request.addBody(m_body);
 		}
 		if (m_request.requestComplete())
 		{
 			m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
 			m_response.createResponseMsg();
+			m_chunked = false;
 		}
 		else 
 			m_chunked = true;
@@ -98,6 +98,7 @@ int Connection::receiveRequestRaw(void)
 int Connection::sendResponse(void)
 {
 	const std::string	response = m_response.getResponse();
+	m_response.clearBody();
 	//std::cout << "Response:\n" << response << '\n';
 	m_idleStart = std::time(NULL);
 	return (send(m_clientSocket, response.data(), response.size(), 0));
