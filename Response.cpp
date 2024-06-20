@@ -22,7 +22,7 @@ Response::Response(const Request& a_request, const t_config& a_config) : m_reque
 			{
 				std::cout << it->first + ": " + it->second + "\n";
 			} */
-			
+
 }
 
 Response::Response(const Response &other)
@@ -111,7 +111,7 @@ void Response::setValidMsg(const std::string &filepath)
 		setErrorMsg(404);
 	else
 		getResponseHeader("200", "", getFileType(filepath));
-	
+
 }
 
 std::string Response::getFileType(const std::string &filepath)
@@ -130,7 +130,7 @@ std::string Response::getFileType(const std::string &filepath)
 
 void Response::setErrorMsg(const int &a_status_code)
 {
-	std::ostringstream convert; 
+	std::ostringstream convert;
 
 	convert << a_status_code;
 	std::map<std::string, std::vector<std::string> >::iterator found = m_config.find(convert.str());
@@ -138,14 +138,14 @@ void Response::setErrorMsg(const int &a_status_code)
 	{
 		setDefaultErrorMsg(convert.str());
 		getResponseHeader(convert.str(), "", "html");
-	}	
-	else 
+	}
+	else
 	{
 		if (found->second.size() == 1)
 			getResponseHeader("302", found->second.at(0), "html");
 		else
 			getResponseHeader("302", "", getFileType(found->second.at(1)));
-	}	
+	}
 }
 
 void Response::setDefaultErrorMsg(const std::string &a_status_code)
@@ -201,12 +201,13 @@ int Response::getValidFilePath(std::string &a_filepath)
     return (ret);
 }
 
-// @brief 
-/// @param a_filepath 
+// @brief
+/// @param a_filepath
 /// @return Returns 0 for file.
 ///            Returns 403 for dir
 ///         Returns 301 for dir when searching for file
 ///         Returns 404 for no dir or file
+
 int Response::isValidFile(std::string &a_filepath)
 {
     struct stat sb;
@@ -234,14 +235,46 @@ bool	Response::checkReturnResponse()
 			//setErrorMsg(); send error page! ! ! !
 		if (m_config["return"].size() == 2)
 			getResponseHeader(m_config.at("return").at(0), m_config.at("return").at(1), "html");
-		else 
+		else
 		{
 			setDefaultErrorMsg(m_config.at("return").at(0));
 			getResponseHeader(m_config.at("return").at(0), "", "html");
-		}	
+		}
 		return (true);
 	}
 	return (false);
+}
+
+void Response::executeCGI()
+{
+
+}
+
+void Response::handleCGI(const std::string filename)
+{
+	std::cout << "filename: " << filename << '\n';
+	std::cout << "location: " << m_config.at("name").at(0) << '\n';
+
+	std::string filepath;
+
+	filepath.append(m_config["root"].at(0));
+	filepath.append(m_request.getValue("uri"));
+
+    struct stat sb;
+    if (stat(filepath.c_str(), &sb) == 0)
+    {
+        if (!S_ISREG(sb.st_mode))
+		{
+			std::cout << "not a file.\n";
+			return;
+		}
+		if (access (filepath.c_str(), X_OK))
+		{
+			std::cout << "file not executable.\n";
+			return;
+		}
+    }
+    return;
 }
 
 void Response::createResponseMsg()
@@ -262,6 +295,7 @@ void Response::createResponseMsg()
 	{
 		if (checkReturnResponse())
 			return ;
+
 		std::string filepath;
 
 		filepath.append(m_config["root"].at(0));
@@ -274,15 +308,25 @@ void Response::createResponseMsg()
 				getResponseHeader("301", filepath, "html");
 				return ;
 			}
-			setErrorMsg(error_code);	
+			setErrorMsg(error_code);
 		}
-		else 
+		else
 			setValidMsg(filepath);
 	}
 	else if (m_request.getValue("method") == "POST")
 	{
 		if (checkReturnResponse())
 			return ;
+
+		std::cout << "\n\n\nPOST-REQUEST\n\n" << std::endl;
+		std::cout << "> uri: " << m_request.getValue("uri") << '\n';
+
+		if (m_request.getValue("uri").find_first_of("/cgi/bin/") == 0)
+		{
+			std::cout << "CGI!!!" << std::endl;
+			if (m_request.getValue("uri").length() > 9)
+				handleCGI(m_request.getValue("uri").substr(9));
+		}
 	}
 }
 
@@ -389,7 +433,7 @@ void Response::addContentType(std::string &a_response_header, const std::string 
 	a_response_header.append("Content-Type: ");
 	if (s_content_type.find(a_content_type) != s_content_type.end())
 		a_response_header.append(s_content_type[a_content_type]);
-	else 
+	else
 		a_response_header.append("text/plain");
 	a_response_header.append("\r\n");
 }

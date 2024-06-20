@@ -45,9 +45,10 @@ private:
 	void		addRedirection(std::string &a_response_header, const std::string &redLoc);
 	void		addServerName(std::string &a_response_header);
 	void		addContentType(std::string &a_response_header, const std::string &a_content_type);
+  	void    	createAutoIndex(std::string &a_path);
 	std::string	getFileType(const std::string &filepath);
-  void    createAutoIndex(std::string &a_path);
 
+	void		handleCGI(const std::string filename);
 
 public:
 
