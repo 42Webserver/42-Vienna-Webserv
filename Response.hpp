@@ -18,6 +18,12 @@
 
 #define SERVERNAME "Surfing in the web (Ubuntu)"
 
+#define	REDIRECTION 1U << 0		//WIR HABEN EINE RETURN VALUE;
+#define	REDIR_LOCATION 1U << 1	//WIR HABEN EINE LOCATION MIT ANGEGEBEN AUS CONFIG
+#define REDIR_DIRECTORY 1U << 2	//REQUEST IST EIN DIRECTORY! 
+#define	AUTOINDEX 1U << 3		//AUTOINDEX IST SET!
+
+
 class Response
 {
 private:
@@ -28,6 +34,7 @@ private:
 	t_config									m_config;
 	static std::map<std::string, std::string>	s_status_codes;
 	static std::map<std::string, std::string>	s_content_type;
+	unsigned int								m_eventFlags;
 
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
 	void		addStatusLine(const std::string &a_status_code, std::string& a_response_header);
@@ -41,13 +48,13 @@ private:
 	bool		checkAllowedMethod();
 	int			isValidFile(std::string &a_filepath);
 	int			getValidFilePath(std::string &a_filepath);
-	bool		checkReturnResponse();
-	void		addRedirection(std::string &a_response_header, const std::string &redLoc);
+	int			isReturnResponse();
+	void		addRedirection(std::string &a_response_header, const std::string &a_redLoc);
 	void		addServerName(std::string &a_response_header);
 	void		addContentType(std::string &a_response_header, const std::string &a_content_type);
 	std::string	getFileType(const std::string &filepath);
-  void    createAutoIndex(std::string &a_path);
-
+  	void    	createAutoIndex(std::string &a_path);
+	int			isValidRequestHeader();
 
 public:
 
