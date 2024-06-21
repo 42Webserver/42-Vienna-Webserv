@@ -107,8 +107,6 @@ int Connection::sendResponse(void)
 	m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
 	m_response.createResponseMsg();
 	m_request = Request();
-	if (!m_response.isReady())
-		return (1);
 	const std::string	response = m_response.getResponse();
 	// m_response.clearBody();
 	//std::cout << "Response:\n" << response << '\n';
