@@ -245,9 +245,118 @@ bool	Response::checkReturnResponse()
 	return (false);
 }
 
-void Response::executeCGI()
+void Response::executeCGI(const std::string filename)
 {
+	(void)filename;
 
+	int cgi_input[2], cgi_output[2];
+
+    if (pipe(cgi_input) == -1 || pipe(cgi_output) == -1)
+	{
+		std::cout << "Error while opening pipe\n";
+		return;
+	}
+
+	pid_t pid = fork();
+	if (pid < 0)
+	{
+		std::cout << "Error while forking\n";
+		return;
+	}
+ 	if (pid == 0)
+    {
+        // Child process
+        dup2(cgi_output[1], STDOUT_FILENO);
+        dup2(cgi_input[0], STDIN_FILENO);
+
+        close(cgi_output[0]);
+        close(cgi_output[1]);
+        close(cgi_input[0]);
+        close(cgi_input[1]);
+
+		// std::ostringstream os;
+		// os << m_request.getBody().length();
+        // std::string content_length = "CONTENT_LENGTH=" + os.str();
+        // std::string content_type = "CONTENT_TYPE=" + m_request.getValue("Content-Type");
+        // char* envp[] = {
+        //     const_cast<char*>(content_length.c_str()),
+        //     const_cast<char*>(content_type.c_str()),
+        //     NULL
+        // };
+
+
+
+
+
+		// char* envp[] = {NULL};
+        // char python_path[] = "/usr/bin/python3";
+        // char script_path[] = "/home/fheid/42-Vienna-Webserv/www/cgi-bin/file-upload.py";
+        // char* args[] = {python_path, script_path, NULL};
+
+		const char pythonPath[] = "/usr/bin/python3";
+        const char scriptPath[] = "/home/fheid/42-Vienna-Webserv/www/cgi-bin/welcome.py";
+
+		// Prepare the arguments (the first argument should be the script name)
+		std::vector<const char*> args;
+		args.push_back(pythonPath);
+		args.push_back(scriptPath);
+		args.push_back(NULL);
+
+		// Set up environment variables required for the CGI script
+		std::vector<const char*> envp;
+		envp.push_back("REQUEST_METHOD=POST");
+		envp.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+
+		std::stringstream content_length;
+
+		content_length << "CONTENT_LENGTH=";
+		content_length << m_request.getBody().length();
+
+		envp.push_back(content_length.str().c_str());
+		envp.push_back(NULL);
+
+
+
+
+        // if (execve(python_path, args, envp) == -1)
+		if (execve(pythonPath, const_cast<char* const*>(args.data()), const_cast<char* const*>(envp.data())) == -1)
+        {
+            std::cout << "Error while calling execve\n";
+            exit(1);
+        }
+        exit(0);
+    }
+    else
+    {
+        // Parent process
+        close(cgi_output[1]);
+        close(cgi_input[0]);
+
+        // Send the POST data to the CGI script
+        // write(cgi_input[1], m_request.getBody().c_str(), m_request.getBody().length());
+		// Data to be passed to the script through stdin (CGI input)
+		// const char* inputData = "first_name=John&last_name=Doe";
+
+		std::cout << "HIER: " << m_request.getBody() << std::endl;
+
+		std::string inputDataString = m_request.getBody();
+		write(cgi_input[1], m_request.getBody().c_str(), m_request.getBody().length());
+        close(cgi_input[1]);
+
+        // Read the output from the CGI script
+        m_responseHeader.clear();
+        m_responseHeader = "HTTP/1.1 200 OK\r\n";
+        m_responseHeader.append("Content-Type: text/html\r\n\r\n");
+
+        char buffer[1024];
+        ssize_t n;
+        while ((n = read(cgi_output[0], buffer, sizeof(buffer))) > 0)
+        {
+            m_responseBody.append(buffer, n);
+        }
+        close(cgi_output[0]);
+        waitpid(pid, NULL, 0);
+    }
 }
 
 void Response::handleCGI(const std::string filename)
@@ -273,7 +382,9 @@ void Response::handleCGI(const std::string filename)
 			std::cout << "file not executable.\n";
 			return;
 		}
+		std::cout << "file ok\n";
     }
+	executeCGI(filename);
     return;
 }
 

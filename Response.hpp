@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <sys/wait.h>
 
 #define SERVERNAME "Surfing in the web (Ubuntu)"
 
@@ -48,6 +48,7 @@ private:
   	void    	createAutoIndex(std::string &a_path);
 	std::string	getFileType(const std::string &filepath);
 
+	void 		executeCGI(const std::string filename);
 	void		handleCGI(const std::string filename);
 
 public:

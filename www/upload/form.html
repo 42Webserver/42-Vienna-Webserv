@@ -1,12 +1,20 @@
+
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<title>File upload</title>
-</head>
-<body>
-	<form action="./../cgi-bin/file-upload.py" method="post" enctype="multipart/form-data">
-		<input type="file" name="filename">
-		<input type="submit">
-	</form>
-</body>
+<html>
+   <head>
+       <meta charset="UTF-8">
+       <title> CGI </title>
+   </head>
+
+   <body>
+        <form action="./../cgi-bin/welcome.py" method="post" enctype="application/x-www-form-urlencoded">
+            Firstname: <input type="text" name="first_name" />
+
+            <br />
+
+           	Lastname: <input type="text" name="last_name" />
+
+            <input type="submit" value="Submit" />
+        </form>
+   </body>
 </html>
