@@ -12,6 +12,9 @@ all:	$(NAME)
 $(NAME):	$(OBJS)
 	c++ $(FLAGS) $(OBJS) -o $(NAME)
 
+debug:
+	make re FLAGS="$(FLAGS) -D DEBUG"
+
 clean:
 	rm -f $(OBJS)
 

@@ -7,8 +7,9 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "Server.hpp"
+#include "Debug.h"
 
-#define BUFFER_SIZE 16
+#define BUFFER_SIZE 1024
 
 class Server;
 
@@ -19,15 +20,15 @@ private:
 	Server&		m_server;
 	int			m_clientSocket;
 
-	std::string	m_head;
-	std::string	m_body;
-
 	time_t		m_idleStart;
-	bool		m_chunked;
 	Response	m_response;
 	Request		m_request;
 
-	std::string	readUntilSep(std::string& a_ouput, const std::string& a_seperator);
+	int		readAppend(std::string& a_appendString);
+	int		readAppend(std::string& a_appendString, std::size_t a_size);
+	int		readHead(void);
+	int		readBody(void);
+
 	Connection(void);
 
 public:
@@ -44,10 +45,6 @@ public:
 	int	sendResponse(void);
 
 	time_t	getIdleTime(void) const;
-
-
-	//debug
-	void printHeadNBody(void) const;
 };
 
 #endif // !CONNECTION_HPP
