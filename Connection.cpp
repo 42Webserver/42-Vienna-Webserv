@@ -63,7 +63,7 @@ int Connection::readBody()
 	std::string bodyPart;
 	int			ret;
 
-	ret = readAppend(bodyPart);//, m_request.getContentLength()); //experimentell kann bei header mit Content-Length=99999999999999999999 sehr blöd sein 
+	ret = readAppend(bodyPart);//, m_request.getContentLength()); //experimentell kann bei header mit Content-Length=99999999999999999999 sehr blöd sein
 	if (ret == -1)
 	{
 		exit(42); //TO SEE IF IT EVER HAPPENS. !

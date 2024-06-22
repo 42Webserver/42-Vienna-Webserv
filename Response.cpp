@@ -294,12 +294,19 @@ void Response::executeCGI(const std::string filename)
         // char* args[] = {python_path, script_path, NULL};
 
 		const char pythonPath[] = "/usr/bin/python3";
-        const char scriptPath[] = "/home/fheid/42-Vienna-Webserv/www/cgi-bin/welcome.py";
+
+		std::string scriptPath;
+
+		scriptPath.append(m_config["root"].at(0));
+		scriptPath.append(m_request.getValue("uri"));
+
+
+        // const char scriptPath[] = "/home/fheid/42-Vienna-Webserv/www/cgi-bin/welcome.py";
 
 		// Prepare the arguments (the first argument should be the script name)
 		std::vector<const char*> args;
 		args.push_back(pythonPath);
-		args.push_back(scriptPath);
+		args.push_back(const_cast<char*>(scriptPath.c_str()));
 		args.push_back(NULL);
 
 		// Set up environment variables required for the CGI script
@@ -362,7 +369,13 @@ void Response::executeCGI(const std::string filename)
 void Response::handleCGI(const std::string filename)
 {
 	std::cout << "filename: " << filename << '\n';
-	std::cout << "location: " << m_config.at("name").at(0) << '\n';
+
+	// std::map<std::string, std::vector<std::string> >::iterator it;
+
+	// for (it = m_config.begin(); it != m_config.end(); ++it)
+	// 	std::cout << (*it).first << " | " << ((*it).second.size() ? (*it).second.at(0) : "XXX") << std::endl;
+
+	std::cout << "location: " << m_config["name"].at(0) << '\n';
 
 	std::string filepath;
 
