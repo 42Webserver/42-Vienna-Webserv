@@ -24,7 +24,7 @@ Connection::~Connection(void) {}
 
 int Connection::readAppend(std::string& a_appendString)
 {
-	char	buffer[BUFFER_SIZE];
+	static char	buffer[BUFFER_SIZE];
 	int		ret;
 
 	ret = recv(m_clientSocket, buffer, BUFFER_SIZE, MSG_DONTWAIT);
@@ -92,12 +92,13 @@ int Connection::receiveRequestRaw(void)
 	{
 		if (readBody())
 			return (-1);
+		LOG("Read Body");
 		// LOG("BODY: \n" << m_request.getBody() << '\n')
 	}
 	m_idleStart = std::time(NULL);
 	if (m_request.isReady())
-		return (0);
-	return (1);
+		return (1);
+	return (0);
 }
 
 int Connection::sendResponse(void)

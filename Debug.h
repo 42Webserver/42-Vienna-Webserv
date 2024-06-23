@@ -24,8 +24,8 @@
 	std::cout << buffer << colour << msg << "\033[39m" << '\n'; \
 } 
 #else
-#define LOG(msg)
-#define LOGC(colour, msg)
+#define LOG(msg){}
+#define LOGC(colour, msg){}
 #endif
 
 #endif // !DEBUG_HPP
