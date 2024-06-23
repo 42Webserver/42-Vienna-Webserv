@@ -322,10 +322,6 @@ void Response::executeCGI(const std::string filename)
 		envp.push_back(content_length.str().c_str());
 		envp.push_back(NULL);
 
-
-
-
-        // if (execve(python_path, args, envp) == -1)
 		if (execve(pythonPath, const_cast<char* const*>(args.data()), const_cast<char* const*>(envp.data())) == -1)
         {
             std::cout << "Error while calling execve\n";
@@ -335,14 +331,8 @@ void Response::executeCGI(const std::string filename)
     }
     else
     {
-        // Parent process
         close(cgi_output[1]);
         close(cgi_input[0]);
-
-        // Send the POST data to the CGI script
-        // write(cgi_input[1], m_request.getBody().c_str(), m_request.getBody().length());
-		// Data to be passed to the script through stdin (CGI input)
-		// const char* inputData = "first_name=John&last_name=Doe";
 
 		std::cout << "HIER: " << m_request.getBody() << std::endl;
 
@@ -350,7 +340,6 @@ void Response::executeCGI(const std::string filename)
 		write(cgi_input[1], m_request.getBody().c_str(), m_request.getBody().length());
         close(cgi_input[1]);
 
-        // Read the output from the CGI script
         m_responseHeader.clear();
         m_responseHeader = "HTTP/1.1 200 OK\r\n";
         m_responseHeader.append("Content-Type: text/html\r\n\r\n");
@@ -369,11 +358,6 @@ void Response::executeCGI(const std::string filename)
 void Response::handleCGI(const std::string filename)
 {
 	std::cout << "filename: " << filename << '\n';
-
-	// std::map<std::string, std::vector<std::string> >::iterator it;
-
-	// for (it = m_config.begin(); it != m_config.end(); ++it)
-	// 	std::cout << (*it).first << " | " << ((*it).second.size() ? (*it).second.at(0) : "XXX") << std::endl;
 
 	std::cout << "location: " << m_config["name"].at(0) << '\n';
 
