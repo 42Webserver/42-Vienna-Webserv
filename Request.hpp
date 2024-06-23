@@ -10,6 +10,10 @@
 #include <dirent.h>
 #include <cstdlib>
 
+#include "Debug.h"
+
+#define MAX_HEAD_SIZE 8192
+
 class Request
 {
 public:
