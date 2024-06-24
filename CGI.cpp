@@ -2,6 +2,8 @@
 
 CGI::CGI() {}
 
+CGI::CGI(t_config config, Request request) : m_config(config), m_request(request) {}
+
 CGI::CGI(const CGI &other)
 {
 	*this = other;
@@ -18,52 +20,83 @@ CGI &CGI::operator=(const CGI &other)
 
 CGI::~CGI() {}
 
-void CGI::getExecutorPath(const std::string filename)
+int	CGI::scriptIsExecutable()
 {
-	if (filename.find_last_of(".py") == filename.length() - 3)
-		m_executorPath = "/usr/bin/python3";
-	else
-		std::cout << "Error: Invalid cgi-script extension. (502 - Bad Gateway?)" << std::endl;
+	std::string filepath;
+	filepath.append(m_config["root"].at(0));
+	filepath.append(m_request.getValue("uri"));
+
+	return (!access(filepath.c_str(), X_OK) ? 0 : 502);
 }
 
-void CGI::execute(const std::string filename)
+int CGI::setPath()
 {
-	//checkScriptFile();
-	// check
-		// file is openable / executable and has valid extension
-	getExecutorPath(filename);
-	//initArgs();
-	//initEnv();
+	// schabernack, was ist wenn zb /cgi-bin/test/script.py ???
+	std::string filename = m_request.getValue("uri").substr(9);
+
+	if (filename.find_last_of(".py") == filename.length() - 3)
+	{
+		std::string	python_path = "/usr/bin/python3";
+		m_path = new char[python_path.length() + 1];
+		strcpy(m_path, python_path.c_str());
+		return (0);
+	}
+	std::cout << "CGI-Error: Invalid cgi-script extension." << std::endl;
+	return (502);
+}
+
+void	CGI::setArgv()
+{
+	m_argv = new char* [3];
+
+	m_argv[0] = m_path;
+
+	std::string scriptPath;
+	scriptPath.append(m_config["root"].at(0));
+	scriptPath.append(m_request.getValue("uri"));
+
+	m_argv[1] = new char[scriptPath.length() + 1];
+	strcpy(m_argv[1], scriptPath.c_str());
+
+	m_argv[2] = NULL;
+}
+
+void	CGI::setEnvp()
+{
+	std::vector<std::string>	vars;
+
+	vars.push_back("REQUEST_METHOD=" + m_request.getValue("method"));
+	vars.push_back("CONTENT_TYPE=" + m_request.getValue("Content-Type"));
+
+	std::stringstream content_length;
+	content_length << m_request.getBody().length();
+
+	vars.push_back("CONTENT_LENGTH=" + content_length.str());
+	vars.push_back("CONTENT_TYPE=" + m_request.getValue("Content-Type"));
+
+	m_envp = new char* [3];
+
+}
+
+int	CGI::execute()
+{
+	int	status_code = 0;
+
+	if ((status_code = scriptIsExecutable()))
+		return (status_code);
+
+	if ((status_code = setPath()))
+		return (status_code);
+
+	setArgv();
+	setEnvp();
 
 
 
 
 
-	std::cout << "filename: " << filename << '\n';
+	// std::cout << "filename: " << filename << '\n';
 	// std::cout << "location: " << m_config["name"].at(0) << '\n';
-
-	std::string filepath;
-
-
-
-	// filepath.append(m_config["root"].at(0));
-	// filepath.append(m_request.getValue("uri"));
-
-    struct stat sb;
-    if (stat(filepath.c_str(), &sb) == 0)
-    {
-        if (!S_ISREG(sb.st_mode))
-		{
-			std::cout << "not a file.\n";
-			return;
-		}
-		if (access (filepath.c_str(), X_OK))
-		{
-			std::cout << "file not executable.\n";
-			return;
-		}
-		std::cout << "file ok\n";
-    }
 	// executeCGI(filename);
-    return;
+    return (status_code);
 }

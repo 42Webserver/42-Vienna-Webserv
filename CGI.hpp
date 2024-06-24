@@ -2,30 +2,41 @@
 # define CGI_HPP
 
 #include <string>
+#include <cstring>
 #include <vector>
 #include <iostream>
 #include <unistd.h>
 #include <sys/stat.h>
+#include "Data.hpp"
+#include "Request.hpp"
 
 class CGI
 {
 private:
 
-	std::string					m_executorPath;
-	std::string					m_scriptPath;
-	std::vector<const char*>	m_args;
-	std::vector<const char*>	m_env;
+	char*						m_path;
+	char**						m_argv;
+	char**						m_envp;
 
+	t_config					m_config;
+	Request						m_request;
 
-public:
 
 	CGI(void);
 	CGI(const CGI& other);
 	CGI& operator=(const CGI& other);
+
+	int		scriptIsExecutable();
+	int		setPath();
+	void	setArgv();
+	void	setEnvp();
+
+public:
+
+	CGI(t_config config, Request m_request);
 	~CGI();
 
-	void	execute(const std::string filename);
-	void	getExecutorPath(const std::string filename);
+	int	execute();
 };
 
 #endif // !CGI_HPP

@@ -312,7 +312,7 @@ void Response::executeCGI(const std::string filename)
 		// Set up environment variables required for the CGI script
 		std::vector<const char*> envp;
 		envp.push_back("REQUEST_METHOD=POST");
-		envp.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+		envp.push_back("CONTENT_TYPE=application/multipart/form-data");
 
 		std::stringstream content_length;
 
@@ -399,6 +399,9 @@ void Response::createResponseMsg()
 		setErrorMsg(error_code);
 		return ;
 	}
+
+	// hier checken ob es file gibt usw?
+
 	if (m_request.getValue("method") == "GET")
 	{
 		if (checkReturnResponse())

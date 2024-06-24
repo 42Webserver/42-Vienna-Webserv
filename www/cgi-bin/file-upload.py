@@ -1,31 +1,43 @@
-# #!/usr/bin/env python3
+#!/usr/bin/env python3
 
-# import cgi
-# import cgitb
-# import os
+import cgi
+import cgitb
+import os
 
-# cgitb.enable()
+cgitb.enable()
 
-# print("das ist im python script 'file-upload'!")
+print("das ist im python script 'file-upload'!")
 
-# formData = cgi.FieldStorage()
+formData = cgi.FieldStorage()
 
-# uploaded_file = formData['filename']
+my_file = formData.make_file()
 
-# if (uploaded_file.value):
+exit()
 
-# 	save_path = os.getcwd() + "www/cgi-bin/uploads/" + uploaded_file.value
+uploaded_file = formData.getvalue("name")
 
-# 	os.makedirs(os.path.dirname(save_path), exist_ok=True)
+print(formData)
+print(uploaded_file)
+print(uploaded_file.value)
 
-# 	with open(save_path, 'wb') as f:
-# 		f.write(uploaded_file.file.read())
+exit()
 
-# 	message = "The file ", uploaded_file.value, " was uploaded successfully."
-# else:
-# 	message = "The file upload failed."
+if (uploaded_file.value):
 
-# print("<h1> ", message, " <h1>")
+	save_path = os.getcwd() + "www/cgi-bin/uploads/" + uploaded_file.value
+
+	os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+	with open(save_path, 'wb') as f:
+		f.write(uploaded_file.file.read())
+
+	message = "The file ", uploaded_file.value, " was uploaded successfully."
+else:
+	message = "The file upload failed."
+
+print("<h1> ", message, " <h1>")
+
+exit()
 
 #!/usr/bin/env python3
 
@@ -34,6 +46,10 @@ import os
 
 # Parse the form data
 form = cgi.FieldStorage()
+
+print(form)
+
+exit()
 
 for field_name in form.keys():
     # Print the field name and its value
