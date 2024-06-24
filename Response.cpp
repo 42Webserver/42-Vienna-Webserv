@@ -107,12 +107,10 @@ const std::string Response::getResponse() const
 
 void Response::setValidMsg(const std::string &filepath)
 {
-	std::cout << "file	path	 = " << filepath << std::endl;
 	if (!getBody(filepath))
 		setErrorMsg(404);
 	else
 		getResponseHeader("200", "", getFileType(filepath));
-	
 }
 
 std::string Response::getFileType(const std::string &filepath)
@@ -252,13 +250,14 @@ int	Response::isValidRequestHeader()
 void Response::createResponseMsg()
 {
 	int error_code;
+	std::string filepath;
+
 	if (!(error_code = isValidRequestHeader()))
 	{
 		if (!(error_code = isReturnResponse()))
 		{
 			if (m_request.getValue("method") == "GET")
 			{
-				std::string filepath;
 
 				filepath.append(m_config["root"].at(0));
 				filepath.append(m_request.getValue("uri"));
@@ -266,15 +265,11 @@ void Response::createResponseMsg()
 				{
 					if (error_code == 301)
 					{
-						m_eventFlags |= REDIRECTION;
-						filepath.erase(0, m_config.at("root").at(0).length());
-						getResponseHeader("301", filepath, "html");
-						return ;
+						m_eventFlags |= REDIRECTION | REDIR_LOCATION;
+						m_config["return"].push_back("301");
+						m_config["return"].push_back(filepath.erase(0, m_config.at("root").at(0).length()));
 					}
-					setErrorMsg(error_code);
 				}
-				else 
-					setValidMsg(filepath);
 			}
 			else if (m_request.getValue("method") == "POST")
 			{
@@ -284,6 +279,8 @@ void Response::createResponseMsg()
 	}
 	if (error_code) 
 		setErrorMsg(error_code);
+	else
+		setValidMsg(filepath);
 }
 
 void Response::clearBody()
