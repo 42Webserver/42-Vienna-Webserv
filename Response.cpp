@@ -245,146 +245,6 @@ bool	Response::checkReturnResponse()
 	return (false);
 }
 
-void Response::executeCGI(const std::string filename)
-{
-	(void)filename;
-
-	int cgi_input[2], cgi_output[2];
-
-    if (pipe(cgi_input) == -1 || pipe(cgi_output) == -1)
-	{
-		std::cout << "Error while opening pipe\n";
-		return;
-	}
-
-	pid_t pid = fork();
-	if (pid < 0)
-	{
-		std::cout << "Error while forking\n";
-		return;
-	}
- 	if (pid == 0)
-    {
-        // Child process
-        dup2(cgi_output[1], STDOUT_FILENO);
-        dup2(cgi_input[0], STDIN_FILENO);
-
-        close(cgi_output[0]);
-        close(cgi_output[1]);
-        close(cgi_input[0]);
-        close(cgi_input[1]);
-
-		// std::ostringstream os;
-		// os << m_request.getBody().length();
-        // std::string content_length = "CONTENT_LENGTH=" + os.str();
-        // std::string content_type = "CONTENT_TYPE=" + m_request.getValue("Content-Type");
-        // char* envp[] = {
-        //     const_cast<char*>(content_length.c_str()),
-        //     const_cast<char*>(content_type.c_str()),
-        //     NULL
-        // };
-
-
-
-
-
-		// char* envp[] = {NULL};
-        // char python_path[] = "/usr/bin/python3";
-        // char script_path[] = "/home/fheid/42-Vienna-Webserv/www/cgi-bin/file-upload.py";
-        // char* args[] = {python_path, script_path, NULL};
-
-		const char pythonPath[] = "/usr/bin/python3";
-
-		std::string scriptPath;
-
-		scriptPath.append(m_config["root"].at(0));
-		scriptPath.append(m_request.getValue("uri"));
-
-
-        // const char scriptPath[] = "/home/fheid/42-Vienna-Webserv/www/cgi-bin/welcome.py";
-
-		// Prepare the arguments (the first argument should be the script name)
-		std::vector<const char*> args;
-		args.push_back(pythonPath);
-		args.push_back(const_cast<char*>(scriptPath.c_str()));
-		args.push_back(NULL);
-
-		// Set up environment variables required for the CGI script
-		std::vector<const char*> envp;
-		envp.push_back("REQUEST_METHOD=POST");
-		envp.push_back("CONTENT_TYPE=application/multipart/form-data");
-
-		std::stringstream content_length;
-
-		content_length << "CONTENT_LENGTH=";
-		content_length << m_request.getBody().length();
-
-		envp.push_back(content_length.str().c_str());
-		envp.push_back(NULL);
-
-		if (execve(pythonPath, const_cast<char* const*>(args.data()), const_cast<char* const*>(envp.data())) == -1)
-        {
-            std::cout << "Error while calling execve\n";
-            exit(1);
-        }
-        exit(0);
-    }
-    else
-    {
-        close(cgi_output[1]);
-        close(cgi_input[0]);
-
-		std::cout << "HIER: " << m_request.getBody() << std::endl;
-
-		std::string inputDataString = m_request.getBody();
-		write(cgi_input[1], m_request.getBody().c_str(), m_request.getBody().length());
-        close(cgi_input[1]);
-
-        m_responseHeader.clear();
-        m_responseHeader = "HTTP/1.1 200 OK\r\n";
-        m_responseHeader.append("Content-Type: text/html\r\n\r\n");
-
-        char buffer[1024];
-        ssize_t n;
-        while ((n = read(cgi_output[0], buffer, sizeof(buffer))) > 0)
-        {
-            m_responseBody.append(buffer, n);
-        }
-        close(cgi_output[0]);
-        waitpid(pid, NULL, 0);
-    }
-}
-
-void Response::handleCGI(const std::string filename)
-{
-	std::cout << "filename: " << filename << '\n';
-
-	std::cout << "location: " << m_config["name"].at(0) << '\n';
-
-	std::string filepath;
-
-	filepath.append(m_config["root"].at(0));
-	filepath.append(m_request.getValue("uri"));
-
-    struct stat sb;
-    if (stat(filepath.c_str(), &sb) == 0)
-    {
-        if (!S_ISREG(sb.st_mode))
-		{
-			std::cout << "not a file.\n";
-			return;
-		}
-		if (access (filepath.c_str(), X_OK))
-		{
-			std::cout << "file not executable.\n";
-			return;
-		}
-		std::cout << "file ok\n";
-    }
-	executeCGI(filename);
-    return;
-}
-
 void Response::createResponseMsg()
 {
 	int error_code;
@@ -443,9 +303,10 @@ void Response::createResponseMsg()
 			// m_responseBody = test.getResponseBody();
 			std::cout << "ret: " << ret << '\n';
 
-			std::cout << "ResponseBody: " << test.getResponseBody() << std::endl;
-
 			m_responseBody = test.getResponseBody();
+			if (ret == 0)
+				ret = 200;
+			getResponseHeader(ret, "", "html");
 			// if (m_request.getValue("uri").length() > 9)
 			// 	handleCGI(m_request.getValue("uri").substr(9));
 		}
@@ -492,6 +353,24 @@ void Response::getResponseHeader(const std::string &a_status_code, const std::st
 {
 	std::string response_header;
 	addStatusLine(a_status_code, response_header);
+	addServerName(response_header);
+	addDateAndTime(response_header);
+	//Content-type!
+	addContentType(response_header, a_content_type);
+	addContentLength(response_header);
+	//Connection: keep-alive!
+	addRedirection(response_header, a_redirLoc);
+	response_header.append("\r\n");
+	m_responseHeader += response_header;
+}
+
+void Response::getResponseHeader(const int &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type)
+{
+	std::ostringstream convert; 
+
+	convert << a_status_code;
+	std::string response_header;
+	addStatusLine(convert.str(), response_header);
 	addServerName(response_header);
 	addDateAndTime(response_header);
 	//Content-type!
