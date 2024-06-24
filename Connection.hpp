@@ -9,7 +9,7 @@
 #include "Server.hpp"
 #include "Debug.h"
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 80000
 
 class Server;
 
