@@ -29,7 +29,7 @@ private:
 	t_config									m_config;
 	static std::map<std::string, std::string>	s_status_codes;
 	static std::map<std::string, std::string>	s_content_type;
-
+	void		getResponseHeader(const int &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
 	void		addStatusLine(const std::string &a_status_code, std::string& a_response_header);
 	void		addDateAndTime(std::string &a_response_header);
