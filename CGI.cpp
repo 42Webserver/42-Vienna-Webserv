@@ -120,7 +120,6 @@ int CGI::run()
         close(cgi_output[1]);
         close(cgi_input[0]);
 
-		std::string inputDataString = m_request.getBody();
 		write(cgi_input[1], m_request.getBody().c_str(), m_request.getContentLength());
         close(cgi_input[1]);
 
