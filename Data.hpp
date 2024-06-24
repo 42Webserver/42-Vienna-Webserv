@@ -18,7 +18,6 @@ public:
 	u_int64_t getIp(void) const;
 	u_int16_t getPort(void) const;
 	serveradress(u_int64_t a_ip, u_int16_t a_port);
-
 };
 
 struct subserver
