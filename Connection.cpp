@@ -24,13 +24,14 @@ Connection::~Connection(void) {}
 
 int Connection::readAppend(std::string& a_appendString)
 {
-	char	buffer[BUFFER_SIZE];
+	static char	buffer[BUFFER_SIZE];
 	int		ret;
 
 	ret = recv(m_clientSocket, buffer, BUFFER_SIZE, MSG_DONTWAIT);
 	if (ret == -1)
 		return (-1);
 	a_appendString.append(buffer, ret);
+	LOGC(TERMC_RED, "Read " << ret << " bytes");
 	return (ret);
 }
 
@@ -66,7 +67,8 @@ int Connection::readBody()
 	ret = readAppend(bodyPart);//, m_request.getContentLength()); //experimentell kann bei header mit Content-Length=99999999999999999999 sehr blöd sein
 	if (ret == -1)
 	{
-		//exit(42); //TO SEE IF IT EVER HAPPENS. !
+		LOG_ERROR("This happened: ret: " << ret << " head:\n" << m_request.getHead() << "\nbody:\n" << m_request.getBody());
+		exit(42); //TO SEE IF IT EVER HAPPENS. !
 		return (-1);
 	}
 	m_request.addBody(bodyPart);
@@ -88,16 +90,17 @@ int Connection::receiveRequestRaw(void)
 			m_request.initMap();
 		LOG("HEAD: \n" << m_request.getHead() << '\n')
 	}
-	if (!m_request.bodyComplete())
+	else if (!m_request.bodyComplete())
 	{
 		if (readBody())
 			return (-1);
+		LOG("Read Body");
 		// LOG("BODY: \n" << m_request.getBody() << '\n')
 	}
 	m_idleStart = std::time(NULL);
 	if (m_request.isReady())
-		return (0);
-	return (1);
+		return (1);
+	return (0);
 }
 
 int Connection::sendResponse(void)

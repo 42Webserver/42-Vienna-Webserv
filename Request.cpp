@@ -157,7 +157,16 @@ size_t Request::getContentLength() const
 void Request::addHead(const std::string &a_head)
 {
 	if (m_headComplete)
-		throw(std::runtime_error("DU MACHST WAS FALSCH?"));
+	{
+		LOG_WARNING("DU MACHST WAS FALSCH?")
+		return;
+	}
+	if (m_head.size() > MAX_HEAD_SIZE)
+	{
+		LOG_ERROR("head too big");
+		m_isValid = false; //invalid request? header zu groß bzw müll
+		return ;
+	}
 	std::size_t	sepPos = a_head.find("\r\n\r\n");
 	if (sepPos == std::string::npos)
 	{
@@ -173,7 +182,7 @@ void Request::addHead(const std::string &a_head)
 
 bool Request::headComplete(void)
 {
-	return (m_headComplete || (m_headComplete = (m_head.find("\r\n\r\n") != std::string::npos)));
+	return (m_headComplete || (m_headComplete = (m_head.rfind("\r\n\r\n") != std::string::npos)));
 }
 
 void Request::addBody(const std::string &a_body)
@@ -188,7 +197,7 @@ bool Request::bodyComplete(void) const
 
 bool Request::isReady(void)
 {
-	return (headComplete() && bodyComplete());
+	return ((headComplete() && bodyComplete()) || !m_isValid);
 }
 
 const std::string &Request::getHead()
