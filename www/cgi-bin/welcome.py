@@ -5,8 +5,6 @@ import cgi
 # Create instance of FieldStorage
 form = cgi.FieldStorage()
 
-print("das ist im python script 'welcome'!")
-
 # Get data from fields
 first_name = form.getvalue('first_name')
 last_name = form.getvalue('last_name')

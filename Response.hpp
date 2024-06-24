@@ -11,6 +11,7 @@
 #include "Request.hpp"
 #include "Data.hpp"
 #include "ConfigParser.hpp"
+#include "CGI.hpp"
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>

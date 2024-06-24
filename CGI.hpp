@@ -7,6 +7,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include "Data.hpp"
 #include "Request.hpp"
 
@@ -21,6 +22,7 @@ private:
 	t_config					m_config;
 	Request						m_request;
 
+	std::string					m_responseBody;
 
 	CGI(void);
 	CGI(const CGI& other);
@@ -28,15 +30,18 @@ private:
 
 	int		scriptIsExecutable();
 	int		setPath();
+	int		run();
 	void	setArgv();
 	void	setEnvp();
+	void	deleteData();
 
 public:
 
 	CGI(t_config config, Request m_request);
 	~CGI();
 
-	int	execute();
+	int					execute();
+	const std::string& 	getResponseBody() const;
 };
 
 #endif // !CGI_HPP

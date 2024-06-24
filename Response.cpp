@@ -435,8 +435,19 @@ void Response::createResponseMsg()
 		if (m_request.getValue("uri").find_first_of("/cgi/bin/") == 0)
 		{
 			std::cout << "CGI!!!" << std::endl;
-			if (m_request.getValue("uri").length() > 9)
-				handleCGI(m_request.getValue("uri").substr(9));
+
+			CGI	test(m_config, m_request);
+			int ret = test.execute();
+			// if (ret != 200)
+			// 	std::cout << "ALARM\n";
+			// m_responseBody = test.getResponseBody();
+			std::cout << "ret: " << ret << '\n';
+
+			std::cout << "ResponseBody: " << test.getResponseBody() << std::endl;
+
+			m_responseBody = test.getResponseBody();
+			// if (m_request.getValue("uri").length() > 9)
+			// 	handleCGI(m_request.getValue("uri").substr(9));
 		}
 	}
 }

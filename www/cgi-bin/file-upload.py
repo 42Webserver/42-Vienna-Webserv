@@ -10,7 +10,9 @@ print("das ist im python script 'file-upload'!")
 
 formData = cgi.FieldStorage()
 
-my_file = formData.make_file()
+print(formData)
+
+print("<h1> ", "hello", " <h1>")
 
 exit()
 
