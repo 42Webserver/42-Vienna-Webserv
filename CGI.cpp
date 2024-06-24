@@ -130,7 +130,8 @@ int CGI::run()
             m_responseBody.append(buffer, n);
         }
         close(cgi_output[0]);
-        waitpid(pid, NULL, 0);
+        if (waitpid(pid, NULL, 0))
+			std::cout << "HIIIIIIIIIIIIILFE\n";
     }
 	return (0);
 }
@@ -139,12 +140,12 @@ void CGI::deleteData()
 {
 	delete (m_path);
 	delete (m_argv[1]);
-	delete (m_argv);
+	delete[] (m_argv);
 
 	for (size_t	i = 0; m_envp[i] != NULL; ++i)
-		delete (m_envp[i++]);
+		delete (m_envp[i]);
 
-	delete (m_envp);
+	delete[] (m_envp);
 }
 
 const std::string& CGI::getResponseBody() const
@@ -169,12 +170,8 @@ int	CGI::execute()
 	std::cout << "ARGS: " << m_argv[0] << " | " << m_argv[1] << std::endl;
 	std::cout << "ENVP: " << m_envp[0] << " | " << m_envp[1] << " | " << m_envp[2] << std::endl;
 
-	run();
-
-	// fixen!
-	// deleteData();
-
-	std::cout << "deleted everything\n";
+	status_code = run();
+	deleteData();
 
     return (status_code);
 }
