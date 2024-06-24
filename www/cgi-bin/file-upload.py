@@ -6,11 +6,47 @@ import os
 
 cgitb.enable()
 
-print("das ist im python script 'file-upload'!")
+#!/usr/bin/env python3
+import cgi
+
+# Initialisierung von formdata mit cgi.FieldStorage()
+formdata = cgi.FieldStorage()
+
+# Zugriff auf das hochgeladene Dateiobjekt
+fileitem = formdata['file']
+
+# Überprüfung, ob es sich um eine hochgeladene Datei handelt
+if fileitem.file:
+    # Lesen der Datei
+    content = fileitem.file.read()
+    # Verarbeiten der Datei
+    filename = os.path.basename(fileitem.filename)
+    
+    # Speichern der Datei im Verzeichnis '/tmp'
+    with open(f'/sgoinfre/goinfre/Perso/fwechsle/test/{filename}', 'wb') as f:
+        f.write(content)
+    uploaded = True  # Simulierte Bedingung, um zu zeigen, ob das Hochladen erfolgreich war
+
+print("""
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Datei Upload</title>
+</head>
+<body>
+""")
+if (uploaded):
+    print("<p>Danke, Ihre Datei wurde erfolgreich hochgeladen.</p>")
+else:
+    print("<p>Fehler beim Hochladen der Datei. Bitte versuchen Sie es erneut.</p>")
+print("</body></html>")
+
+exit()
+
 
 formData = cgi.FieldStorage()
-
-print(formData)
+print(formdata['file'])
 
 print("<h1> ", "hello", " <h1>")
 
