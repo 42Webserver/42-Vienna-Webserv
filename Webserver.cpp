@@ -97,22 +97,22 @@ int Webserver::pollClients(void)
 {
 	for (std::size_t i = m_servers.size(); i < m_polls.getPollfds().size(); i++)
 	{
-		//std::cout << m_polls.getPollfdsAt(i);
+		LOG_INFO(m_polls.getPollfdsAt(i));
 		if (m_polls.getPollfdsAt(i).revents & POLLHUP)
 		{
-			LOGC(TERMC_BLUE, "Socket hang-up.")
+			LOG_WARNING("Socket hang-up.")
 			m_polls.removeConnection(i--);
 			continue;
 		}
 		if (m_polls.getPollfdsAt(i).revents & (POLLERR | POLLNVAL))
 		{
-			LOGC(TERMC_RED, "Socket error: \n" << m_polls.getPollfdsAt(i))
+			LOG_ERROR("Socket error: \n" << m_polls.getPollfdsAt(i))
 			m_polls.removeConnection(i--);
 			continue;
 		}
 		if (m_polls.getPollfdsAt(i).revents & POLLIN)
 		{
-			LOGC(TERMC_GREEN, "Do read/accept request.")
+			LOG_INFO("Do read/accept request.")
 			int ret = m_polls.getConnection(i).receiveRequestRaw();
 			if (ret == 1){
 				;// continue;
@@ -126,7 +126,7 @@ int Webserver::pollClients(void)
 		}
 		if (m_polls.getPollfdsAt(i).revents & POLLOUT)
 		{
-			LOGC(TERMC_GREEN, "Pollout triggered")
+			LOG_INFO("Pollout triggered")
 			if (m_polls.getConnection(i).sendResponse() == -1)
 				std::cerr << "Error: send\n";
 			// close(m_polls.getPollfdsAt(i).fd);
@@ -159,7 +159,7 @@ int	Webserver::runServer()
 		if (pollRet == -1)
 			std::cerr << "Error: poll error.\n";
 		else if (pollRet == 0) {
-			LOGC(TERMC_BLUE, "Poll timeout");
+			LOG_INFO("Poll timeout " << m_polls.getPollfds().size());
 			for (std::size_t i = m_polls.getPollfds().size() - 1; i >= m_servers.size(); i--)
 			{
 				if (m_polls.getConnection(i).getIdleTime() > 1) {
@@ -171,7 +171,7 @@ int	Webserver::runServer()
 		}
 		else
 		{
-			LOGC(TERMC_ORANGE, pollRet << " Poll(s) triggered\n")
+			LOGC(TERMC_ORANGE, pollRet << '/' << m_polls.getPollfds().size() - m_servers.size() << " Poll(s) triggered\n")
 			if (pollServers() == -1)
 			{
 				std::cerr << "Poll server error\n";

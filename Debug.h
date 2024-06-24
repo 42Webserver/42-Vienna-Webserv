@@ -25,9 +25,15 @@
 	strftime(buffer,80, "%Y-%m-%d %H:%M:%S | ", timeinfo); \
 	std::cout << buffer << colour << msg << "\033[39m" << '\n'; \
 } 
+#define LOG_INFO(msg) LOGC(TERMC_BLUE, msg)
+#define LOG_WARNING(msg) LOGC(TERMC_ORANGE, msg)
+#define LOG_ERROR(msg) LOGC(TERMC_RED, msg)
 #else
 #define LOG(msg){}
 #define LOGC(colour, msg){}
+#define LOG_INFO(msg) {}
+#define LOG_WARNING(msg) {}
+#define LOG_ERROR(msg) {}
 #endif
 
 #endif // !DEBUG_HPP

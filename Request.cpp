@@ -157,10 +157,13 @@ size_t Request::getContentLength() const
 void Request::addHead(const std::string &a_head)
 {
 	if (m_headComplete)
-		throw(std::runtime_error("DU MACHST WAS FALSCH?"));
+	{
+		LOG_WARNING("DU MACHST WAS FALSCH?")
+		return;
+	}
 	if (m_head.size() > MAX_HEAD_SIZE)
 	{
-		LOGC(TERMC_RED, "head too big");
+		LOG_ERROR("head too big");
 		m_isValid = false; //invalid request? header zu groß bzw müll
 		return ;
 	}

@@ -31,6 +31,7 @@ int Connection::readAppend(std::string& a_appendString)
 	if (ret == -1)
 		return (-1);
 	a_appendString.append(buffer, ret);
+	LOGC(TERMC_RED, "Read " << ret << " bytes");
 	return (ret);
 }
 
@@ -66,6 +67,7 @@ int Connection::readBody()
 	ret = readAppend(bodyPart);//, m_request.getContentLength()); //experimentell kann bei header mit Content-Length=99999999999999999999 sehr blöd sein 
 	if (ret == -1)
 	{
+		LOG_ERROR("This happened: ret: " << ret << " head:\n" << m_request.getHead() << "\nbody:\n" << m_request.getBody());
 		exit(42); //TO SEE IF IT EVER HAPPENS. !
 		return (-1);
 	}
@@ -88,7 +90,7 @@ int Connection::receiveRequestRaw(void)
 			m_request.initMap();
 		LOG("HEAD: \n" << m_request.getHead() << '\n')
 	}
-	if (!m_request.bodyComplete())
+	else if (!m_request.bodyComplete())
 	{
 		if (readBody())
 			return (-1);
