@@ -6,6 +6,8 @@
 #include <iostream>
 
 #define TERMC_RED "\033[91m"
+#define TERMC_DARKRED "\033[31m"
+#define TERMC_DARKMAG "\033[35m"
 #define TERMC_GREEN "\033[92m"
 #define TERMC_DARKGREEN "\033[32m"
 #define TERMC_BLUE "\033[94m"
