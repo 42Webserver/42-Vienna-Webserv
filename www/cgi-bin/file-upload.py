@@ -13,19 +13,22 @@ import cgi
 formdata = cgi.FieldStorage()
 
 # Zugriff auf das hochgeladene Dateiobjekt
-fileitem = formdata['file']
+
+uploaded = False
 
 # Überprüfung, ob es sich um eine hochgeladene Datei handelt
-if fileitem.file:
-    # Lesen der Datei
-    content = fileitem.file.read()
-    # Verarbeiten der Datei
-    filename = os.path.basename(fileitem.filename)
-    
-    # Speichern der Datei im Verzeichnis '/tmp'
-    with open(f'/sgoinfre/goinfre/Perso/fwechsle/test/{filename}', 'wb') as f:
-        f.write(content)
-    uploaded = True  # Simulierte Bedingung, um zu zeigen, ob das Hochladen erfolgreich war
+if 'file' in formdata:
+    fileitem = formdata['file']
+    if fileitem.file:
+        # Lesen der Datei
+        content = fileitem.file.read()
+        # Verarbeiten der Datei
+        filename = os.path.basename(fileitem.filename)
+
+        # Speichern der Datei im Verzeichnis '/tmp'
+        with open(f'/sgoinfre/goinfre/Perso/fheid/test/{filename}', 'wb') as f:
+            f.write(content)
+        uploaded = True  # Simulierte Bedingung, um zu zeigen, ob das Hochladen erfolgreich war
 
 print("""
 <!DOCTYPE html>
