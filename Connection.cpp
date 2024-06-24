@@ -1,25 +1,21 @@
 #include "Connection.hpp"
 
-Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket), 
-m_chunked(false)
+Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket)
 {
 	// std::cout << "New connection on fd: " << m_clientSocket << '\n';
 	m_idleStart = std::time(NULL);
 }
 
 Connection::Connection(const Connection &a_other)
-	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_head(a_other.m_head), m_body(a_other.m_body), m_idleStart(std::time(NULL)), m_chunked(a_other.m_chunked)  {}
+	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_idleStart(std::time(NULL)) {}
 
 Connection &Connection::operator=(const Connection &a_other)
 {
 	if (this != &a_other)
 	{
 		m_clientSocket = a_other.m_clientSocket;
-		m_head = a_other.m_head;
-		m_body = a_other.m_body;
 		m_server = a_other.m_server;
 		m_idleStart = a_other.m_idleStart;
-		m_chunked = a_other.m_chunked;
 	}
 	return (*this);
 }
@@ -28,7 +24,7 @@ Connection::~Connection(void) {}
 
 int Connection::readAppend(std::string& a_appendString)
 {
-	char	buffer[BUFFER_SIZE];
+	static char	buffer[BUFFER_SIZE];
 	int		ret;
 
 	ret = recv(m_clientSocket, buffer, BUFFER_SIZE, MSG_DONTWAIT);
@@ -38,40 +34,42 @@ int Connection::readAppend(std::string& a_appendString)
 	return (ret);
 }
 
+int Connection::readAppend(std::string& a_appendString, std::size_t a_size)
+{
+	std::vector<char> buffer(a_size);
+	int		ret;
+
+	ret = recv(m_clientSocket, buffer.data(), a_size, MSG_DONTWAIT);
+	if (ret == -1)
+		return (-1);
+	a_appendString.append(buffer.begin(), buffer.begin() + ret);
+	LOGC(TERMC_RED, "READ: " << ret << " BYTES")
+	return (ret);
+}
+
 int Connection::readHead()
 {
-	std::size_t	sepPos;
+	std::string	head;
 	int			ret;
 
-	if ((ret = readAppend(m_head)) == -1)
+	if ((ret = readAppend(head)) == -1)
 		return (-1);
-	sepPos = m_head.find("\r\n\r\n");
-	if (sepPos == std::string::npos)
-	{
-		std::cout << "OH NO?" << '\n';
-		std::cout << "DEBUG: readHead: { ret: " << ret << "; m_head: [" << m_head << "]; }\n";
-		return (-1);
-	}
-	m_body.append(m_head.begin() + sepPos + 4, m_head.end());
-	m_head.erase(sepPos);
+	m_request.addHead(head);
 	return (0);
 }
 
 int Connection::readBody()
 {
-	std::size_t contentLength = m_request.getContentLength();
+	std::string bodyPart;
 	int			ret;
 
-	do
+	ret = readAppend(bodyPart);//, m_request.getContentLength()); //experimentell kann bei header mit Content-Length=99999999999999999999 sehr blöd sein 
+	if (ret == -1)
 	{
-		ret = readAppend(m_body);
-		if (ret == -1)
-		{
-			std::cout << "DEBUG: readHead: { ret: " << ret << "; m_body: [" << m_body << "]; }\n";
-			exit(42); //TO SEE IF IT EVER HAPPENS. !
-			return (-1);
-		}
-	} while(m_body.length() != contentLength && ret == BUFFER_SIZE);
+		exit(42); //TO SEE IF IT EVER HAPPENS. !
+		return (-1);
+	}
+	m_request.addBody(bodyPart);
 	return (0);
 }
 
@@ -82,36 +80,34 @@ int Connection::getSocketFd(void) const
 
 int Connection::receiveRequestRaw(void)
 {
-	if (!m_chunked)
+	if (!m_request.headComplete())
 	{
 		if (readHead())
 			return (-1);
-		m_request = Request(m_head);
-		LOG("HEAD: \n" << m_head << '\n')
-		m_head.clear();
+		if (m_request.headComplete())
+			m_request.initMap();
+		LOG("HEAD: \n" << m_request.getHead() << '\n')
 	}
-	if (m_body.size() || m_chunked)
+	if (!m_request.bodyComplete())
 	{
 		if (readBody())
 			return (-1);
-		m_request.addBody(m_body);
-		LOG("BODY: \n" << m_body << '\n')
-		m_body.clear();
+		LOG("Read Body");
+		// LOG("BODY: \n" << m_request.getBody() << '\n')
 	}
-	if (m_request.requestComplete())
-	{
-		m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
-		m_response.createResponseMsg();
-		m_chunked = false;
-	}
-	else
-		m_chunked = true;
 	m_idleStart = std::time(NULL);
+	if (m_request.isReady())
+		return (1);
 	return (0);
 }
 
 int Connection::sendResponse(void)
 {
+	if (!m_request.isReady())
+		return (1);
+	m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
+	m_response.createResponseMsg();
+	m_request = Request();
 	const std::string	response = m_response.getResponse();
 	// m_response.clearBody();
 	//std::cout << "Response:\n" << response << '\n';
@@ -127,10 +123,4 @@ time_t Connection::getIdleTime(void) const
 bool Connection::operator==(const int a_fd) const
 {
 	return (m_clientSocket == a_fd);
-}
-
-void Connection::printHeadNBody(void) const
-{
-	std::cout << "Head:\n" << m_head << '\n';
-	std::cout << "Body:\n" << m_body << '\n';
 }

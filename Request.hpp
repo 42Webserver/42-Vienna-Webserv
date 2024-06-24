@@ -10,13 +10,17 @@
 #include <dirent.h>
 #include <cstdlib>
 
+#include "Debug.h"
+
+#define MAX_HEAD_SIZE 8192
+
 class Request
 {
 public:
 
 	Request(void);
 	Request(const Request& other);
-	Request(std::string& head);
+	// Request(std::string& head);
 	Request& operator=(const Request& other);
 	~Request();
 
@@ -27,15 +31,22 @@ public:
 	std::string			getRequestHost() const;
 	bool				getIsValid(void) const;
 	size_t				getContentLength() const;
+	void				addHead(const std::string& a_head);
+	bool				headComplete(void);
 	void				addBody(const std::string& a_body);
-	bool				requestComplete(void) const;
-	const std::string&	getBody();	
+	bool				bodyComplete(void) const;
+	bool				isReady(void);
+	const std::string&	getHead();
+	const std::string&	getBody();
+	void				initMap();
+
 private:
 
 	void	getRequestLine(std::string& line);
 	void	createKeyValuePair(std::string line);
-	void	initMap(std::string head);
 	bool								m_isValid;
+	bool								m_headComplete;
+	std::string							m_head;
 	std::string							m_body;
 	std::map <std::string, std::string>	m_requestHeader;
 };

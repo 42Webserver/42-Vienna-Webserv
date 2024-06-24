@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request(void) : m_isValid(true) {}
+Request::Request(void) : m_isValid(true), m_headComplete(false) {}
 
 Request::Request(const Request &other)
 {
@@ -11,20 +11,21 @@ Request &Request::operator=(const Request &other)
 {
 	if (this != &other)
 	{
-		if (!other.m_requestHeader.empty())
-			m_requestHeader = other.m_requestHeader;
+		m_requestHeader = other.m_requestHeader;
 		m_isValid = other.m_isValid;
+		m_head = other.m_head;
 		m_body = other.m_body;
+		m_headComplete = other.m_headComplete;
 	}
 	return (*this);
 }
 
 Request::~Request() {}
 
-Request::Request(std::string& head) : m_isValid(true)
-{
-	initMap(head);
-}
+// Request::Request(std::string& head) : m_isValid(true)
+// {
+// 	initMap(head);
+// }
 
 void Request::getRequestLine(std::string& line)
 {
@@ -87,9 +88,9 @@ void Request::createKeyValuePair(std::string line)
 	m_requestHeader[key] = value;
 }
 
-void Request::initMap(std::string head)
+void Request::initMap()
 {
-	size_t	delimiter = head.find_first_of("\r\n");
+	size_t	delimiter = m_head.find_first_of("\r\n");
 
 	if (delimiter == std::string::npos)
 	{
@@ -98,8 +99,8 @@ void Request::initMap(std::string head)
 		return;
 	}
 
-	std::string headline = head.substr(0, delimiter);
-	std::string	remainder = head.substr(delimiter + 2, head.length() - delimiter);
+	std::string headline = m_head.substr(0, delimiter);
+	std::string	remainder = m_head.substr(delimiter + 2, m_head.length() - delimiter);
 	getRequestLine(headline);
 
 
@@ -153,14 +154,52 @@ size_t Request::getContentLength() const
     return 0;
 }
 
+void Request::addHead(const std::string &a_head)
+{
+	if (m_headComplete)
+		throw(std::runtime_error("DU MACHST WAS FALSCH?"));
+	if (m_head.size() > MAX_HEAD_SIZE)
+	{
+		LOGC(TERMC_RED, "head too big");
+		m_isValid = false; //invalid request? header zu groß bzw müll
+		return ;
+	}
+	std::size_t	sepPos = a_head.find("\r\n\r\n");
+	if (sepPos == std::string::npos)
+	{
+		m_headComplete = false;
+		m_head.append(a_head);
+		return ;
+	}
+	m_head.append(a_head, 0, sepPos);
+	if (sepPos < a_head.length() - 4)
+		m_body.append(a_head, sepPos + 4);
+	m_headComplete = true;
+}
+
+bool Request::headComplete(void)
+{
+	return (m_headComplete || (m_headComplete = (m_head.rfind("\r\n\r\n") != std::string::npos)));
+}
+
 void Request::addBody(const std::string &a_body)
 {
 	m_body.append(a_body);
 }
 
-bool Request::requestComplete(void) const
+bool Request::bodyComplete(void) const
 {
 	return (getContentLength() == m_body.length());
+}
+
+bool Request::isReady(void)
+{
+	return ((headComplete() && bodyComplete()) || !m_isValid);
+}
+
+const std::string &Request::getHead()
+{
+	return (m_head);
 }
 
 const std::string &Request::getBody()

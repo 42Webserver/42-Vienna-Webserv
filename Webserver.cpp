@@ -115,9 +115,7 @@ int Webserver::pollClients(void)
 			LOGC(TERMC_GREEN, "Do read/accept request.")
 			int ret = m_polls.getConnection(i).receiveRequestRaw();
 			if (ret == 1){
-				//std::cout << "\033[91m" << "recv == 0, close connection?\n\033[39m";
-				m_polls.removeConnection(i);
-				continue;
+				;// continue;
 			} if (ret == -1) {
 				std::cerr << "Mal schaun\n";
 				m_polls.removeConnection(i--);
@@ -161,7 +159,7 @@ int	Webserver::runServer()
 		if (pollRet == -1)
 			std::cerr << "Error: poll error.\n";
 		else if (pollRet == 0) {
-			//std::cout << "\033[96m" << "Poll timeout\n\033[39m";
+			LOGC(TERMC_BLUE, "Poll timeout");
 			for (std::size_t i = m_polls.getPollfds().size() - 1; i >= m_servers.size(); i--)
 			{
 				if (m_polls.getConnection(i).getIdleTime() > 1) {

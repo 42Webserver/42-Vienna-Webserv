@@ -5,8 +5,8 @@
             "name": "Debug Webserver",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/webserv", // Path to the PmergeMe executable
-            "args": ["/home/nsassenb/Documents/Core/42-Vienna-Webserv/webserv.conf"], // Command line arguments to pass to PmergeMe
+            "program": "${workspaceFolder}/webserv",
+            "args": ["${workspaceFolder}/webserv.conf"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
