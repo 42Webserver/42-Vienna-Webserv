@@ -68,7 +68,7 @@ int Connection::readBody()
 		if (ret == -1)
 		{
 			std::cout << "DEBUG: readHead: { ret: " << ret << "; m_body: [" << m_body << "]; }\n";
-			exit(42); //TO SEE IF IT EVER HAPPENS. !
+			//exit(42); //TO SEE IF IT EVER HAPPENS. !
 			return (-1);
 		}
 	} while(m_body.length() != contentLength && ret == BUFFER_SIZE);
@@ -113,7 +113,7 @@ int Connection::receiveRequestRaw(void)
 int Connection::sendResponse(void)
 {
 	const std::string	response = m_response.getResponse();
-	// m_response.clearBody();
+	m_response.clearBody();
 	//std::cout << "Response:\n" << response << '\n';
 	m_idleStart = std::time(NULL);
 	return (send(m_clientSocket, response.data(), response.size(), 0));
