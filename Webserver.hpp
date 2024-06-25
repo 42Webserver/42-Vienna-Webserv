@@ -10,6 +10,7 @@
 #include "Data.hpp"
 #include "ConfigParser.hpp"
 #include <map>
+#include <csignal>
 
 
 
