@@ -122,6 +122,11 @@ void Request::initMap()
 	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
 
+void Request::setIsValid(const bool &value)
+{
+	m_isValid = value;
+}
+
 const std::string &Request::getValue(const std::string &a_key)
 {
 	return (m_requestHeader[a_key]);
