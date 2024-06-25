@@ -76,7 +76,7 @@ int CGI::run()
 	}
 
 	pid_t pid = fork();
-	std::cout << "pid: " << pid << '\n';
+	//PROTECTION
 	if (pid < 0)
 	{
 		std::cout << "Error while forking\n";

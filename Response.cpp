@@ -107,14 +107,10 @@ const std::string Response::getResponse() const
 
 void Response::setValidMsg(const std::string &filepath)
 {
-	std::cout <<"filepath = " << filepath << std::endl;
 	if (!getBody(filepath))
 		setErrorMsg(404);
 	else
-	{
-		
 		getResponseHeader("200", "", getFileType(filepath));
-	}
 }
 
 std::string Response::getFileType(const std::string &filepath)
@@ -281,27 +277,14 @@ void Response::createResponseMsg()
 			{
 				// if (isReturnResponse())
 				// 	return ;
-
-				std::cout << "\n\n\nPOST-REQUEST\n\n" << std::endl;
-				std::cout << "> uri: " << m_request.getValue("uri") << '\n';
-
+				LOG("POST-REQUEST");
 				if (m_request.getValue("uri").find_first_of("/cgi/bin/") == 0)
 				{
-					std::cout << "CGI!!!" << std::endl;
-
+					LOG("CGI")
 					CGI	test(m_config, m_request);
 					int ret = test.execute();
-					// if (ret != 200)
-					// 	std::cout << "ALARM\n";
-					// m_responseBody = test.getResponseBody();
-					std::cout << "ret: " << ret << '\n';
-
 					m_responseBody = test.getResponseBody();
-					std::cout << "ALSO ICH BIN NOCH HIER ODER ??? errorcode = " << error_code << std::endl;
 					error_code = ret;
-					//getResponseHeader(ret, "", "html");
-					// if (m_request.getValue("uri").length() > 9)
-					// 	handleCGI(m_request.getValue("uri").substr(9));
 				}
 			}
 		}
@@ -310,7 +293,6 @@ void Response::createResponseMsg()
 		setErrorMsg(error_code);
 	else
 		setValidMsg(filepath);
-	std::cout << "BIN ICH NOCH DA?" << std::endl;
 }
 
 void Response::clearBody()
