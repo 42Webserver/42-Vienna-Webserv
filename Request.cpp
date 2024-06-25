@@ -123,6 +123,11 @@ void Request::initMap()
 	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
 
+void Request::setHeadDone(void)
+{
+	m_headComplete = true;
+}
+
 void Request::setMaxBodySize(std::size_t a_maxBody)
 {
 	m_maxBodySize = a_maxBody;

@@ -33,6 +33,7 @@ int Connection::readAppend(std::string& a_appendString)
 	if (ret == -1)
 		return (-1);
 	a_appendString.append(buffer, ret);
+	LOGC(TERMC_RED, "READ: " << ret << " BYTES")
 	return (ret);
 }
 
@@ -57,6 +58,8 @@ int Connection::readHead()
 	if ((ret = readAppend(head)) == -1)
 		return (-1);
 	m_request.addHead(head);
+	if (ret == 0)
+		m_request.setHeadDone();
 	return (0);
 }
 
@@ -73,7 +76,6 @@ int Connection::readBody()
 		return (-1);
 	}
 	m_request.addBody(bodyPart);
-	LOGC(TERMC_RED, "Read " << ret << " bytes | Body size: " << m_request.getBody().length());
 	return (0);
 }
 
