@@ -19,6 +19,7 @@
 
 #define SERVERNAME "Surfing in the web (Ubuntu)"
 
+
 class Response
 {
 private:

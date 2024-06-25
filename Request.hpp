@@ -39,6 +39,7 @@ public:
 	const std::string&	getHead();
 	const std::string&	getBody();
 	void				initMap();
+	void				setIsValid(const bool &value);
 
 private:
 
