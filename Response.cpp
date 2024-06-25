@@ -3,9 +3,9 @@
 std::map<std::string, std::string>	Response::s_status_codes;
 std::map<std::string, std::string>	Response::s_content_type;
 
-Response::Response() {}
+Response::Response(Request &a_request) : m_request(a_request) {}
 
-Response::Response(const Request& a_request, const t_config& a_config) : m_request(a_request), m_config(a_config)
+Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config)
 {
 	// std::cout << "HEEEEREEEEEEEEEEEEEE: " << m_request.getValue("method") << " " << m_request.getValue("uri") << '\n';
 	// 		for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
@@ -25,10 +25,9 @@ Response::Response(const Request& a_request, const t_config& a_config) : m_reque
 			
 }
 
-Response::Response(const Response &other)
-{
-	*this = other;
-}
+Response::Response(Request &a_request, const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(a_request), m_config(other.m_config) {}
+
+Response::Response(const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(other.m_request), m_config(other.m_config) {}
 
 Response &Response::operator=(const Response &other)
 {

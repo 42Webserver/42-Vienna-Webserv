@@ -21,8 +21,8 @@ private:
 	int			m_clientSocket;
 
 	time_t		m_idleStart;
-	Response	m_response;
 	Request		m_request;
+	Response	m_response;
 
 	int		readAppend(std::string& a_appendString);
 	int		readAppend(std::string& a_appendString, std::size_t a_size);

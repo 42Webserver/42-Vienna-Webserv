@@ -24,7 +24,7 @@ private:
 
 	std::string									m_responseHeader;
 	std::string									m_responseBody;
-	Request										m_request;
+	Request&									m_request;
 	t_config									m_config;
 	static std::map<std::string, std::string>	s_status_codes;
 	static std::map<std::string, std::string>	s_content_type;
@@ -46,13 +46,15 @@ private:
 	void		addServerName(std::string &a_response_header);
 	void		addContentType(std::string &a_response_header, const std::string &a_content_type);
 	std::string	getFileType(const std::string &filepath);
-  void    createAutoIndex(std::string &a_path);
+	void    createAutoIndex(std::string &a_path);
 
+	Response(void);
 
 public:
 
-	Response(void);
-	Response(const Request& a_request, const t_config& a_subserver);
+	Response(Request& a_request);
+	Response(Request& a_request, const t_config& a_subserver);
+	Response(Request& a_request, const Response& other);
 	Response(const Response& other);
 	Response& operator=(const Response& other);
 	~Response();
@@ -62,7 +64,6 @@ public:
 	const std::string	getResponse() const;
 	void	createResponseMsg();
 	void	clearBody();
-
 };
 
 #endif // !RESPONSE_HPP

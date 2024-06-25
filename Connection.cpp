@@ -1,13 +1,13 @@
 #include "Connection.hpp"
 
-Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket)
+Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket), m_request(), m_response(m_request)
 {
 	// std::cout << "New connection on fd: " << m_clientSocket << '\n';
 	m_idleStart = std::time(NULL);
 }
 
 Connection::Connection(const Connection &a_other)
-	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_idleStart(std::time(NULL)) {}
+	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_idleStart(std::time(NULL)), m_request(a_other.m_request), m_response(m_request, a_other.m_response) {}
 
 Connection &Connection::operator=(const Connection &a_other)
 {
@@ -16,6 +16,8 @@ Connection &Connection::operator=(const Connection &a_other)
 		m_clientSocket = a_other.m_clientSocket;
 		m_server = a_other.m_server;
 		m_idleStart = a_other.m_idleStart;
+		m_request = a_other.m_request;
+		m_response = Response(m_request, a_other.m_response);
 	}
 	return (*this);
 }
@@ -31,7 +33,6 @@ int Connection::readAppend(std::string& a_appendString)
 	if (ret == -1)
 		return (-1);
 	a_appendString.append(buffer, ret);
-	LOGC(TERMC_RED, "Read " << ret << " bytes");
 	return (ret);
 }
 
@@ -72,6 +73,7 @@ int Connection::readBody()
 		return (-1);
 	}
 	m_request.addBody(bodyPart);
+	LOGC(TERMC_RED, "Read " << ret << " bytes | Body size: " << m_request.getBody().length());
 	return (0);
 }
 
