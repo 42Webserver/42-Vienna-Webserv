@@ -5,7 +5,7 @@ std::map<std::string, std::string>	Response::s_content_type;
 
 Response::Response() {}
 
-Response::Response(const Request& a_request, const t_config& a_config) : m_request(a_request), m_config(a_config)
+Response::Response(const Request& a_request, const t_config& a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0)
 {
 	// std::cout << "HEEEEREEEEEEEEEEEEEE: " << m_request.getValue("method") << " " << m_request.getValue("uri") << '\n';
 	// 		for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
@@ -38,6 +38,7 @@ Response &Response::operator=(const Response &other)
 		m_responseHeader = other.m_responseHeader;
 		m_responseBody = other.m_responseBody;
 		m_config = other.m_config;
+		m_eventFlags = other.m_eventFlags;
 	}
 	return (*this);
 }
@@ -106,15 +107,20 @@ const std::string Response::getResponse() const
 
 void Response::setValidMsg(const std::string &filepath)
 {
+	std::cout <<"filepath = " << filepath << std::endl;
 	if (!getBody(filepath))
 		setErrorMsg(404);
 	else
+	{
+		
 		getResponseHeader("200", "", getFileType(filepath));
-
+	}
 }
 
 std::string Response::getFileType(const std::string &filepath)
 {
+	if (filepath.empty())
+		return ("html");
 	size_t pos;
 	std::string print;
 	if ((pos = filepath.find_last_of(".")) != std::string::npos)
@@ -138,12 +144,13 @@ void Response::setErrorMsg(const int &a_status_code)
 		setDefaultErrorMsg(convert.str());
 		getResponseHeader(convert.str(), "", "html");
 	}
-	else
+	else 
 	{
 		if (found->second.size() == 1)
-			getResponseHeader("302", found->second.at(0), "html");
-		else
-			getResponseHeader("302", "", getFileType(found->second.at(1)));
+		{
+			m_eventFlags |= REDIRECTION;
+			getResponseHeader("302", found->second.at(0), getFileType(found->second.at(0)));
+		}
 	}
 }
 
@@ -227,89 +234,83 @@ int Response::isValidFile(std::string &a_filepath)
     return (404);
 }
 
-bool	Response::checkReturnResponse()
+int	Response::isReturnResponse()
 {
 	if (m_config["return"].size())
 	{
-			//setErrorMsg(); send error page! ! ! !
+		m_eventFlags |= REDIRECTION;
 		if (m_config["return"].size() == 2)
-			getResponseHeader(m_config.at("return").at(0), m_config.at("return").at(1), "html");
-		else
-		{
-			setDefaultErrorMsg(m_config.at("return").at(0));
-			getResponseHeader(m_config.at("return").at(0), "", "html");
-		}
-		return (true);
+			m_eventFlags |= REDIR_LOCATION;
+		return (static_cast<int>(strtol(m_config.at("return").at(0).c_str(), NULL, 10)));
 	}
-	return (false);
+	return (0);
+}
+
+int	Response::isValidRequestHeader()
+{
+	if (m_request.getIsValid())
+		return (checkHeaderline());
+	return (400);
 }
 
 void Response::createResponseMsg()
 {
 	int error_code;
+	std::string filepath;
 
-	if (!m_request.getIsValid())
+	if (!(error_code = isValidRequestHeader()))
 	{
-		setErrorMsg(400);
-		return ;
-	}
-	if ((error_code = checkHeaderline()))
-	{
-		setErrorMsg(error_code);
-		return ;
-	}
-
-	// hier checken ob es file gibt usw?
-
-	if (m_request.getValue("method") == "GET")
-	{
-		if (checkReturnResponse())
-			return ;
-
-		std::string filepath;
-
-		filepath.append(m_config["root"].at(0));
-		filepath.append(m_request.getValue("uri"));
-	 	if ((error_code = getValidFilePath(filepath)))
+		if (!(error_code = isReturnResponse()))
 		{
-			if (error_code == 301)
+			if (m_request.getValue("method") == "GET")
 			{
-				filepath.erase(0, m_config.at("root").at(0).length());
-				getResponseHeader("301", filepath, "html");
-				return ;
+
+				filepath.append(m_config["root"].at(0));
+				filepath.append(m_request.getValue("uri"));
+				if ((error_code = getValidFilePath(filepath)))
+				{
+					if (error_code == 301)
+					{
+						m_eventFlags |= REDIRECTION | REDIR_LOCATION;
+						m_config["return"].push_back("301");
+						m_config["return"].push_back(filepath.erase(0, m_config.at("root").at(0).length()));
+					}
+				}
 			}
-			setErrorMsg(error_code);
-		}
-		else
-			setValidMsg(filepath);
-	}
-	else if (m_request.getValue("method") == "POST")
-	{
-		if (checkReturnResponse())
-			return ;
+			else if (m_request.getValue("method") == "POST")
+			{
+				// if (isReturnResponse())
+				// 	return ;
 
-		std::cout << "\n\n\nPOST-REQUEST\n\n" << std::endl;
-		std::cout << "> uri: " << m_request.getValue("uri") << '\n';
+				std::cout << "\n\n\nPOST-REQUEST\n\n" << std::endl;
+				std::cout << "> uri: " << m_request.getValue("uri") << '\n';
 
-		if (m_request.getValue("uri").find_first_of("/cgi/bin/") == 0)
-		{
-			std::cout << "CGI!!!" << std::endl;
+				if (m_request.getValue("uri").find_first_of("/cgi/bin/") == 0)
+				{
+					std::cout << "CGI!!!" << std::endl;
 
-			CGI	test(m_config, m_request);
-			int ret = test.execute();
-			// if (ret != 200)
-			// 	std::cout << "ALARM\n";
-			// m_responseBody = test.getResponseBody();
-			std::cout << "ret: " << ret << '\n';
+					CGI	test(m_config, m_request);
+					int ret = test.execute();
+					// if (ret != 200)
+					// 	std::cout << "ALARM\n";
+					// m_responseBody = test.getResponseBody();
+					std::cout << "ret: " << ret << '\n';
 
-			m_responseBody = test.getResponseBody();
-			if (ret == 0)
-				ret = 200;
-			getResponseHeader(ret, "", "html");
-			// if (m_request.getValue("uri").length() > 9)
-			// 	handleCGI(m_request.getValue("uri").substr(9));
+					m_responseBody = test.getResponseBody();
+					std::cout << "ALSO ICH BIN NOCH HIER ODER ??? errorcode = " << error_code << std::endl;
+					error_code = ret;
+					//getResponseHeader(ret, "", "html");
+					// if (m_request.getValue("uri").length() > 9)
+					// 	handleCGI(m_request.getValue("uri").substr(9));
+				}
+			}
 		}
 	}
+	if (error_code) 
+		setErrorMsg(error_code);
+	else
+		setValidMsg(filepath);
+	std::cout << "BIN ICH NOCH DA?" << std::endl;
 }
 
 void Response::clearBody()
@@ -363,23 +364,23 @@ void Response::getResponseHeader(const std::string &a_status_code, const std::st
 	m_responseHeader += response_header;
 }
 
-void Response::getResponseHeader(const int &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type)
-{
-	std::ostringstream convert; 
+// void Response::getResponseHeader(const int &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type)
+// {
+// 	std::ostringstream convert; 
 
-	convert << a_status_code;
-	std::string response_header;
-	addStatusLine(convert.str(), response_header);
-	addServerName(response_header);
-	addDateAndTime(response_header);
-	//Content-type!
-	addContentType(response_header, a_content_type);
-	addContentLength(response_header);
-	//Connection: keep-alive!
-	addRedirection(response_header, a_redirLoc);
-	response_header.append("\r\n");
-	m_responseHeader += response_header;
-}
+// 	convert << a_status_code;
+// 	std::string response_header;
+// 	addStatusLine(convert.str(), response_header);
+// 	addServerName(response_header);
+// 	addDateAndTime(response_header);
+// 	Content-type!
+// 	addContentType(response_header, a_content_type);
+// 	addContentLength(response_header);
+// 	Connection: keep-alive!
+// 	addRedirection(response_header, a_redirLoc);
+// 	response_header.append("\r\n");
+// 	m_responseHeader += response_header;
+// }
 
 void	Response::addStatusLine(const std::string &a_status_code, std::string& a_response_header)
 {
@@ -414,11 +415,18 @@ void Response::addContentLength(std::string &a_response_header)
 	a_response_header.append("\r\n");
 }
 
-void Response::addRedirection(std::string &a_response_header, const std::string &redLoc)
+void Response::addRedirection(std::string &a_response_header, const std::string &a_redLoc)
 {
-	a_response_header.append("Location: ");
-	a_response_header.append(redLoc);
-	a_response_header.append("\r\n");
+	if (m_eventFlags & REDIRECTION)
+	{
+		a_response_header.append("Location: ");
+		if (m_eventFlags & REDIR_LOCATION)
+			a_response_header.append(m_config.at("return").at(1));
+		else 
+			a_response_header.append(a_redLoc);
+		a_response_header.append("\r\n");
+
+	}
 }
 
 void Response::addServerName(std::string &a_response_header)
