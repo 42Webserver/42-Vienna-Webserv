@@ -106,7 +106,7 @@ int Connection::receiveRequestRaw(void)
 		// LOG("BODY: \n" << m_request.getBody() << '\n')
 	}
 	m_idleStart = std::time(NULL);
-	if (m_request.isReady())
+ 	if (m_request.isReady())
 		return (1);
 	return (0);
 }
@@ -116,12 +116,16 @@ int Connection::sendResponse(void)
 	if (!m_request.isReady())
 		return (1);
 	m_response.createResponseMsg();
+	int error_code = m_request.getIsValid();
 	m_request = Request();
 	const std::string	response = m_response.getResponse();
 	// m_response.clearBody();
-	// std::cout << "Response:\n" << response << '\n';
+	std::cout << "Response:\n" << response << '\n';
 	m_idleStart = std::time(NULL);
-	return (send(m_clientSocket, response.data(), response.size(), 0));
+	if (send(m_clientSocket, response.data(), response.size(), 0) == -1)
+		return (-1);
+		
+	return (error_code);
 }
 
 time_t Connection::getIdleTime(void) const
