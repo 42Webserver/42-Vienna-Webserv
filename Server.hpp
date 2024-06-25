@@ -36,7 +36,6 @@ public:
 	struct subserver&	getSubServer(const std::string& a_hostname);
 
 	int	initServerSocket();
-
 	int	acceptNewConnection();
 
 	bool	operator==(struct serveradress a_listen) const;

@@ -1,13 +1,13 @@
 #include "Connection.hpp"
 
-Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket)
+Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket), m_request(), m_response(m_request)
 {
 	// std::cout << "New connection on fd: " << m_clientSocket << '\n';
 	m_idleStart = std::time(NULL);
 }
 
 Connection::Connection(const Connection &a_other)
-	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_idleStart(std::time(NULL)) {}
+	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_idleStart(std::time(NULL)), m_request(a_other.m_request), m_response(m_request, a_other.m_response) {}
 
 Connection &Connection::operator=(const Connection &a_other)
 {
@@ -16,6 +16,8 @@ Connection &Connection::operator=(const Connection &a_other)
 		m_clientSocket = a_other.m_clientSocket;
 		m_server = a_other.m_server;
 		m_idleStart = a_other.m_idleStart;
+		m_request = a_other.m_request;
+		m_response = Response(m_request, a_other.m_response);
 	}
 	return (*this);
 }
@@ -31,7 +33,7 @@ int Connection::readAppend(std::string& a_appendString)
 	if (ret == -1)
 		return (-1);
 	a_appendString.append(buffer, ret);
-	LOGC(TERMC_RED, "Read " << ret << " bytes");
+	LOGC(TERMC_RED, "READ: " << ret << " BYTES")
 	return (ret);
 }
 
@@ -56,6 +58,8 @@ int Connection::readHead()
 	if ((ret = readAppend(head)) == -1)
 		return (-1);
 	m_request.addHead(head);
+	if (ret == 0)
+		m_request.setHeadDone();
 	return (0);
 }
 
@@ -99,7 +103,11 @@ int Connection::receiveRequestRaw(void)
 		if (readHead())
 			return (-1);
 		if (m_request.headComplete())
+		{
 			m_request.initMap();
+			m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
+			m_request.setMaxBodySize(m_response.getMaxBodySize());
+		}
 		LOG("HEAD: \n" << m_request.getHead() << '\n')
 	}
 	else if (!m_request.bodyComplete())
@@ -119,12 +127,11 @@ int Connection::sendResponse(void)
 {
 	if (!m_request.isReady())
 		return (1);
-	m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
 	m_response.createResponseMsg();
 	m_request = Request();
 	const std::string	response = m_response.getResponse();
 	// m_response.clearBody();
-	//std::cout << "Response:\n" << response << '\n';
+	// std::cout << "Response:\n" << response << '\n';
 	m_idleStart = std::time(NULL);
 	return (send(m_clientSocket, response.data(), response.size(), 0));
 }

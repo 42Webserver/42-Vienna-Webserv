@@ -3,9 +3,10 @@
 std::map<std::string, std::string>	Response::s_status_codes;
 std::map<std::string, std::string>	Response::s_content_type;
 
-Response::Response() {}
+Response::Response(Request &a_request) : m_request(a_request) {}
 
-Response::Response(const Request& a_request, const t_config& a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0)
+
+Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0)
 {
 	// std::cout << "HEEEEREEEEEEEEEEEEEE: " << m_request.getValue("method") << " " << m_request.getValue("uri") << '\n';
 	// 		for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
@@ -25,10 +26,9 @@ Response::Response(const Request& a_request, const t_config& a_config) : m_reque
 
 }
 
-Response::Response(const Response &other)
-{
-	*this = other;
-}
+Response::Response(Request &a_request, const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(a_request), m_config(other.m_config) {}
+
+Response::Response(const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(other.m_request), m_config(other.m_config) {}
 
 Response &Response::operator=(const Response &other)
 {
@@ -318,6 +318,17 @@ void Response::clearBody()
 	m_responseBody.clear();
 }
 
+std::size_t Response::getMaxBodySize(void) const
+{
+	t_config::const_iterator found = m_config.find("client_max_body_size");
+	if (found != m_config.end())
+	{
+		if (found->second.size() != 0)
+			return (std::strtol(found->second.at(0).c_str(), NULL, 10) * BYTE_TO_KB);
+	}
+	return std::size_t(0);
+}
+
 void Response::createAutoIndex(std::string &a_path)
 {
 	DIR* dir = opendir(a_path.c_str());
@@ -363,24 +374,6 @@ void Response::getResponseHeader(const std::string &a_status_code, const std::st
 	response_header.append("\r\n");
 	m_responseHeader += response_header;
 }
-
-// void Response::getResponseHeader(const int &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type)
-// {
-// 	std::ostringstream convert; 
-
-// 	convert << a_status_code;
-// 	std::string response_header;
-// 	addStatusLine(convert.str(), response_header);
-// 	addServerName(response_header);
-// 	addDateAndTime(response_header);
-// 	Content-type!
-// 	addContentType(response_header, a_content_type);
-// 	addContentLength(response_header);
-// 	Connection: keep-alive!
-// 	addRedirection(response_header, a_redirLoc);
-// 	response_header.append("\r\n");
-// 	m_responseHeader += response_header;
-// }
 
 void	Response::addStatusLine(const std::string &a_status_code, std::string& a_response_header)
 {
