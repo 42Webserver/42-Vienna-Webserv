@@ -76,7 +76,9 @@ void Response::initStatusCodes()
 	s_status_codes["403"] = "Forbidden";
     s_status_codes["404"] = "Not Found";
     s_status_codes["405"] = "Method Not Allowed";
+	s_status_codes["413"] = "Content Too Large";
     s_status_codes["414"] = "URI Too Long";
+	s_status_codes["431"] = "Request Header Fields Too Large";
     s_status_codes["500"] = "Internal Server Error";
     s_status_codes["505"] = "HTTP Version not supported";
 
@@ -244,9 +246,11 @@ int	Response::isReturnResponse()
 
 int	Response::isValidRequestHeader()
 {
-	if (m_request.getIsValid())
+	int error_code;
+	std::cout << m_request.getIsValid()<< std::endl;
+	if ((error_code = m_request.getIsValid()) == 0)
 		return (checkHeaderline());
-	return (400);
+	return (error_code);
 }
 
 void Response::createResponseMsg()

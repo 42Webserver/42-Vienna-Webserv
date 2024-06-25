@@ -124,20 +124,24 @@ int Webserver::pollClients(void)
 			LOG_INFO("Do read/accept request.")
 			int ret = m_polls.getConnection(i).receiveRequestRaw();
 			if (ret == 1){
-				;// continue;
+				m_polls.getPollfdsAt(i).events ^= POLLOUT;
+				m_polls.getPollfdsAt(i).events ^= POLLIN;
+				// continue;
 			} if (ret == -1) {
 				std::cerr << "Mal schaun\n";
 				m_polls.removeConnection(i--);
 				continue;
 			}
-			m_polls.getPollfdsAt(i).events ^= POLLOUT;
-			m_polls.getPollfdsAt(i).events ^= POLLIN;
 		}
 		if (m_polls.getPollfdsAt(i).revents & POLLOUT)
 		{
 			LOG_INFO("Pollout triggered")
-			if (m_polls.getConnection(i).sendResponse() == -1)
+			if (m_polls.getConnection(i).sendResponse() != 0)
+			{
 				std::cerr << "Error: send\n";
+				m_polls.removeConnection(i--);
+				continue;
+			}
 			// close(m_polls.getPollfdsAt(i).fd);
 			// m_polls.removeConnection(i--); 	//? Sicher
 			// continue ;						//?

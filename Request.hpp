@@ -28,7 +28,7 @@ public:
 	bool				getValue(const std::string& a_key, std::string& a_returnValue) const;
 	void				setValue(const std::string& a_key, const std::string& a_val);
 	std::string			getRequestHost() const;
-	bool				getIsValid(void) const;
+	int					getIsValid(void) const;
 	size_t				getContentLength() const;
 	void				addHead(const std::string& a_head);
 	bool				headComplete(void);
@@ -38,7 +38,6 @@ public:
 	const std::string&	getHead();
 	const std::string&	getBody();
 	void				initMap();
-	void				setIsValid(const bool &value);
 	void				setHeadDone(void);
 	void				setMaxBodySize(std::size_t a_maxBody);
 
@@ -47,7 +46,7 @@ private:
 	void	getRequestLine(std::string& line);
 	void	createKeyValuePair(std::string line);
 
-	bool								m_isValid;
+	int									m_isValid;
 	bool								m_headComplete;
 	std::size_t							m_maxBodySize;
 	std::string							m_head;

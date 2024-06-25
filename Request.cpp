@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request(void) : m_isValid(true), m_headComplete(false), m_maxBodySize(0) {}
+Request::Request(void) : m_isValid(0), m_headComplete(false), m_maxBodySize(0) {}
 
 Request::Request(const Request &other)
 {
@@ -23,11 +23,6 @@ Request &Request::operator=(const Request &other)
 
 Request::~Request() {}
 
-// Request::Request(std::string& head) : m_isValid(true)
-// {
-// 	initMap(head);
-// }
-
 void Request::getRequestLine(std::string& line)
 {
 	std::stringstream	input(line);
@@ -36,7 +31,7 @@ void Request::getRequestLine(std::string& line)
 	if (line.empty())
 	{
 		std::cout << "EMPTY REQUEST HEADLINE!!!" << std::endl;
-		m_isValid = false;
+		m_isValid = 400;
 		return;
 	}
 
@@ -54,7 +49,7 @@ void Request::getRequestLine(std::string& line)
 	if (args != 3)
 	{
 		std::cout << "INVALID AMOUNT OF ARGUMENTS IN REQUEST HEADLINE!!!" << std::endl;
-		m_isValid = false;
+		m_isValid = 400;
 		return;
 	}
 }
@@ -66,7 +61,7 @@ void Request::createKeyValuePair(std::string line)
 	if (line.empty())
 	{
 		std::cout << "EMPTY REQUEST LINE!!!" << std::endl;
-		m_isValid = false;
+		m_isValid = 400;
 		return;
 	}
 
@@ -83,7 +78,7 @@ void Request::createKeyValuePair(std::string line)
 	}
 	else
 	{
-		m_isValid = false;
+		m_isValid = 400;
 		return;
 	}
 	m_requestHeader[key] = value;
@@ -96,7 +91,7 @@ void Request::initMap()
 	if (delimiter == std::string::npos)
 	{
 		std::cout << "INVALID REQUEST!!!" << std::endl;
-		m_isValid = false;
+		m_isValid = 400;
 		return;
 	}
 
@@ -105,12 +100,12 @@ void Request::initMap()
 	getRequestLine(headline);
 
 
-	if (!m_isValid)
+	if (m_isValid)
 		return;
 
 	std::string	line;
 	size_t		pos = 0, prevPos = 0;
-	while ((m_isValid && (pos = remainder.find("\r\n", pos)) != std::string::npos))
+	while ((!m_isValid && (pos = remainder.find("\r\n", pos)) != std::string::npos))
 	{
 		line = remainder.substr(prevPos, pos - prevPos);
 		if (line.empty())
@@ -121,11 +116,6 @@ void Request::initMap()
 	}
 	// for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
 	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
-}
-
-void Request::setIsValid(const bool &value)
-{
-	m_isValid = value;
 }
 
 void Request::setHeadDone(void)
@@ -154,7 +144,7 @@ std::string Request::getRequestHost() const
     return host;
 }
 
-bool	Request::getIsValid(void) const
+int	Request::getIsValid(void) const
 {
 	return (m_isValid);
 }
@@ -180,7 +170,7 @@ void Request::addHead(const std::string &a_head)
 	if (m_head.size() + a_head.size() > MAX_HEAD_SIZE)
 	{
 		LOG_ERROR("head too big");
-		m_isValid = false; //invalid request? header zu groß bzw müll
+		m_isValid = 431; //invalid request? header zu groß bzw müll
 		return ;
 	}
 	std::size_t	sepPos = a_head.find("\r\n\r\n");
@@ -207,12 +197,12 @@ void Request::addBody(const std::string &a_body)
 
 	if (m_maxBodySize > 0 && m_body.length() + a_body.length() >= m_maxBodySize)
 	{
-		m_isValid = false;
+		m_isValid = 413;
 		return ;
 	}
 	if (m_body.length() + a_body.length() >= MAX_BODY_SIZE) //? else if
 	{
-		m_isValid = false;
+		m_isValid = 413;
 		return ;
 	}
 	m_body.append(a_body);
@@ -225,7 +215,7 @@ bool Request::bodyComplete(void) const
 
 bool Request::isReady(void)
 {
-	return ((headComplete() && bodyComplete()) || !m_isValid);
+	return ((headComplete() && bodyComplete()) || m_isValid);
 }
 
 const std::string &Request::getHead()
