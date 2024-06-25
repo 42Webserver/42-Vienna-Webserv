@@ -20,7 +20,7 @@ private:
 	char**						m_envp;
 
 	t_config					m_config;
-	Request						m_request;
+	Request&					m_request;
 
 	std::string					m_responseBody;
 
@@ -37,7 +37,7 @@ private:
 
 public:
 
-	CGI(t_config config, Request m_request);
+	CGI(t_config config, Request& m_request);
 	~CGI();
 
 	int					execute();
