@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request(void) : m_isValid(true), m_headComplete(false) {}
+Request::Request(void) : m_isValid(true), m_headComplete(false), m_maxBodySize(0) {}
 
 Request::Request(const Request &other)
 {
@@ -13,6 +13,7 @@ Request &Request::operator=(const Request &other)
 	{
 		m_requestHeader = other.m_requestHeader;
 		m_isValid = other.m_isValid;
+		m_maxBodySize = other.m_maxBodySize;
 		m_head = other.m_head;
 		m_body = other.m_body;
 		m_headComplete = other.m_headComplete;
@@ -122,6 +123,11 @@ void Request::initMap()
 	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
 
+void Request::setMaxBodySize(std::size_t a_maxBody)
+{
+	m_maxBodySize = a_maxBody;
+}
+
 const std::string &Request::getValue(const std::string &a_key)
 {
 	return (m_requestHeader[a_key]);
@@ -187,6 +193,18 @@ bool Request::headComplete(void)
 
 void Request::addBody(const std::string &a_body)
 {
+	//check here if body length is > max_body_size
+
+	if (m_maxBodySize > 0 && m_body.length() + a_body.length() >= m_maxBodySize)
+	{
+		m_isValid = false;
+		return ;
+	}
+	if (m_body.length() + a_body.length() >= MAX_BODY_SIZE) //? else if
+	{
+		m_isValid = false;
+		return ;
+	}
 	m_body.append(a_body);
 }
 

@@ -18,16 +18,19 @@
 
 #define SERVERNAME "Surfing in the web (Ubuntu)"
 
+#define BYTE_TO_KB 1000
+
 class Response
 {
 private:
+
+	static std::map<std::string, std::string>	s_status_codes;
+	static std::map<std::string, std::string>	s_content_type;
 
 	std::string									m_responseHeader;
 	std::string									m_responseBody;
 	Request&									m_request;
 	t_config									m_config;
-	static std::map<std::string, std::string>	s_status_codes;
-	static std::map<std::string, std::string>	s_content_type;
 
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
 	void		addStatusLine(const std::string &a_status_code, std::string& a_response_header);
@@ -46,7 +49,7 @@ private:
 	void		addServerName(std::string &a_response_header);
 	void		addContentType(std::string &a_response_header, const std::string &a_content_type);
 	std::string	getFileType(const std::string &filepath);
-	void    createAutoIndex(std::string &a_path);
+	void    	createAutoIndex(std::string &a_path);
 
 	Response(void);
 
@@ -64,6 +67,7 @@ public:
 	const std::string	getResponse() const;
 	void	createResponseMsg();
 	void	clearBody();
+	std::size_t	getMaxBodySize(void) const;
 };
 
 #endif // !RESPONSE_HPP

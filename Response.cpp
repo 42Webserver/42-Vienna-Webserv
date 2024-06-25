@@ -290,6 +290,17 @@ void Response::clearBody()
 	m_responseBody.clear();
 }
 
+std::size_t Response::getMaxBodySize(void) const
+{
+	t_config::const_iterator found = m_config.find("client_max_body_size");
+	if (found != m_config.end())
+	{
+		if (found->second.size() != 0)
+			return (std::strtol(found->second.at(0).c_str(), NULL, 10) * BYTE_TO_KB);
+	}
+	return std::size_t(0);
+}
+
 void Response::createAutoIndex(std::string &a_path)
 {
 	DIR* dir = opendir(a_path.c_str());
