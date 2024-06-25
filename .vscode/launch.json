@@ -2,14 +2,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Webserver",
+            "name": "Debug with GDB",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/webserv",
-            "args": ["${workspaceFolder}/webserv.conf"],
+            "program": "${workspaceFolder}/webserv", // Pfad zu Ihrem ausführbaren Programm
+            "args": ["webserv.conf"], // Optional: Argumente für Ihr Programm
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
+            "cwd": "${workspaceFolder}", // Arbeitsverzeichnis
+            "environment": [], // Optional: Umgebungsvariablen
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
@@ -18,7 +18,7 @@
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
                 }
-            ]
+            ],
         }
     ]
 }

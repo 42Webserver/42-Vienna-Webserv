@@ -11,12 +11,17 @@
 #include "Request.hpp"
 #include "Data.hpp"
 #include "ConfigParser.hpp"
+#include "CGI.hpp"
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <sys/wait.h>
 
 #define SERVERNAME "Surfing in the web (Ubuntu)"
+
+#define	REDIRECTION 1U << 0		//WIR HABEN EINE RETURN VALUE;
+#define	REDIR_LOCATION 1U << 1	//WIR HABEN EINE LOCATION MIT ANGEGEBEN AUS CONFIG
+#define REDIR_DIRECTORY 1U << 2	//REQUEST IST EIN DIRECTORY! 
 
 #define BYTE_TO_KB 1000
 
@@ -31,7 +36,8 @@ private:
 	std::string									m_responseBody;
 	Request&									m_request;
 	t_config									m_config;
-
+	unsigned int								m_eventFlags;
+  
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
 	void		addStatusLine(const std::string &a_status_code, std::string& a_response_header);
 	void		addDateAndTime(std::string &a_response_header);
@@ -44,12 +50,13 @@ private:
 	bool		checkAllowedMethod();
 	int			isValidFile(std::string &a_filepath);
 	int			getValidFilePath(std::string &a_filepath);
-	bool		checkReturnResponse();
+	int		isReturnResponse();
 	void		addRedirection(std::string &a_response_header, const std::string &redLoc);
 	void		addServerName(std::string &a_response_header);
 	void		addContentType(std::string &a_response_header, const std::string &a_content_type);
+  void    	createAutoIndex(std::string &a_path);
 	std::string	getFileType(const std::string &filepath);
-	void    	createAutoIndex(std::string &a_path);
+	int			isValidRequestHeader();
 
 	Response(void);
 

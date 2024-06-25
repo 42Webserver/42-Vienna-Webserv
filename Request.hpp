@@ -38,6 +38,7 @@ public:
 	const std::string&	getHead();
 	const std::string&	getBody();
 	void				initMap();
+	void				setIsValid(const bool &value);
 	void				setHeadDone(void);
 	void				setMaxBodySize(std::size_t a_maxBody);
 

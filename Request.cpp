@@ -123,6 +123,11 @@ void Request::initMap()
 	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
 
+void Request::setIsValid(const bool &value)
+{
+	m_isValid = value;
+}
+
 void Request::setHeadDone(void)
 {
 	m_headComplete = true;

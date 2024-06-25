@@ -68,7 +68,7 @@ int Connection::readBody()
 	std::string bodyPart;
 	int			ret;
 
-	ret = readAppend(bodyPart);//, m_request.getContentLength()); //experimentell kann bei header mit Content-Length=99999999999999999999 sehr blöd sein 
+	ret = readAppend(bodyPart);//, m_request.getContentLength()); //experimentell kann bei header mit Content-Length=99999999999999999999 sehr blöd sein
 	if (ret == -1)
 	{
 		LOG_ERROR("This happened: ret: " << ret << " head:\n" << m_request.getHead() << "\nbody:\n" << m_request.getBody());
@@ -76,6 +76,18 @@ int Connection::readBody()
 		return (-1);
 	}
 	m_request.addBody(bodyPart);
+	if (m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")).at("client_max_body_size").size())
+	{
+		long maxBodySize = strtol(m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")).at("client_max_body_size").at(0).c_str(), NULL, 10);
+		if (m_request.getBody().length()> static_cast<size_t>(maxBodySize * 1000000))
+		{
+			LOG_ERROR("Body too big!!!");
+			m_request.setIsValid(false);
+			//bitmask BODYTOOBIG
+			return (1);
+			//return (STATUS_CODE) stop reading!
+		}
+	}
 	return (0);
 }
 
