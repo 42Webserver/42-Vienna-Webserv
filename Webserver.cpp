@@ -127,8 +127,12 @@ int Webserver::pollClients(void)
 		if (m_polls.getPollfdsAt(i).revents & POLLOUT)
 		{
 			LOG_INFO("Pollout triggered")
-			if (m_polls.getConnection(i).sendResponse() != 0)
+			int error_code = m_polls.getConnection(i).sendResponse();
+			if (error_code == 1)
+				continue;
+			else if (error_code != 0)
 			{
+				//sleep(5);
 				std::cerr << "Error: send\n";
 				m_polls.removeConnection(i--);
 				continue;
@@ -141,6 +145,7 @@ int Webserver::pollClients(void)
 		}
 		if (m_polls.getConnection(i).getIdleTime() > 1) {
 			LOGC(TERMC_DARKGREEN, ">>> Client time out <<<")
+			std::cout << "TIMEOUT! "<< std::endl;
 			m_polls.removeConnection(i--);
 			continue;
 		}
