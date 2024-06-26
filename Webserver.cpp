@@ -1,5 +1,13 @@
 #include "Webserver.hpp"
 
+bool	g_isRunning = true;
+
+static void stopServer(int a_sig)
+{
+	if (a_sig)
+		g_isRunning = false;
+}
+
 Webserver::Webserver(void)
 {
 	// if (testSrvr.initServerSocket(INADDR_ANY, 8090) != -1)
@@ -13,6 +21,7 @@ Webserver::Webserver(void)
 
 Webserver::Webserver(std::vector<struct subserver> subservers)
 {
+	signal(SIGINT, stopServer);
 	for (std::size_t i = 0; i < subservers.size(); i++)
 	{
 		//std::cout << (m_servers.size() != 0 ? m_servers.at(0).getPort() : -1) << " | " << subservers.at(i).getPort() << '\n';
@@ -162,10 +171,15 @@ int	Webserver::runServer()
 		std::cerr << "NO servers\n";
 		return (1);
 	}
-	while (pollRet != -1)
+	while (pollRet != -1 && g_isRunning)
 	{
 		pollRet = poll(m_polls.getPollfds().data(), m_polls.getPollfds().size(), 100);
-		if (pollRet == -1)
+		if (pollRet == -1 && !g_isRunning)
+		{
+			std::cout << "Stopping Server :)" << std::endl;
+			return (0);
+		}
+		else if (pollRet == -1)
 			std::cerr << "Error: poll error.\n";
 		else if (pollRet == 0) {
 			LOG_INFO("Poll timeout " << m_polls.getPollfds().size());

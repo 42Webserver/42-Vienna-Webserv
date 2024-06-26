@@ -157,7 +157,7 @@ size_t Request::getContentLength() const
 		//Maybe parse value, check for numbers!
 		return (strtol(found->second.c_str(), NULL, 10));		
 	}
-    return 0;
+	return 0;
 }
 
 void Request::addHead(const std::string &a_head)
@@ -167,7 +167,7 @@ void Request::addHead(const std::string &a_head)
 		LOG_WARNING("DU MACHST WAS FALSCH?")
 		return;
 	}
-	if (m_head.size() > MAX_HEAD_SIZE)
+	if (m_head.size() + a_head.size() > MAX_HEAD_SIZE)
 	{
 		LOG_ERROR("head too big");
 		m_isValid = 431; //invalid request? header zu groß bzw müll
