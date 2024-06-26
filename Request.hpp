@@ -13,7 +13,7 @@
 #include "Debug.h"
 
 #define MAX_HEAD_SIZE 8192
-#define MAX_BODY_SIZE 1048576
+#define MAX_BODY_SIZE 1073741824
 
 class Request
 {
