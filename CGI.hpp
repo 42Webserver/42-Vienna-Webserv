@@ -21,7 +21,8 @@ private:
 
 	t_config					m_config;
 	Request&					m_request;
-
+	int							m_pid; 
+	int							m_outputPipe;
 	std::string					m_responseBody;
 
 	CGI(void);
@@ -40,6 +41,7 @@ public:
 	CGI(t_config config, Request& m_request);
 	~CGI();
 
+	bool	readFromPipe();
 	int					execute();
 	const std::string& 	getResponseBody() const;
 };
