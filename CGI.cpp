@@ -127,6 +127,8 @@ void CGI::deleteData()
 
 bool CGI::readFromPipe()
 {
+	if (m_outputPipe == -1 )
+		return true;
 	ssize_t n = 0;
 	char buffer[4096];
 	if (waitpid(m_pid, NULL, WNOHANG) == 0)
@@ -141,6 +143,7 @@ bool CGI::readFromPipe()
 		m_responseBody.append(buffer, n);
 	}
 	close(m_outputPipe);
+	m_outputPipe = -1;
     return true;
 }
 
