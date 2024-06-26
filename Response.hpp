@@ -37,6 +37,8 @@ private:
 	Request&									m_request;
 	t_config									m_config;
 	unsigned int								m_eventFlags;
+	CGI*										m_cgi;
+
   
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
 	void		addStatusLine(const std::string &a_status_code, std::string& a_response_header);
@@ -50,11 +52,11 @@ private:
 	bool		checkAllowedMethod();
 	int			isValidFile(std::string &a_filepath);
 	int			getValidFilePath(std::string &a_filepath);
-	int		isReturnResponse();
+	int			isReturnResponse();
 	void		addRedirection(std::string &a_response_header, const std::string &redLoc);
 	void		addServerName(std::string &a_response_header);
 	void		addContentType(std::string &a_response_header, const std::string &a_content_type);
-  void    	createAutoIndex(std::string &a_path);
+  	void    	createAutoIndex(std::string &a_path);
 	std::string	getFileType(const std::string &filepath);
 	int			isValidRequestHeader();
 
@@ -69,12 +71,14 @@ public:
 	Response& operator=(const Response& other);
 	~Response();
 
+	bool		isCgiResponse();
 	static void	initContentType();
 	static void	initStatusCodes();
 	const std::string	getResponse() const;
 	void	createResponseMsg();
 	void	clearBody();
 	std::size_t	getMaxBodySize(void) const;
+	bool	isCgiReady();
 };
 
 #endif // !RESPONSE_HPP
