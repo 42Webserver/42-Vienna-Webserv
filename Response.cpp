@@ -3,21 +3,12 @@
 std::map<std::string, std::string>	Response::s_status_codes;
 std::map<std::string, std::string>	Response::s_content_type;
 
-Response::Response(Request &a_request) : m_request(a_request) {}
+Response::Response(Request &a_request) : m_request(a_request), m_cgi(NULL) {}
 
 
-Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0)
+Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0), m_cgi(NULL)
 {
-	// std::cout << "HEEEEREEEEEEEEEEEEEE: " << m_request.getValue("method") << " " << m_request.getValue("uri") << '\n';
-	// 		for (std::map<std::string, std::vector<std::string> > ::iterator it = m_config.begin(); it != m_config.end(); ++it)
-	// 		{
-	// 			std::cout << "		Key: " << it->first << " | value: ";
-	// 			for (size_t j = 0; j < it->second.size(); j++)
-	// 			{
-	// 				std::cout << it->second.at(j) << ", ";
-	// 			}
-	// 			std::cout<< std::endl;
-	// 		}
+	std::cout << "ICH SETZE CGI AUF NULL" << std::endl;
 /* 			std::cout << "STATUS CODE =";
 			for (std::map<std::string, std::string>::iterator it = s_status_codes.begin(); it != s_status_codes.end(); ++it)
 			{
@@ -26,9 +17,9 @@ Response::Response(Request &a_request, const t_config &a_config) : m_request(a_r
 
 }
 
-Response::Response(Request &a_request, const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(a_request), m_config(other.m_config) {}
+Response::Response(Request &a_request, const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(a_request), m_config(other.m_config), m_cgi(other.m_cgi){}
 
-Response::Response(const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(other.m_request), m_config(other.m_config) {}
+Response::Response(const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(other.m_request), m_config(other.m_config), m_cgi(other.m_cgi) {}
 
 Response &Response::operator=(const Response &other)
 {
@@ -39,6 +30,7 @@ Response &Response::operator=(const Response &other)
 		m_responseBody = other.m_responseBody;
 		m_config = other.m_config;
 		m_eventFlags = other.m_eventFlags;
+		m_cgi = other.m_cgi;
 	}
 	return (*this);
 }
@@ -247,10 +239,19 @@ int	Response::isReturnResponse()
 int	Response::isValidRequestHeader()
 {
 	int error_code;
-	std::cout << m_request.getIsValid()<< std::endl;
 	if ((error_code = m_request.getIsValid()) == 0)
 		return (checkHeaderline());
 	return (error_code);
+}
+
+bool Response::isCgiResponse()
+{
+	if (m_cgi)
+	{
+		return true;
+	}
+	else
+    	return false;
 }
 
 void Response::createResponseMsg()
@@ -285,10 +286,14 @@ void Response::createResponseMsg()
 				if (m_request.getValue("uri").find_first_of("/cgi/bin/") == 0)
 				{
 					LOG("CGI")
-					CGI	test(m_config, m_request);
-					int ret = test.execute();
-					m_responseBody = test.getResponseBody();
+					m_cgi =	new CGI(m_config, m_request);
+					int ret = m_cgi->execute();
+
+					//HIER MUSS NOCH EINMAL DAS MIT READ FROM PIPE REINGEMACHT WERDEN UND DIE ISCGIREADY FUNCTION GECALLT WERDEN!!!!!!
+					//m_responseBody = m_cgi->getResponseBody();
 					error_code = ret;
+					if (error_code == 0)
+						return ;
 				}
 			}
 		}
@@ -302,6 +307,17 @@ void Response::createResponseMsg()
 void Response::clearBody()
 {
 	m_responseBody.clear();
+}
+
+bool Response::isCgiReady()
+{
+	if (m_cgi->readFromPipe())
+	{
+		m_responseBody = m_cgi->getResponseBody();
+		getResponseHeader("200", "", "html");
+		return (true);
+	}
+	return (false);
 }
 
 std::size_t Response::getMaxBodySize(void) const
