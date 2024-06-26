@@ -103,22 +103,15 @@ int CGI::run()
     {
         close(cgi_output[1]);
         close(cgi_input[0]);
-
 		write(cgi_input[1], m_request.getBody().c_str(), m_request.getContentLength());
         close(cgi_input[1]);
-
-        char buffer[1024];
-        ssize_t n;
-        while ((n = read(cgi_output[0], buffer, sizeof(buffer))) > 0)
-        {
-            m_responseBody.append(buffer, n);
-        }
-        close(cgi_output[0]);
-        if (waitpid(pid, NULL, 0))
-			std::cout << "HIIIIIIIIIIIIILFE\n";
+		m_pid = pid;
+		m_outputPipe = cgi_output[0];
     }
 	return (0);
 }
+
+
 
 void CGI::deleteData()
 {
@@ -130,6 +123,25 @@ void CGI::deleteData()
 		delete (m_envp[i]);
 
 	delete[] (m_envp);
+}
+
+bool CGI::readFromPipe()
+{
+	ssize_t n = 0;
+	char buffer[4096];
+	if (waitpid(m_pid, NULL, WNOHANG) == 0)
+	{
+		std::cout << "WE HAVE TO WAIT!!" << std::endl;
+		return (false);
+	}
+	std::cout << "JUHU READY!" << std::endl;
+	while ((n = read(m_outputPipe, buffer, sizeof(buffer))) > 0)
+	{
+		std::cout << "OUTPUT PIPE = " << m_outputPipe << " | N = " << n << std::endl;
+		m_responseBody.append(buffer, n);
+	}
+	close(m_outputPipe);
+    return true;
 }
 
 const std::string& CGI::getResponseBody() const
