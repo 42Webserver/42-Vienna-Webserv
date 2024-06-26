@@ -3,7 +3,7 @@
 std::map<std::string, std::string>	Response::s_status_codes;
 std::map<std::string, std::string>	Response::s_content_type;
 
-Response::Response(Request &a_request) : m_request(a_request), m_cgi(NULL) {}
+Response::Response(Request &a_request) : m_request(a_request),  m_eventFlags(0), m_cgi(NULL) {}
 
 
 Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0), m_cgi(NULL)
@@ -17,9 +17,9 @@ Response::Response(Request &a_request, const t_config &a_config) : m_request(a_r
 
 }
 
-Response::Response(Request &a_request, const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(a_request), m_config(other.m_config), m_cgi(other.m_cgi){}
+Response::Response(Request &a_request, const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(a_request), m_config(other.m_config), m_eventFlags(other.m_eventFlags), m_cgi(other.m_cgi){}
 
-Response::Response(const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(other.m_request), m_config(other.m_config), m_cgi(other.m_cgi) {}
+Response::Response(const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(other.m_request), m_config(other.m_config), m_eventFlags(other.m_eventFlags) ,m_cgi(other.m_cgi) {}
 
 Response &Response::operator=(const Response &other)
 {
@@ -37,6 +37,7 @@ Response &Response::operator=(const Response &other)
 
 Response::~Response()
 {
+	delete m_cgi;
 }
 
 bool Response::getBody(std::string const &filename)
