@@ -120,7 +120,7 @@ int Connection::sendResponse(void)
 	m_request = Request();
 	const std::string	response = m_response.getResponse();
 	// m_response.clearBody();
-	std::cout << "Response:\n" << response << '\n';
+	// std::cout << "Response:\n" << response << '\n';
 	m_idleStart = std::time(NULL);
 	if (send(m_clientSocket, response.data(), response.size(), 0) == -1)
 		return (-1);

@@ -43,18 +43,21 @@ u_int64_t Server::getIp(void) const
 
 subserver& Server::getSubServer(const std::string &a_hostname)
 {
+	subserver& defaultSubServer = m_subServers.at(0);
 	for (size_t i = 0; i < m_subServers.size(); i++)
 	{
 		if (m_subServers.at(i).serverConfig.find("server_name") != m_subServers.at(i).serverConfig.end())
 		{
 			for (size_t j = 0; j < m_subServers.at(i).serverConfig.at("server_name").size(); j++)
 			{
+				if (m_subServers.at(i).serverConfig.at("server_name").at(j) == "_")
+					defaultSubServer = m_subServers.at(i);
 				if (m_subServers.at(i).serverConfig.at("server_name").at(j) == a_hostname)
 					return (m_subServers.at(i));
 			}
 		}
 	}
-    return (m_subServers.at(0));
+    return (defaultSubServer);
 }
 
 int Server::initServerSocket()
