@@ -39,6 +39,7 @@ private:
 	static void	checkValueReturn(std::vector<std::string>& value);
 	static void	checkValueAllowedMethods(std::vector<std::string>& value);
 	static void	checkErrorPage(std::vector<std::string>& value);
+	static void checkCgiInfo(std::vector<std::string>& value);
 	static unsigned long ipToL(std::string ip);
 
 	static void	setupErrorPages(struct subserver& subserver);
