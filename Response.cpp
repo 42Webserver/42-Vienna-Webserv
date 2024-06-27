@@ -389,7 +389,7 @@ void Response::addConnection(const std::string& a_status_code, std::string &a_re
 {
 	const std::string& requestConnection = m_request.getValue("Connection");
 	if (a_status_code > "302")
-		a_response_header.append("Connection: Closed\r\n");
+		a_response_header.append("Connection: close\r\n");
 	else if (!requestConnection.empty())
 	{
 		a_response_header.append("Connection: ");
