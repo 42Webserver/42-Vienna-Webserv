@@ -116,21 +116,12 @@ int Connection::sendResponse(void)
 	int error_code = 0;
 	if (!m_request.isReady())
 		return (0);
-	if (m_response.isCgiResponse())
-	{
-		if (!m_response.isCgiReady())
-			return (1);
-	}
-	else
-	{
-		m_response.createResponseMsg();
-		if (m_response.isCgiResponse())
-			return (1);
-		error_code = m_request.getIsValid();
-		m_request = Request();
-	}
+	if (!m_response.createResponseMsg())
+		return (1);
+	error_code = m_request.getIsValid();
+	m_request = Request();
 	const std::string	response = m_response.getResponse();
-	// m_response.clearBody();
+
 	std::cout << "Response:\n" << response << '\n';
 	m_idleStart = std::time(NULL);
 	if (send(m_clientSocket, response.data(), response.size(), 0) == -1)

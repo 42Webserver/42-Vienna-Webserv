@@ -1,6 +1,6 @@
 #include "CGI.hpp"
 
-CGI::CGI(t_config config, Request& request) : m_config(config), m_request(request), m_pid(0), m_outputPipe(-1) {}
+CGI::CGI(t_config config, Request& request) : m_config(config), m_request(request), m_pid(0), m_outputPipe(-1), m_status(0) {}
 
 CGI::~CGI() {}
 
@@ -150,7 +150,7 @@ int CGI::readFromPipe()
 	}
 
 	if (WIFEXITED(status_code) && WEXITSTATUS(status_code) != 0)
-		return (500);
+		return ((m_status = 500));
 
 	while ((n = read(m_outputPipe, buffer, sizeof(buffer))) > 0)
 	{
@@ -165,6 +165,11 @@ int CGI::readFromPipe()
 const std::string& CGI::getResponseBody() const
 {
 	return (m_responseBody);
+}
+
+int CGI::getStatusCode() const
+{
+	return (m_status);
 }
 
 int	CGI::execute()

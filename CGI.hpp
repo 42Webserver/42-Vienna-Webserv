@@ -23,6 +23,7 @@ private:
 	Request&					m_request;
 	int							m_pid;
 	int							m_outputPipe;
+	int							m_status;
 	std::string					m_responseBody;
 
 	CGI(void);
@@ -44,6 +45,7 @@ public:
 	int					readFromPipe();
 	int					execute();
 	const std::string& 	getResponseBody() const;
+	int					getStatusCode() const;
 };
 
 #endif // !CGI_HPP

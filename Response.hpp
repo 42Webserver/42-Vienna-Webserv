@@ -59,6 +59,7 @@ private:
   	void    	createAutoIndex(std::string &a_path);
 	std::string	getFileType(const std::string &filepath);
 	int			isValidRequestHeader();
+	bool		isCgiReady();
 
 	Response(void);
 
@@ -75,10 +76,9 @@ public:
 	static void	initContentType();
 	static void	initStatusCodes();
 	const std::string	getResponse() const;
-	void	createResponseMsg();
+	bool	createResponseMsg();
 	void	clearBody();
 	std::size_t	getMaxBodySize(void) const;
-	bool	isCgiReady();
 };
 
 #endif // !RESPONSE_HPP

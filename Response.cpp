@@ -19,7 +19,7 @@ Response::Response(Request &a_request, const t_config &a_config) : m_request(a_r
 
 Response::Response(Request &a_request, const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(a_request), m_config(other.m_config), m_eventFlags(other.m_eventFlags), m_cgi(other.m_cgi){}
 
-Response::Response(const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(other.m_request), m_config(other.m_config), m_eventFlags(other.m_eventFlags) ,m_cgi(other.m_cgi) {}
+Response::Response(const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(other.m_request), m_config(other.m_config), m_eventFlags(other.m_eventFlags), m_cgi(other.m_cgi) {}
 
 Response &Response::operator=(const Response &other)
 {
@@ -247,20 +247,31 @@ int	Response::isValidRequestHeader()
 
 bool Response::isCgiResponse()
 {
-	if (m_cgi)
-	{
-		return true;
-	}
-	else
-    	return false;
+	return (m_cgi != NULL);
 }
 
-void Response::createResponseMsg()
+bool Response::createResponseMsg()
 {
 	int error_code;
 	std::string filepath;
 
-	if (!(error_code = isValidRequestHeader()))
+	if (isCgiResponse())
+	{
+		if (isCgiReady())
+		{
+			if (m_cgi->getStatusCode())
+				setErrorMsg(m_cgi->getStatusCode());
+			else
+			{
+				m_responseBody = m_cgi->getResponseBody();
+				std::cout << "CGI Rsponese: " << m_responseBody << '\n';
+				getResponseHeader("200", "", "html");
+			}
+			return (true);
+		}
+		return (false);
+	}
+	else if (!(error_code = isValidRequestHeader()))
 	{
 		if (!(error_code = isReturnResponse()))
 		{
@@ -294,7 +305,7 @@ void Response::createResponseMsg()
 					//m_responseBody = m_cgi->getResponseBody();
 					error_code = ret;
 					if (error_code == 0)
-						return ;
+						return (false);
 				}
 			}
 		}
@@ -303,6 +314,7 @@ void Response::createResponseMsg()
 		setErrorMsg(error_code);
 	else
 		setValidMsg(filepath);
+	return (true);
 }
 
 void Response::clearBody()
@@ -312,28 +324,7 @@ void Response::clearBody()
 
 bool	Response::isCgiReady()
 {
-	int status_code = m_cgi->readFromPipe();
-
-	// status_code == -1 if still waiting for child process
-	if (status_code == -1)
-		return (false);
-
-	// status_code == 0 if reading from pipe is finished
-	if (status_code == 0)
-	{
-		m_responseBody = m_cgi->getResponseBody();
-		getResponseHeader("200", "", "html");
-		return (true);
-	}
-
-	// status_code > 0 if cgi_script exited with error
-	if (status_code > 0)
-	{
-		setErrorMsg(status_code);
-		return (true);
-	}
-
-	return (true);
+	return (m_cgi->readFromPipe() != -1);
 }
 
 std::size_t Response::getMaxBodySize(void) const
