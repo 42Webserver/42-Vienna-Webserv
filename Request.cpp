@@ -126,7 +126,7 @@ void Request::setHeadDone(void)
 void Request::setMaxBodySize(std::size_t a_maxBody)
 {
 	m_maxBodySize = a_maxBody;
-	if (m_body.length() > m_maxBodySize)
+	if (m_maxBodySize != 0 && m_body.length() > m_maxBodySize)
 	{
 		m_isValid = 413;
 		m_body.clear();
