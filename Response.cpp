@@ -264,7 +264,7 @@ bool Response::createResponseMsg()
 			else
 			{
 				m_responseBody = m_cgi->getResponseBody();
-				std::cout << "CGI Rsponese: " << m_responseBody << '\n';
+				// std::cout << "CGI Rsponese: " << m_responseBody << '\n';
 				getResponseHeader("200", "", "html");
 			}
 			return (true);
@@ -316,6 +316,14 @@ bool Response::createResponseMsg()
 		setValidMsg(filepath);
 	return (true);
 }
+
+
+// is GET METHOD => check if uri if it is a PATH_INFO, then if there is an query string, safe it in envp!
+//call with execve the file! 
+// if method post and is uri is path info => pipe body and execve the python script 
+//Everything what is inside in PATH_INFO has to be a script so it will be executed!!
+//UPLOAD value will be stored in envp that the script knows where to upload! 
+
 
 void Response::clearBody()
 {
