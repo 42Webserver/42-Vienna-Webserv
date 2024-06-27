@@ -41,6 +41,7 @@ private:
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
 	void		addStatusLine(const std::string &a_status_code, std::string& a_response_header);
 	void		addDateAndTime(std::string &a_response_header);
+	void		addConnection(const std::string& a_status_code, std::string& a_response_header);
 	void		setErrorMsg(const int &a_status_code);
 	void		setDefaultErrorMsg(const std::string &a_status_code);
 	void		setValidMsg(const std::string &filepath);
