@@ -167,12 +167,6 @@ void Request::addHead(const std::string &a_head)
 		LOG_WARNING("DU MACHST WAS FALSCH?")
 		return;
 	}
-	if (m_head.size() + a_head.size() > MAX_HEAD_SIZE)
-	{
-		LOG_ERROR("head too big");
-		m_isValid = 431; //invalid request? header zu groß bzw müll
-		return ;
-	}
 	std::size_t	sepPos = a_head.find("\r\n\r\n");
 	if (sepPos == std::string::npos)
 	{
@@ -181,6 +175,12 @@ void Request::addHead(const std::string &a_head)
 		return ;
 	}
 	m_head.append(a_head, 0, sepPos);
+	if (m_head.length() > MAX_HEAD_SIZE)
+	{
+		LOG_ERROR("head too big");
+		m_isValid = 431; //invalid request? header zu groß bzw müll
+		return ;
+	}
 	if (sepPos < a_head.length() - 4)
 		m_body.append(a_head, sepPos + 4);
 	m_headComplete = true;
