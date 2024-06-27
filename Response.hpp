@@ -21,7 +21,7 @@
 
 #define	REDIRECTION 1U << 0		//WIR HABEN EINE RETURN VALUE;
 #define	REDIR_LOCATION 1U << 1	//WIR HABEN EINE LOCATION MIT ANGEGEBEN AUS CONFIG
-#define REDIR_DIRECTORY 1U << 2	//REQUEST IST EIN DIRECTORY! 
+#define REDIR_DIRECTORY 1U << 2	//REQUEST IST EIN DIRECTORY!
 
 #define BYTE_TO_KB 1000
 
@@ -39,7 +39,7 @@ private:
 	unsigned int								m_eventFlags;
 	CGI*										m_cgi;
 
-  
+
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
 	void		addStatusLine(const std::string &a_status_code, std::string& a_response_header);
 	void		addDateAndTime(std::string &a_response_header);

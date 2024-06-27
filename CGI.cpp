@@ -59,7 +59,7 @@ void	CGI::setEnvp()
 	while (i < vars.size())
 	{
 			std::cout << &m_envp[i] << std::endl;
-			std::cout << "COPY STRING = '" << vars.at(i) << "' WITH SIZE = " << vars.at(i).length() << std::endl; 
+			std::cout << "COPY STRING = '" << vars.at(i) << "' WITH SIZE = " << vars.at(i).length() << std::endl;
 			m_envp[i] = new char[vars.at(i).length() + 1];
 
 			strcpy(m_envp[i], vars.at(i).c_str());
@@ -134,17 +134,24 @@ void CGI::deleteData()
 	delete[] (m_envp);
 }
 
-bool CGI::readFromPipe()
+int CGI::readFromPipe()
 {
-	if (m_outputPipe == -1 )
-		return true;
+	if (m_outputPipe == -1)
+		return (0);
+
 	ssize_t n = 0;
 	char buffer[4096];
-	if (waitpid(m_pid, NULL, WNOHANG) == 0)
+
+	int	status_code = 0;
+	if (waitpid(m_pid, &status_code, WNOHANG) == 0)
 	{
 		std::cout << "WAIT FOR CHILD PROCESS!" << std::endl;
-		return (false);
+		return (-1);
 	}
+
+	if (WIFEXITED(status_code) && WEXITSTATUS(status_code) != 0)
+		return (500);
+
 	while ((n = read(m_outputPipe, buffer, sizeof(buffer))) > 0)
 	{
 		std::cout << "OUTPUT PIPE = " << m_outputPipe << " | N = " << n << std::endl;
@@ -152,7 +159,7 @@ bool CGI::readFromPipe()
 	}
 	close(m_outputPipe);
 	m_outputPipe = -1;
-    return true;
+    return (0);
 }
 
 const std::string& CGI::getResponseBody() const

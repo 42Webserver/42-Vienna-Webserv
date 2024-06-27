@@ -135,7 +135,7 @@ void Response::setErrorMsg(const int &a_status_code)
 		setDefaultErrorMsg(convert.str());
 		getResponseHeader(convert.str(), "", "html");
 	}
-	else 
+	else
 	{
 		if (found->second.size() == 1)
 		{
@@ -299,7 +299,7 @@ void Response::createResponseMsg()
 			}
 		}
 	}
-	if (error_code) 
+	if (error_code)
 		setErrorMsg(error_code);
 	else
 		setValidMsg(filepath);
@@ -310,15 +310,30 @@ void Response::clearBody()
 	m_responseBody.clear();
 }
 
-bool Response::isCgiReady()
+bool	Response::isCgiReady()
 {
-	if (m_cgi->readFromPipe())
+	int status_code = m_cgi->readFromPipe();
+
+	// status_code == -1 if still waiting for child process
+	if (status_code == -1)
+		return (false);
+
+	// status_code == 0 if reading from pipe is finished
+	if (status_code == 0)
 	{
 		m_responseBody = m_cgi->getResponseBody();
 		getResponseHeader("200", "", "html");
 		return (true);
 	}
-	return (false);
+
+	// status_code > 0 if cgi_script exited with error
+	if (status_code > 0)
+	{
+		setErrorMsg(status_code);
+		return (true);
+	}
+
+	return (true);
 }
 
 std::size_t Response::getMaxBodySize(void) const
@@ -366,6 +381,7 @@ void Response::createAutoIndex(std::string &a_path)
 void Response::getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type)
 {
 	std::string response_header;
+	m_responseHeader.clear();
 	addStatusLine(a_status_code, response_header);
 	addServerName(response_header);
 	addDateAndTime(response_header);
@@ -418,7 +434,7 @@ void Response::addRedirection(std::string &a_response_header, const std::string 
 		a_response_header.append("Location: ");
 		if (m_eventFlags & REDIR_LOCATION)
 			a_response_header.append(m_config.at("return").at(1));
-		else 
+		else
 			a_response_header.append(a_redLoc);
 		a_response_header.append("\r\n");
 
