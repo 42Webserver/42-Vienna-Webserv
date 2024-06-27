@@ -387,12 +387,15 @@ void Response::addDateAndTime(std::string &a_response_header)
 
 void Response::addConnection(const std::string& a_status_code, std::string &a_response_header)
 {
-	a_response_header.append("Connection: ");
+	const std::string& requestConnection = m_request.getValue("Connection");
 	if (a_status_code > "302")
-		a_response_header.append("Closed");
-	else
-		a_response_header.append(m_request.getValue("Connection"));
-	a_response_header.append("\r\n");
+		a_response_header.append("Connection: Closed\r\n");
+	else if (!requestConnection.empty())
+	{
+		a_response_header.append("Connection: ");
+		a_response_header.append(requestConnection);
+		a_response_header.append("\r\n");
+	}
 }
 
 void Response::addContentLength(std::string &a_response_header)
