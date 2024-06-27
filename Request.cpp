@@ -126,6 +126,11 @@ void Request::setHeadDone(void)
 void Request::setMaxBodySize(std::size_t a_maxBody)
 {
 	m_maxBodySize = a_maxBody;
+	if (m_body.length() > m_maxBodySize)
+	{
+		m_isValid = 413;
+		m_body.clear();
+	}
 }
 
 const std::string &Request::getValue(const std::string &a_key)
@@ -172,6 +177,12 @@ void Request::addHead(const std::string &a_head)
 	{
 		m_headComplete = false;
 		m_head.append(a_head);
+		return ;
+	}
+	if (m_head.size() + sepPos > MAX_HEAD_SIZE)
+	{
+		LOG_ERROR("head too big");
+		m_isValid = 431; //invalid request? header zu groß bzw müll
 		return ;
 	}
 	m_head.append(a_head, 0, sepPos);
