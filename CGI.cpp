@@ -1,6 +1,6 @@
 #include "CGI.hpp"
 
-CGI::CGI(t_config config, Request& request) : m_config(config), m_request(request) {}
+CGI::CGI(t_config config, Request& request) : m_config(config), m_request(request), m_pid(0), m_outputPipe(-1) {}
 
 CGI::~CGI() {}
 
@@ -58,8 +58,12 @@ void	CGI::setEnvp()
 	size_t	i = 0;
 	while (i < vars.size())
 	{
+			std::cout << &m_envp[i] << std::endl;
+			std::cout << "COPY STRING = '" << vars.at(i) << "' WITH SIZE = " << vars.at(i).length() << std::endl; 
 			m_envp[i] = new char[vars.at(i).length() + 1];
+
 			strcpy(m_envp[i], vars.at(i).c_str());
+			std::cout << "AFTER COPY = '" << m_envp[i] << "'" << std::endl;
 			i++;
 	}
 	m_envp[i] = NULL;
@@ -115,12 +119,17 @@ int CGI::run()
 
 void CGI::deleteData()
 {
-	delete (m_path);
-	delete (m_argv[1]);
+	delete[] (m_path);
+	delete[] (m_argv[1]);
 	delete[] (m_argv);
 
 	for (size_t	i = 0; m_envp[i] != NULL; ++i)
-		delete (m_envp[i]);
+	{
+		std::cout << &m_envp[i] << std::endl;
+		std::cout << "DELETE = " << m_envp[i] << std::endl;
+		std::cout << "i = " << i << std::endl;
+		delete[] (m_envp[i]);
+	}
 
 	delete[] (m_envp);
 }
@@ -133,10 +142,9 @@ bool CGI::readFromPipe()
 	char buffer[4096];
 	if (waitpid(m_pid, NULL, WNOHANG) == 0)
 	{
-		std::cout << "WE HAVE TO WAIT!!" << std::endl;
+		std::cout << "WAIT FOR CHILD PROCESS!" << std::endl;
 		return (false);
 	}
-	std::cout << "JUHU READY!" << std::endl;
 	while ((n = read(m_outputPipe, buffer, sizeof(buffer))) > 0)
 	{
 		std::cout << "OUTPUT PIPE = " << m_outputPipe << " | N = " << n << std::endl;
