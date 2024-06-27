@@ -4,7 +4,6 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include "Singleton.hpp"
 
 class Log
 {
@@ -30,16 +29,14 @@ public:
 		LogType& operator<<(const T& msg)
 		{
 			std::stringstream ss;
-			time_t rawtime;
-			struct tm* timeinfo;
-			char buffer [80];
-			time(&rawtime);
-			timeinfo = localtime(&rawtime);
-			strftime(buffer, 80, "%Y-%m-%d %H:%M:%S | ", timeinfo);
-			ss << buffer << msg;
-			m_file.write(ss.str().c_str(), ss.str().length());
+			std::string	str;
+			ss << msg;
+			str = ss.str();
+			m_file.write(str.c_str(), str.length());
 			return (*this);
 		}
+
+		LogType& ts();
 
 	};
 private:
@@ -51,7 +48,7 @@ private:
 
 public:
 	
-	static int Initialize(const std::string& errorLogFileName, const std::string& accesLogFileName);
+	static int 		Initialize(const std::string& errorLogFileName, const std::string& accesLogFileName);
 
 	static LogType Error;
 	static LogType Access;

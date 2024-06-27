@@ -1,8 +1,10 @@
 #include "Webserver.hpp"
 #include "Response.hpp"
+#include "Log.hpp"
 
 int	main(int argc, char **argv)
 {
+	Log::Initialize("error", "access");
 	if (argc > 2)
 	{
 		std::cerr << "Error: too many arguments." << std::endl;

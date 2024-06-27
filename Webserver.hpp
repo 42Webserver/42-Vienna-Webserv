@@ -11,6 +11,7 @@
 #include "ConfigParser.hpp"
 #include <map>
 #include <csignal>
+#include "Log.hpp"
 
 
 

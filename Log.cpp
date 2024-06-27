@@ -13,9 +13,8 @@ int Log::LogType::openInit(void)
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	strftime(buffer, 80, "_%Y-%m-%d_%H:%M:%S", timeinfo);
-	m_fileName.append(buffer);
 
-	m_file.open(m_fileName.c_str(), std::ofstream::out | std::ofstream::app);
+	m_file.open((m_fileName + buffer + ".log").c_str(), std::ofstream::out | std::ofstream::app);
 	if (!m_file.is_open() || !m_file.good())
 		throw(std::runtime_error("Error open file"));
 	return (0);
@@ -50,6 +49,17 @@ Log::LogType &Log::LogType::operator=(const LogType &a_other)
 Log::LogType::~LogType()
 {
 	m_file.close();
+}
+
+Log::LogType &Log::LogType::ts()
+{
+	time_t rawtime;
+	struct tm* timeinfo;
+	char buffer [80];
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(buffer, 80, "%Y-%m-%d %H:%M:%S | ", timeinfo);
+	return(*this << buffer);
 }
 
 int Log::Initialize(const std::string &errorLogFileName, const std::string &accesLogFileName)
