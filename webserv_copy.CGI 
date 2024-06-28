@@ -1,0 +1,61 @@
+http
+{
+	Server
+	{
+
+		listen localhost:8080;
+		server_name example.com example2.com example3.com;
+		#error_page 404 /error/notFound.html;
+		root /home/fwechsle/webserv/www;
+		autoindex on;
+		#client_max_body_size 1;
+		PATH_INFO 
+		# comment
+ 		location /test1/
+		{
+			allowed_methods GET;
+			root /home/fwechsle/webserv/www;
+		
+		#	error_page 404 /../error/notFound.html;
+			index index.html;
+		}
+		location /dev
+		{
+			allowed_methods GET;
+			root /;
+		#	error_page 404 /error/notFound.html;
+			index urandom;
+		}
+ 		location /welcome/
+		{
+			allowed_methods GET POST;
+			root /home/fwechsle/webserv/www;
+		#	error_page 404 /../error/notFound.html;
+			index form.html;
+		}
+ 		location /upload/
+		{
+			allowed_methods GET;
+			root /home/fwechsle/webserv/www;
+		#	error_page 404 /../error/notFound.html;
+			index file-upload.html;
+		}
+		location /cgi-bin/
+		{
+			python
+			{
+				extension 			.py;
+				path				/usr/bin/python3;
+				allowed_methods		GET POST;
+				root				/home/fwechsle/webserv/www;
+			}
+			bash
+			{
+				extension			.sh;
+				path				/usr/bin/bash;
+				allowed_methods		GET POST;
+			}
+		}
+	}
+
+}
