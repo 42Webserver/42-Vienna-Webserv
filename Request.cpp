@@ -114,6 +114,11 @@ void Request::initMap()
 		pos += 2;
 		prevPos = pos;
 	}
+	if (m_requestHeader.find("Host") == m_requestHeader.end())
+	{
+		LOG_ERROR("Host is missing in Request Header");
+		m_isValid = 400; 
+	}
 	// for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
 	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
