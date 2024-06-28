@@ -107,6 +107,7 @@ void Request::initMap()
 	size_t		pos = 0, prevPos = 0;
 	while ((!m_isValid && (pos = remainder.find("\r\n", pos)) != std::string::npos))
 	{
+		std::cout << remainder << std::endl;
 		line = remainder.substr(prevPos, pos - prevPos);
 		if (line.empty())
 			break;
@@ -116,11 +117,12 @@ void Request::initMap()
 	}
 	if (m_requestHeader.find("Host") == m_requestHeader.end())
 	{
+
 		LOG_ERROR("Host is missing in Request Header");
 		m_isValid = 400; 
 	}
-	// for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
-	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
+	for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
+		std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
 
 void Request::setHeadDone(void)
@@ -184,13 +186,13 @@ void Request::addHead(const std::string &a_head)
 		m_head.append(a_head);
 		return ;
 	}
-	if (m_head.size() + sepPos > MAX_HEAD_SIZE)
+	if (m_head.size() + sepPos + 4 > MAX_HEAD_SIZE)
 	{
 		LOG_ERROR("head too big");
 		m_isValid = 431; //invalid request? header zu groß bzw müll
 		return ;
 	}
-	m_head.append(a_head, 0, sepPos);
+	m_head.append(a_head, 0, sepPos + 4);
 	if (m_head.length() > MAX_HEAD_SIZE)
 	{
 		LOG_ERROR("head too big");
