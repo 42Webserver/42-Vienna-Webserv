@@ -236,7 +236,7 @@ void	ConfigParser::readConfigFile(const std::string& file)
 	sortConfigVector(tokens);
 
 	safeData(tokens);
-	printData(m_subservers);
+	//printData(m_subservers);
 
 
 
