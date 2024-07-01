@@ -124,6 +124,7 @@ void	ConfigParser::checkSyntax(std::vector<std::string>& tokens)
 	std::vector<std::string>::iterator	it;
 	int									braceCount = 0;
 	int 								maxBraceCount = 0;
+
 	for (it = tokens.begin(); it != tokens.end(); ++it)
 	{
 		if (it != tokens.begin() && *it == "http")
@@ -158,7 +159,7 @@ void	ConfigParser::checkSyntax(std::vector<std::string>& tokens)
 
 		if (*it == "location" && ((it + 2) == tokens.end() || *(it + 2) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid location scope."));
-
+			
 		if (*it == "Server" && ((it + 1) == tokens.end() || *(it + 1) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid Server scope."));
 	}
@@ -390,7 +391,7 @@ void	ConfigParser::checkValue(const std::string& key, std::vector<std::string>& 
 		checkValueListen(value);
 	if (key == "error_page")
 		checkErrorPage(value);
-	if (key == "UPLOAD" || key == "PATH_INFO")
+	if (key == "UPLOAD")
 		checkCgiInfo(value);
 }
 
@@ -449,7 +450,7 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 		value.clear();
 		if (tokens.at(i) == "listen" || tokens.at(i) == "root" || tokens.at(i) == "index" \
 			|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex" \
-			|| tokens.at(i) == "PATH_INFO" || tokens.at(i) == "UPLOAD")
+			|| tokens.at(i) == "UPLOAD")
 		{
 			value.push_back(tokens.at(++i));
 			checkValue(tokens.at(i - 1), value);
@@ -497,8 +498,7 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 		throw std::runtime_error("Error: config-file: Missing argument at key [serverscope]");
 	//ADD just one arg!
 	if (tokens.at(i) == "listen" || tokens.at(i) == "root" || tokens.at(i) == "index" \
-		|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex" || tokens.at(i) == "UPLOAD" \
-		|| tokens.at(i) == "PATH_INFO")
+		|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex" || tokens.at(i) == "UPLOAD")
 	{
 		i++;
 		value.push_back(tokens.at(i));
@@ -618,7 +618,6 @@ void ConfigParser::initSubserver(struct subserver &subserver)
 	subserver.serverConfig["allowed_methods"];
 	subserver.serverConfig["autoindex"];
 	subserver.serverConfig["return"];
-	subserver.serverConfig["PATH_INFO"];
 	subserver.serverConfig["UPLOAD"];
 }
 
@@ -646,12 +645,12 @@ void ConfigParser::initLocation(std::map<std::string, std::vector<std::string> >
 	location["return"];
 	location["root"];
 	location["name"];
-	location["PATH_INFO"];
 	location["UPLOAD"];
 }
 
 std::vector<struct subserver>	ConfigParser::parseConfig(std::string& configname)
 {
 	readConfigFile(configname);
+	exit(42);
 	return (m_subservers);
 }
