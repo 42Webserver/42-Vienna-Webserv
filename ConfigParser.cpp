@@ -124,6 +124,7 @@ void	ConfigParser::checkSyntax(std::vector<std::string>& tokens)
 	std::vector<std::string>::iterator	it;
 	int									braceCount = 0;
 	int 								maxBraceCount = 0;
+
 	for (it = tokens.begin(); it != tokens.end(); ++it)
 	{
 		if (it != tokens.begin() && *it == "http")
@@ -158,7 +159,7 @@ void	ConfigParser::checkSyntax(std::vector<std::string>& tokens)
 
 		if (*it == "location" && ((it + 2) == tokens.end() || *(it + 2) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid location scope."));
-
+			
 		if (*it == "Server" && ((it + 1) == tokens.end() || *(it + 1) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid Server scope."));
 	}
@@ -325,6 +326,12 @@ void	ConfigParser::checkValueRoot(std::string& value)
 		throw(std::runtime_error("Error: config-file: invalid value at key 'root'."));
 }
 
+void	ConfigParser::checkValueUpload(std::string& value)
+{
+	if (value.at(0) != '/')
+		throw(std::runtime_error("Error: config-file: invalid value at key 'upload'."));
+}
+
 void	ConfigParser::checkValueAllowedMethods(std::vector<std::string>& value)
 {
 	if (value.size() > 3)
@@ -368,10 +375,22 @@ void	ConfigParser::checkErrorPage(std::vector<std::string>& value)
 	}
 }
 
-void ConfigParser::checkCgiInfo(std::vector<std::string> &value)
+void 	ConfigParser::checkValueExtension(std::vector<std::string>& value)
 {
-	if (value.at(0).at(0) != '/')
-		throw(std::runtime_error("Error: config-file: invalid value at CGI info"));
+	for (std::vector<std::string>::iterator it = value.begin(); it != value.end(); ++it)
+	{
+		if ((*it).find_last_of('.') != 0)
+			throw (std::runtime_error("Error: config-file: invalid file extension"));
+	}
+}
+
+void 	ConfigParser::checkValueScriptPath(std::vector<std::string>& value)
+{
+	for (std::vector<std::string>::iterator it = value.begin(); it != value.end(); ++it)
+	{
+		if ((*it).at(0) != '/')
+			throw (std::runtime_error("Error: config-file: invalid script path"));
+	}
 }
 
 void	ConfigParser::checkValue(const std::string& key, std::vector<std::string>& value)
@@ -382,6 +401,8 @@ void	ConfigParser::checkValue(const std::string& key, std::vector<std::string>& 
 		checkValueClientMaxBodySize(value.at(0));
 	if (key == "root")
 		checkValueRoot(value.at(0));
+	if (key == "upload")
+		checkValueUpload(value.at(0));	
 	if (key == "allowed_methods")
 		checkValueAllowedMethods(value);
 	if (key == "return")
@@ -390,8 +411,10 @@ void	ConfigParser::checkValue(const std::string& key, std::vector<std::string>& 
 		checkValueListen(value);
 	if (key == "error_page")
 		checkErrorPage(value);
-	if (key == "UPLOAD" || key == "PATH_INFO")
-		checkCgiInfo(value);
+	if (key == "extension")
+		checkValueExtension(value);
+	if (key == "script_path")
+		checkValueScriptPath(value);
 }
 
 // shit incoming
@@ -439,9 +462,11 @@ void	ConfigParser::allowAllMethods(std::vector<std::string> &value)
 bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::string> &tokens, size_t &i)
 {
 	std::map< std::string, std::vector<std::string> > location;
-	initLocation(location);
+	initLocation(location, tokens.at(i + 1));
 	std::vector<std::string> value;
 	value.push_back(tokens.at(i + 1));
+	bool isCgi;
+	value.at(0) == "/cgi-bin" ? isCgi = true : isCgi = false;
 	location["name"] = value;
 	i += 3;
 	while(tokens.at(i) != "}")
@@ -449,7 +474,7 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 		value.clear();
 		if (tokens.at(i) == "listen" || tokens.at(i) == "root" || tokens.at(i) == "index" \
 			|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex" \
-			|| tokens.at(i) == "PATH_INFO" || tokens.at(i) == "UPLOAD")
+			|| (isCgi && tokens.at(i) == "upload"))
 		{
 			value.push_back(tokens.at(++i));
 			checkValue(tokens.at(i - 1), value);
@@ -459,7 +484,8 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 				throw std::runtime_error("Error: config-file: Two many arguments for key [locationscope]");
 		}
 		else if (tokens.at(i) == "server_name" || tokens.at(i) == "error_page" || \
-			tokens.at(i) == "allowed_methods" || tokens.at(i) == "return")
+			tokens.at(i) == "allowed_methods" || tokens.at(i) == "return" \
+			|| (isCgi && (tokens.at(i) == "extension" || tokens.at(i) == "script_path")))
 		{
 			i++;
 			while (tokens.at(i) != ";")
@@ -497,8 +523,7 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 		throw std::runtime_error("Error: config-file: Missing argument at key [serverscope]");
 	//ADD just one arg!
 	if (tokens.at(i) == "listen" || tokens.at(i) == "root" || tokens.at(i) == "index" \
-		|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex" || tokens.at(i) == "UPLOAD" \
-		|| tokens.at(i) == "PATH_INFO")
+		|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex" || tokens.at(i) == "UPLOAD")
 	{
 		i++;
 		value.push_back(tokens.at(i));
@@ -618,7 +643,6 @@ void ConfigParser::initSubserver(struct subserver &subserver)
 	subserver.serverConfig["allowed_methods"];
 	subserver.serverConfig["autoindex"];
 	subserver.serverConfig["return"];
-	subserver.serverConfig["PATH_INFO"];
 	subserver.serverConfig["UPLOAD"];
 }
 
@@ -636,7 +660,7 @@ void ConfigParser::updateLocation(std::map<std::string, std::vector<std::string>
 	}
 }
 
-void ConfigParser::initLocation(std::map<std::string, std::vector<std::string> > &location)
+void ConfigParser::initLocation(std::map<std::string, std::vector<std::string> > &location, const std::string &locationName)
 {
 	location["index"];
 	location["client_max_body_size"];
@@ -646,8 +670,12 @@ void ConfigParser::initLocation(std::map<std::string, std::vector<std::string> >
 	location["return"];
 	location["root"];
 	location["name"];
-	location["PATH_INFO"];
-	location["UPLOAD"];
+	if (locationName == "/cgi-bin")
+	{
+		location["upload"];
+		location["extension"];
+		location["script_path"];
+	}
 }
 
 std::vector<struct subserver>	ConfigParser::parseConfig(std::string& configname)

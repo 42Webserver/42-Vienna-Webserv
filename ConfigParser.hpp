@@ -36,10 +36,12 @@ private:
 	static void	checkValueClientMaxBodySize(std::string& value);
 	static void	checkValueListen(std::vector<std::string>& value);
 	static void	checkValueRoot(std::string& value);
+	static void checkValueUpload(std::string& value);
 	static void	checkValueReturn(std::vector<std::string>& value);
 	static void	checkValueAllowedMethods(std::vector<std::string>& value);
 	static void	checkErrorPage(std::vector<std::string>& value);
-	static void checkCgiInfo(std::vector<std::string>& value);
+	static void checkValueExtension(std::vector<std::string>& value);
+	static void checkValueScriptPath(std::vector<std::string>& value);
 	static unsigned long ipToL(std::string ip);
 
 	static void	setupErrorPages(struct subserver& subserver);
@@ -47,7 +49,7 @@ private:
 
 	static void	safeData(std::vector<std::string> tokens);
 	static void	initSubserver(struct subserver &subserver);
-	static void	initLocation(std::map<std::string, std::vector<std::string> > &location);
+	static void	initLocation(std::map<std::string, std::vector<std::string> > &location, const std::string &locationName);
 	static void	updateLocation(std::map<std::string, std::vector<std::string> > &location, struct subserver newSubserver);
 	static void	printData(std::vector <struct subserver> data);
 
