@@ -681,6 +681,5 @@ void ConfigParser::initLocation(std::map<std::string, std::vector<std::string> >
 std::vector<struct subserver>	ConfigParser::parseConfig(std::string& configname)
 {
 	readConfigFile(configname);
-	exit(42);
 	return (m_subservers);
 }
