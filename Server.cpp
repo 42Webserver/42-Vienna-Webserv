@@ -69,7 +69,7 @@ int Server::initServerSocket()
 	m_serverAddress.sin_port = htons(m_subServers.at(0).getPort());
 	m_serverAddress.sin_addr.s_addr = htonl(m_subServers.at(0).getIp());
 
-	int sock = socket(AF_INET, SOCK_STREAM, 0);
+	int sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (sock == -1)
 	{
 		throw (std::runtime_error("Error: server: socket creation failed."));
