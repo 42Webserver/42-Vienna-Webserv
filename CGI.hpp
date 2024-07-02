@@ -16,8 +16,8 @@ class CGI
 private:
 
 	char*						m_path;
-	char**						m_argv;
-	char**						m_envp;
+	std::vector<char*>			m_argv;
+	std::vector<char*>			m_envp;
 
 	t_config					m_config;
 	Request&					m_request;
@@ -25,27 +25,29 @@ private:
 	int							m_outputPipe;
 	int							m_status;
 	std::string					m_responseBody;
+	std::string					m_filePath;
 
 	CGI(void);
+
+	int		scriptIsExecutable(const std::string& a_filePath) const;
+	int		setPath(const std::string& a_filePath);
+	int		run();
+	void	setArgv(const std::string& a_filePath);
+	void	setEnvp();
+	void	deleteData();
 	CGI(const CGI& other);
 	CGI& operator=(const CGI& other);
 
-	int		scriptIsExecutable();
-	int		setPath();
-	int		run();
-	void	setArgv();
-	void	setEnvp();
-	void	deleteData();
-
 public:
 
-	CGI(t_config config, Request& m_request);
+	CGI(t_config config, Request& a_request);
 	~CGI();
 
 	int					readFromPipe();
-	int					execute();
+	int					execute(std::string a_filePath);
 	const std::string& 	getResponseBody() const;
 	int					getStatusCode() const;
+	void				setUrlQuery(const std::string& a_urlQuery);
 };
 
 #endif // !CGI_HPP

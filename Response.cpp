@@ -8,7 +8,6 @@ Response::Response(Request &a_request) : m_request(a_request),  m_eventFlags(0),
 
 Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0), m_cgi(NULL)
 {
-	std::cout << "ICH SETZE CGI AUF NULL" << std::endl;
 /* 			std::cout << "STATUS CODE =";
 			for (std::map<std::string, std::string>::iterator it = s_status_codes.begin(); it != s_status_codes.end(); ++it)
 			{
@@ -35,10 +34,7 @@ Response &Response::operator=(const Response &other)
 	return (*this);
 }
 
-Response::~Response()
-{
-	delete m_cgi;
-}
+Response::~Response() {}
 
 bool Response::getBody(std::string const &filename)
 {
@@ -126,6 +122,11 @@ std::string Response::getFileType(const std::string &filepath)
 
 void Response::setErrorMsg(const int &a_status_code)
 {
+	if (a_status_code == -1)
+	{
+		getResponseHeader("200", "", "");
+		return;
+	}
 	std::ostringstream convert;
 
 	convert << a_status_code;
@@ -198,7 +199,22 @@ int Response::getValidFilePath(std::string &a_filepath)
     return (ret);
 }
 
-// @brief
+/// @brief Takes the a_uri and seperates it into filepath and uriQuery
+/// @param a_uri the request uri
+/// @param a_query the string where we write the query into
+/// @return returns the path to the file (config root + uri) 
+std::string Response::decodeUri(const std::string &a_uri, std::string &a_query)
+{
+	std::string filePath;
+	filePath.append(m_config["root"].at(0));
+	std::size_t	encPos = a_uri.find_first_of('?');
+	filePath.append(a_uri, 0, encPos);
+	if (encPos != std::string::npos && encPos + 1 < a_uri.length())
+		a_query.append(a_uri, encPos + 1);
+	return (filePath);
+}
+
+/// @brief
 /// @param a_filepath
 /// @return Returns 0 for file.
 ///            Returns 403 for dir
@@ -229,10 +245,11 @@ int	Response::isReturnResponse()
 {
 	if (m_config["return"].size())
 	{
+		m_responseBody.clear();
 		m_eventFlags |= REDIRECTION;
 		if (m_config["return"].size() == 2)
 			m_eventFlags |= REDIR_LOCATION;
-		return (static_cast<int>(strtol(m_config.at("return").at(0).c_str(), NULL, 10)));
+		return (static_cast<int>(std::strtol(m_config.at("return").at(0).c_str(), NULL, 10)));
 	}
 	return (0);
 }
@@ -247,13 +264,14 @@ int	Response::isValidRequestHeader()
 
 bool Response::isCgiResponse()
 {
-	return (m_cgi != NULL);
+	return (m_cgi);
 }
 
 bool Response::createResponseMsg()
 {
-	int error_code;
+	int error_code = 0;
 	std::string filepath;
+	std::string urlQuery;
 
 	if (isCgiResponse())
 	{
@@ -264,52 +282,54 @@ bool Response::createResponseMsg()
 			else
 			{
 				m_responseBody = m_cgi->getResponseBody();
-				// std::cout << "CGI Rsponese: " << m_responseBody << '\n';
+				std::cout << "CGI Rsponese: " << m_responseBody << '\n';
 				getResponseHeader("200", "", "html");
 			}
-			return (true);
 		}
-		return (false);
+		else
+			return (false);
 	}
 	else if (!(error_code = isValidRequestHeader()))
 	{
-		if (!(error_code = isReturnResponse()))
+		filepath = decodeUri(m_request.getValue("uri"), urlQuery);
+		std::cout << "FIlepath: " << filepath << " Query: " << urlQuery << '\n';
+		if (m_config.find("name") != m_config.end() && m_config.at("name").at(0).find("/cgi-bin") == 0)
 		{
 			if (m_request.getValue("method") == "GET")
 			{
 
-				filepath.append(m_config["root"].at(0));
-				filepath.append(m_request.getValue("uri"));
-				if ((error_code = getValidFilePath(filepath)))
-				{
-					if (error_code == 301)
-					{
-						m_eventFlags |= REDIRECTION | REDIR_LOCATION;
-						m_config["return"].push_back("301");
-						m_config["return"].push_back(filepath.erase(0, m_config.at("root").at(0).length()));
-					}
-				}
 			}
-			else if (m_request.getValue("method") == "POST")
+			if (m_request.getValue("method") == "POST")
 			{
-				// if (isReturnResponse())
-				// 	return ;
-				LOG("POST-REQUEST");
-				if (m_request.getValue("uri").find_first_of("/cgi/bin/") == 0)
+				LOG("CGI POST-REQUEST");
+				m_cgi =	SharedPtr<CGI>(new CGI(m_config, m_request));
+				m_cgi->setUrlQuery(urlQuery);
+				int ret = m_cgi->execute(filepath);
+				//HIER MUSS NOCH EINMAL DAS MIT READ FROM PIPE REINGEMACHT WERDEN UND DIE ISCGIREADY FUNCTION GECALLT WERDEN!!!!!!
+				//m_responseBody = m_cgi->getResponseBody();
+				error_code = ret;
+				if (error_code == 0)
+					return (false);
+			}
+		}
+		else if (m_request.getValue("method") == "GET")
+		{
+			if ((error_code = getValidFilePath(filepath)))
+			{
+				if (error_code == 301)
 				{
-					LOG("CGI")
-					m_cgi =	new CGI(m_config, m_request);
-					int ret = m_cgi->execute();
-
-					//HIER MUSS NOCH EINMAL DAS MIT READ FROM PIPE REINGEMACHT WERDEN UND DIE ISCGIREADY FUNCTION GECALLT WERDEN!!!!!!
-					//m_responseBody = m_cgi->getResponseBody();
-					error_code = ret;
-					if (error_code == 0)
-						return (false);
+					m_eventFlags |= REDIRECTION | REDIR_LOCATION;
+					m_config["return"].push_back("301");
+					m_config["return"].push_back(filepath.erase(0, m_config.at("root").at(0).length()));
 				}
 			}
 		}
+		else if (m_request.getValue("method") == "POST")
+			error_code = -1;
 	}
+	int ret = isReturnResponse();
+	if (ret)
+		error_code = ret;
 	if (error_code)
 		setErrorMsg(error_code);
 	else
@@ -318,11 +338,13 @@ bool Response::createResponseMsg()
 }
 
 
+
+
 // is GET METHOD => check if uri if it is a PATH_INFO, then if there is an query string, safe it in envp!
-//call with execve the file! 
+// call with execve the file! 
 // if method post and is uri is path info => pipe body and execve the python script 
-//Everything what is inside in PATH_INFO has to be a script so it will be executed!!
-//UPLOAD value will be stored in envp that the script knows where to upload! 
+// Everything what is inside in PATH_INFO has to be a script so it will be executed!!
+// UPLOAD value will be stored in envp that the script knows where to upload! 
 
 
 void Response::clearBody()
