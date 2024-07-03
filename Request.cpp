@@ -120,8 +120,8 @@ void Request::initMap()
 		LOG_ERROR("Host is missing in Request Header");
 		m_isValid = 400; 
 	}
-	for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
-		std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
+	// for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
+	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
 
 void Request::setHeadDone(void)
@@ -142,6 +142,11 @@ void Request::setMaxBodySize(std::size_t a_maxBody)
 const std::string &Request::getValue(const std::string &a_key)
 {
 	return (m_requestHeader[a_key]);
+}
+
+void Request::setUri(std::string a_uri)
+{
+	m_requestHeader["uri"] = a_uri;
 }
 
 std::string Request::getRequestHost() const
