@@ -1,48 +1,90 @@
 #include "CGI.hpp"
 
-CGI::CGI(t_config config, Request& request) : m_config(config), m_request(request), m_pid(0), m_outputPipe(-1), m_status(0) {}
+CGI::CGI(t_config config, Request& request) : m_path(NULL), m_config(config), m_request(request), m_pid(0), m_outputPipe(-1), m_status(0) {}
 
-CGI::~CGI() {}
-
-int	CGI::scriptIsExecutable()
+CGI::CGI(const CGI &other) : m_request(other.m_request)
 {
-	std::string filepath;
-	filepath.append(m_config["root"].at(0));
-	filepath.append(m_request.getValue("uri"));
+	m_path = new char[std::strlen(other.m_path) + 1];
+	std::strcpy(m_path, other.m_path);
 
-	return (!access(filepath.c_str(), X_OK) ? 0 : 502);
-}
-
-int CGI::setPath()
-{
-	// schabernack, was ist wenn zb /cgi-bin/test/script.py ???
-	std::string filename = m_request.getValue("uri").substr(9);
-
-	if (filename.find(".py") == filename.length() - 3)
+	for (size_t i = 0; i < other.m_argv.size(); i++)
 	{
-		std::string	python_path = "/usr/bin/python3";
-		m_path = new char[python_path.length() + 1];
-		strcpy(m_path, python_path.c_str());
-		return (0);
+		char* str = new char[std::strlen(other.m_argv.at(i)) + 1];
+		std::strcpy(str, other.m_argv.at(i));
+		m_argv.push_back(str);
 	}
-	std::cout << "CGI-Error: Invalid cgi-script extension." << std::endl;
-	return (502);
+	for (size_t i = 0; i < other.m_envp.size(); i++)
+	{
+		char* str = new char[std::strlen(other.m_envp.at(i)) + 1];
+		std::strcpy(str, other.m_envp.at(i));
+		m_envp.push_back(str);
+	}
 }
 
-void	CGI::setArgv()
+CGI &CGI::operator=(const CGI &other)
 {
-	m_argv = new char* [3];
+	if (this != &other)
+	{
+		deleteData();
 
-	m_argv[0] = m_path;
+		m_path = new char[std::strlen(other.m_path) + 1];
+		std::strcpy(m_path, other.m_path);
+		for (size_t i = 0; i < other.m_argv.size(); i++)
+		{
+			char* str = new char[std::strlen(other.m_argv.at(i)) + 1];
+			std::strcpy(str, other.m_argv.at(i));
+			m_argv.push_back(str);
+		}
+		for (size_t i = 0; i < other.m_envp.size(); i++)
+		{
+			char* str = new char[std::strlen(other.m_envp.at(i)) + 1];
+			std::strcpy(str, other.m_envp.at(i));
+			m_envp.push_back(str);
+		}
+	}
+	return (*this);
+}
 
-	std::string scriptPath;
-	scriptPath.append(m_config["root"].at(0));
-	scriptPath.append(m_request.getValue("uri"));
+CGI::~CGI() 
+{
+	deleteData();
+}
 
-	m_argv[1] = new char[scriptPath.length() + 1];
-	strcpy(m_argv[1], scriptPath.c_str());
+int	CGI::scriptIsExecutable(const std::string& a_filePath) const
+{
+	return (!access(a_filePath.c_str(), X_OK) ? 0 : 500);
+}
 
-	m_argv[2] = NULL;
+int CGI::setPath(const std::string& a_filePath)
+{
+	t_config::iterator extentions = m_config.find("extension");
+	if (extentions == m_config.end())
+		return (500);
+	size_t i = 0;
+	for (; i < extentions->second.size(); ++i)
+	{
+		if (a_filePath.find(extentions->second.at(i)) == a_filePath.length() - extentions->second.at(i).length())
+			break;
+	}
+	if (i >= extentions->second.size())
+	{
+		LOG_ERROR("CGI: extension not found");
+		return (500);
+	}
+	if (m_config.find("script_path") == m_config.end() || m_config.at("script_path").size() <= i)
+		return (500);
+	m_path = new char[m_config.at("script_path").at(i).length() + 1];
+	std::strcpy(m_path, m_config.at("script_path").at(i).c_str());
+	return (0);
+}
+
+void	CGI::setArgv(const std::string& a_filePath)
+{
+	m_argv.push_back(new char[std::strlen(m_path) + 1]);
+	std::strcpy(m_argv[0], m_path);
+
+	m_argv.push_back(new char[a_filePath.length() + 1]);
+	std::strcpy(m_argv[1], a_filePath.c_str());
 }
 
 void	CGI::setEnvp()
@@ -52,21 +94,21 @@ void	CGI::setEnvp()
 	vars.push_back("REQUEST_METHOD=" + m_request.getValue("method"));
 	vars.push_back("CONTENT_TYPE=" + m_request.getValue("Content-Type"));
 	vars.push_back("CONTENT_LENGTH=" + m_request.getValue("Content-Length"));
-
-	m_envp = new char* [4];
+	std::cerr << m_config.at("upload").size() << '\n';
+	if (m_config.at("upload").size() == 1)
+		vars.push_back("UPLOAD="+ m_config.at("upload").at(0));
 
 	size_t	i = 0;
 	while (i < vars.size())
 	{
-			std::cout << &m_envp[i] << std::endl;
 			std::cout << "COPY STRING = '" << vars.at(i) << "' WITH SIZE = " << vars.at(i).length() << std::endl;
-			m_envp[i] = new char[vars.at(i).length() + 1];
+			char *str = new char[vars.at(i).length() + 1];
 
-			strcpy(m_envp[i], vars.at(i).c_str());
-			std::cout << "AFTER COPY = '" << m_envp[i] << "'" << std::endl;
+			std::strcpy(str, vars.at(i).c_str());
+			m_envp.push_back(str);
+			std::cout << "AFTER COPY = '" << str << "'" << std::endl;
 			i++;
 	}
-	m_envp[i] = NULL;
 }
 
 int CGI::run()
@@ -95,12 +137,12 @@ int CGI::run()
         close(cgi_output[1]);
         close(cgi_input[0]);
         close(cgi_input[1]);
-
-		if (execve(m_path, m_argv, m_envp) == -1)
-        {
-            std::cout << "Error while calling execve\n";
+		m_envp.push_back(NULL);
+		m_argv.push_back(NULL);
+		if (chdir(m_filePath.substr(0, m_filePath.find_last_of('/')).c_str()) == -1)
+			exit(500);
+		if (execve(m_path, m_argv.data(), m_envp.data()) == -1)
             exit(500);
-        }
         exit(0);
     }
     else
@@ -115,23 +157,25 @@ int CGI::run()
 	return (0);
 }
 
-
-
 void CGI::deleteData()
 {
-	delete[] (m_path);
-	delete[] (m_argv[1]);
-	delete[] (m_argv);
-
-	for (size_t	i = 0; m_envp[i] != NULL; ++i)
+	if (m_path != NULL)
 	{
-		std::cout << &m_envp[i] << std::endl;
-		std::cout << "DELETE = " << m_envp[i] << std::endl;
-		std::cout << "i = " << i << std::endl;
-		delete[] (m_envp[i]);
+		delete[] (m_path);
+		m_path = NULL;
 	}
-
-	delete[] (m_envp);
+	for (size_t i = 0; i < m_argv.size(); i++)
+	{
+		if (m_argv.at(i) != NULL)
+			delete[] (m_argv.at(i));
+	}
+	m_argv.clear();
+	for (size_t i = 0; i < m_envp.size(); i++)
+	{
+		if (m_envp.at(i) != NULL)
+			delete[] (m_envp.at(i));
+	}
+	m_envp.clear();
 }
 
 int CGI::readFromPipe()
@@ -141,11 +185,9 @@ int CGI::readFromPipe()
 
 	ssize_t n = 0;
 	char buffer[4096];
-
 	int	status_code = 0;
 	if (waitpid(m_pid, &status_code, WNOHANG) == 0)
 	{
-		std::cout << "WAIT FOR CHILD PROCESS!" << std::endl;
 		return (-1);
 	}
 
@@ -172,25 +214,42 @@ int CGI::getStatusCode() const
 	return (m_status);
 }
 
-int	CGI::execute()
+void CGI::setUrlQuery(const std::string &a_urlQuery)
 {
-	int	status_code = 0;
+	std::string envvar = "QUERY_STRING=";
+	envvar.append(a_urlQuery);
+	char* str = new char[envvar.length() + 1];
+	std::strcpy(str, envvar.c_str());
+	m_envp.push_back(str);
+}
 
-	if ((status_code = scriptIsExecutable()))
-		return (status_code);
+int	CGI::execute(std::string a_filePath)
+{
+	m_filePath = a_filePath;
+	std::cout << "Check exec\n";
+	if ((m_status = scriptIsExecutable(a_filePath)))
+	{
+		std::cout << "err: " << m_status << '\n';
+		return (m_status);
+	}
 
-	if ((status_code = setPath()))
-		return (status_code);
+	std::cout << "set path\n";
+	if ((m_status = setPath(a_filePath)))
+		return (m_status);
 
-	setArgv();
+	std::cout << "set argv envp\n" << std::endl;
+	setArgv(a_filePath);
 	setEnvp();
 
 	std::cout << "PATH: " << m_path << std::endl;
 	std::cout << "ARGS: " << m_argv[0] << " | " << m_argv[1] << std::endl;
-	std::cout << "ENVP: " << m_envp[0] << " | " << m_envp[1] << " | " << m_envp[2] << std::endl;
+	std::cout << "ENVP: ";
+	for (size_t i = 0; i < m_envp.size(); i++)
+		std::cout << " | " << m_envp.at(i);
+	
 
-	status_code = run();
+	m_status = run();
 	deleteData();
 
-    return (status_code);
+    return (m_status);
 }

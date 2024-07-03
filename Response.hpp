@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "SharedPtr.hpp"
 #include <algorithm>
 
 #define SERVERNAME "Surfing in the web (Ubuntu)"
@@ -38,7 +39,7 @@ private:
 	Request&									m_request;
 	t_config									m_config;
 	unsigned int								m_eventFlags;
-	CGI*										m_cgi;
+	SharedPtr<CGI>								m_cgi;
 
 
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
@@ -54,6 +55,7 @@ private:
 	bool		checkAllowedMethod();
 	int			isValidFile(std::string &a_filepath);
 	int			getValidFilePath(std::string &a_filepath);
+	std::string	decodeUri(const std::string& a_uri, std::string& a_query);
 	int			isReturnResponse();
 	void		addRedirection(std::string &a_response_header, const std::string &redLoc);
 	void		addServerName(std::string &a_response_header);
@@ -62,6 +64,7 @@ private:
 	std::string	getFileType(const std::string &filepath);
 	int			isValidRequestHeader();
 	bool		isCgiReady();
+	bool		isCgiFile(const std::string& a_filePath) const;
 	int			deleteRequest();
 	void		modifyUri();
 

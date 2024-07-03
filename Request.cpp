@@ -171,7 +171,7 @@ size_t Request::getContentLength() const
 	if (found != m_requestHeader.end())
 	{
 		//Maybe parse value, check for numbers!
-		return (strtol(found->second.c_str(), NULL, 10));		
+		return (std::strtol(found->second.c_str(), NULL, 10));		
 	}
 	return 0;
 }

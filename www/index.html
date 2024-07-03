@@ -9,11 +9,14 @@
 		<div class="circular--portrait rotate-container">
 			<img src="bild.jpg" />
 		</div>
-
 		<form method="post" enctype="multipart/form-data" action="/upload">
 			<input type="file" title="file" id="file" name="file">
 			<button type="submit">Upload</button>
 		</form>
+		<form enctype="application/x-www-form-urlencoded" action="/cgi-bin/test.sh">
+			<textarea id="text" name="text"></textarea>
+			<button type="submit">Test bash</button>
+		</form>
 	</body>
-	<script type='text/javascript' src='main.js'></script>
+	<script type='text/javascript' src='main.js'></script>	
 </html>
