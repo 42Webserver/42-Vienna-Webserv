@@ -332,7 +332,6 @@ bool Response::createResponseMsg()
 	else if (!(error_code = isValidRequestHeader()))
 	{
 		filepath = decodeUri(m_request.getValue("uri"), urlQuery);
-		std::cout << "FIlepath: " << filepath << " Query: " << urlQuery << '\n';
 		if ((error_code = getValidFilePath(filepath)))
 		{
 			if (error_code == 301)
@@ -430,6 +429,8 @@ void Response::createAutoIndex(std::string &a_path)
 		return ;
 	std::string uri = a_path;
 	uri.erase(0,  m_config.at("root").at(0).length());
+	if (m_config.find("name") != m_config.end())
+		uri.insert(0, m_config.at("name").at(0));
 	m_responseBody.append("<!DOCTYPE html><body><h1>Index of " + uri + "</h1><hr><div style=\"display: flex; flex-direction: column; justify-items: center; align-items: flex-begin;\">");
 	struct dirent* de;
 	std::vector<dirent> ents;
