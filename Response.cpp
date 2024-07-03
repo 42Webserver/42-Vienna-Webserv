@@ -44,20 +44,20 @@ bool Response::getBody(std::string const &filename)
 {
 	if (!m_responseBody.empty())
 		return true;
-    std::ifstream input_file(filename.c_str());
-    std::stringstream body;
+	std::ifstream input_file(filename.c_str());
+	std::stringstream body;
 	//std::cout << "Filename = " << filename << std::endl;
 
-    if (!input_file.is_open() || !input_file.good())
-    {
-        std::cerr << "Error: open error file" << '\n';
-        return (false);
+	if (!input_file.is_open() || !input_file.good())
+	{
+		std::cerr << "Error: open error file" << '\n';
+		return (false);
 	}
 	body << input_file.rdbuf();
-    m_responseBody.append(body.str());
-    m_responseBody.append("\r\n");
+	m_responseBody.append(body.str());
+	m_responseBody.append("\r\n");
 	input_file.close();
-    return (true);
+	return (true);
 }
 
 void Response::initStatusCodes()
@@ -65,15 +65,15 @@ void Response::initStatusCodes()
 	s_status_codes["200"] = "OK";
 	s_status_codes["301"] = "Moved Permanently";
 	s_status_codes["302"] = "Found";
-    s_status_codes["400"] = "Bad Request";
+	s_status_codes["400"] = "Bad Request";
 	s_status_codes["403"] = "Forbidden";
-    s_status_codes["404"] = "Not Found";
-    s_status_codes["405"] = "Method Not Allowed";
+	s_status_codes["404"] = "Not Found";
+	s_status_codes["405"] = "Method Not Allowed";
 	s_status_codes["413"] = "Content Too Large";
-    s_status_codes["414"] = "URI Too Long";
+	s_status_codes["414"] = "URI Too Long";
 	s_status_codes["431"] = "Request Header Fields Too Large";
-    s_status_codes["500"] = "Internal Server Error";
-    s_status_codes["505"] = "HTTP Version not supported";
+	s_status_codes["500"] = "Internal Server Error";
+	s_status_codes["505"] = "HTTP Version not supported";
 
 	s_status_codes["0"] = "LANDING PAGE!";
 }
@@ -120,7 +120,7 @@ std::string Response::getFileType(const std::string &filepath)
 			return (filepath.substr(pos + 1, filepath.length()));
 	}
 	else if (filepath.at(filepath.length() - 1) == '/')
-    	return ("html");
+		return ("html");
 	return ("NOTHING");
 }
 
@@ -175,54 +175,57 @@ int Response::checkHeaderline()
 
 int Response::getValidFilePath(std::string &a_filepath)
 {
-    int    ret = isValidFile(a_filepath);
-    if (ret == 403)
-    {
-        std::string temp;
-        if (m_config.at("index").size())
-        {
-            temp = a_filepath + m_config.at("index").at(0);
-            ret = getValidFilePath(temp);
-            a_filepath = temp;
-            return (ret);
-        }
-        if (m_config.at("autoindex").size())
-        {
-            if (m_config.at("autoindex").at(0) == "on")
-            {
+	int    ret = isValidFile(a_filepath);
+	if (ret == 4031)
+	{
+		if (m_config.at("index").size())
+		{
+			std::string temp = a_filepath + m_config.at("index").at(0);
+			ret = getValidFilePath(temp);
+			a_filepath = temp;
+			return (ret);
+		}
+		if (m_config.at("autoindex").size())
+		{
+			if (m_config.at("autoindex").at(0) == "on")
+			{
 				createAutoIndex(a_filepath);
-                return (0);
-            }
-        }
-    }
-    return (ret);
+				return (0);
+			}
+		}
+		return (403);
+	}
+	return (ret);
 }
 
 // @brief
 /// @param a_filepath
 /// @return Returns 0 for file.
-///            Returns 403 for dir
+///			Returns 403 for no perms;
+///         Returns 4031 for dir
 ///         Returns 301 for dir when searching for file
 ///         Returns 404 for no dir or file
 
 int Response::isValidFile(std::string &a_filepath)
 {
-    struct stat sb;
-    if (stat(a_filepath.c_str(), &sb) == 0)
-    {
-        if (S_ISREG(sb.st_mode))
-            return (0);
-        if (S_ISDIR(sb.st_mode))
-        {
-            if (a_filepath.size() > 0 && a_filepath.at(a_filepath.size() - 1) != '/')
-            {
-                a_filepath.push_back('/');
-                return (301);
-            }
-            return (403);
-        }
-    }
-    return (404);
+	struct stat sb;
+	if (stat(a_filepath.c_str(), &sb) == 0)
+	{
+		if ((sb.st_mode & S_IRUSR) == 0)
+			return (403);
+		if (S_ISREG(sb.st_mode))
+			return (0);
+		if (S_ISDIR(sb.st_mode))
+		{
+			if (a_filepath.size() > 0 && a_filepath.at(a_filepath.size() - 1) != '/')
+			{
+				a_filepath.push_back('/');
+				return (301);
+			}
+			return (4031);
+		}
+	}
+	return (404);
 }
 
 int	Response::isReturnResponse()
@@ -407,7 +410,7 @@ void	Response::addStatusLine(const std::string &a_status_code, std::string& a_re
 void Response::addDateAndTime(std::string &a_response_header)
 {
 	std::time_t t = std::time(NULL);
-    std::tm* now = std::localtime(&t);
+	std::tm* now = std::localtime(&t);
 
 	char buffer[32];
 	a_response_header.append("Date: ");
