@@ -34,7 +34,7 @@ Response &Response::operator=(const Response &other)
 	return (*this);
 }
 
-Response::~Response() {delete (m_cgi);}
+Response::~Response() {}
 
 bool Response::getBody(std::string const &filename)
 {
@@ -293,38 +293,26 @@ bool Response::createResponseMsg()
 	{
 		filepath = decodeUri(m_request.getValue("uri"), urlQuery);
 		std::cout << "FIlepath: " << filepath << " Query: " << urlQuery << '\n';
-		if (m_config.find("name") != m_config.end() && m_config.at("name").at(0).find("/cgi-bin") == 0)
+		if ((error_code = getValidFilePath(filepath)))
 		{
-			if (m_request.getValue("method") == "GET")
+			if (error_code == 301)
 			{
-
-			}
-			if (m_request.getValue("method") == "POST")
-			{
-				LOG("CGI POST-REQUEST");
-				if (m_cgi != NULL)
-					delete (m_cgi);
-				m_cgi =	new CGI(m_config, m_request);
-				m_cgi->setUrlQuery(urlQuery);
-				int ret = m_cgi->execute(filepath);
-				//HIER MUSS NOCH EINMAL DAS MIT READ FROM PIPE REINGEMACHT WERDEN UND DIE ISCGIREADY FUNCTION GECALLT WERDEN!!!!!!
-				//m_responseBody = m_cgi->getResponseBody();
-				error_code = ret;
-				if (error_code == 0)
-					return (false);
+				m_eventFlags |= REDIRECTION | REDIR_LOCATION;
+				m_config["return"].push_back("301");
+				m_config["return"].push_back(filepath.erase(0, m_config.at("root").at(0).length()));
 			}
 		}
-		else if (m_request.getValue("method") == "GET")
+		else if (isCgiFile(filepath))
 		{
-			if ((error_code = getValidFilePath(filepath)))
-			{
-				if (error_code == 301)
-				{
-					m_eventFlags |= REDIRECTION | REDIR_LOCATION;
-					m_config["return"].push_back("301");
-					m_config["return"].push_back(filepath.erase(0, m_config.at("root").at(0).length()));
-				}
-			}
+			LOG("CGI POST-REQUEST");
+			m_cgi =	SharedPtr<CGI>(new CGI(m_config, m_request));
+			m_cgi->setUrlQuery(urlQuery);
+			int ret = m_cgi->execute(filepath);
+			//HIER MUSS NOCH EINMAL DAS MIT READ FROM PIPE REINGEMACHT WERDEN UND DIE ISCGIREADY FUNCTION GECALLT WERDEN!!!!!!
+			//m_responseBody = m_cgi->getResponseBody();
+			error_code = ret;
+			if (error_code == 0)
+				return (false);
 		}
 		else if (m_request.getValue("method") == "POST")
 			error_code = -1;
@@ -357,6 +345,24 @@ void Response::clearBody()
 bool	Response::isCgiReady()
 {
 	return (m_cgi->readFromPipe() != -1);
+}
+
+bool Response::isCgiFile(const std::string &a_filePath) const
+{
+	if (m_config.find("name") == m_config.end() || m_config.find("extension") == m_config.end())
+		return (false);
+	//make filepath class that is a string but with extra functions like get extention and isFile or isDir etc...
+	std::size_t dotPos = a_filePath.find_last_of('.');
+	if (dotPos == std::string::npos)
+		return (false);
+	const std::vector<std::string>& extensions = m_config.at("extension");
+	std::string fileEnd = a_filePath.substr(dotPos);
+	for (std::size_t i = 0; i < extensions.size(); i++)
+	{
+		if (fileEnd == extensions.at(i))
+			return (true);
+	}
+	return (false);
 }
 
 std::size_t Response::getMaxBodySize(void) const
@@ -420,7 +426,7 @@ void Response::getResponseHeader(const std::string &a_status_code, const std::st
 
 void	Response::addStatusLine(const std::string &a_status_code, std::string& a_response_header)
 {
-	a_response_header.append(m_request.getValue("http_version"));
+	a_response_header.append("HTTP/1.1");
 	a_response_header += ' ';
 	a_response_header.append(a_status_code);
 	a_response_header += ' ';

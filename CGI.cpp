@@ -25,17 +25,7 @@ CGI &CGI::operator=(const CGI &other)
 {
 	if (this != &other)
 	{
-		delete[] (m_path);
-		for (size_t i = 0; i < m_argv.size(); i++)
-		{
-			delete[] (m_argv.at(i));
-		}
-		m_argv.clear();
-		for (size_t i = 0; i < m_envp.size(); i++)
-		{
-			delete[] (m_envp.at(i));
-		}
-		m_envp.clear();
+		deleteData();
 
 		m_path = new char[std::strlen(other.m_path) + 1];
 		std::strcpy(m_path, other.m_path);
@@ -57,18 +47,7 @@ CGI &CGI::operator=(const CGI &other)
 
 CGI::~CGI() 
 {
-	if (m_path != NULL)
-		delete[] (m_path);
-	for (size_t i = 0; i < m_argv.size(); i++)
-	{
-		if (m_argv.at(i) != NULL)
-			delete[] (m_argv.at(i));
-	}
-	for (size_t i = 0; i < m_envp.size(); i++)
-	{
-		if (m_envp.at(i) != NULL)
-			delete[] (m_envp.at(i));
-	}
+	deleteData();
 }
 
 int	CGI::scriptIsExecutable(const std::string& a_filePath) const
@@ -78,7 +57,7 @@ int	CGI::scriptIsExecutable(const std::string& a_filePath) const
 
 int CGI::setPath(const std::string& a_filePath)
 {
-	t_config::const_iterator extentions = m_config.find("extension");
+	t_config::iterator extentions = m_config.find("extension");
 	if (extentions == m_config.end())
 		return (500);
 	size_t i = 0;
@@ -258,7 +237,7 @@ int	CGI::execute(std::string a_filePath)
 	if ((m_status = setPath(a_filePath)))
 		return (m_status);
 
-	std::cout << "set argv envp\n";
+	std::cout << "set argv envp\n" << std::endl;
 	setArgv(a_filePath);
 	setEnvp();
 
