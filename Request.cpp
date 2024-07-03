@@ -107,7 +107,6 @@ void Request::initMap()
 	size_t		pos = 0, prevPos = 0;
 	while ((!m_isValid && (pos = remainder.find("\r\n", pos)) != std::string::npos))
 	{
-		//std::cout << remainder << std::endl;
 		line = remainder.substr(prevPos, pos - prevPos);
 		if (line.empty())
 			break;

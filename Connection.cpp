@@ -92,18 +92,17 @@ int Connection::receiveRequestRaw(void)
 			return (-1);
 		if (m_request.headComplete())
 		{
+			LOG("HEAD: \n" << m_request.getHead() << '\n')
 			m_request.initMap();
 			m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
 			m_request.setMaxBodySize(m_response.getMaxBodySize());
 		}
-		LOG("HEAD: \n" << m_request.getHead() << '\n')
 	}
 	else if (!m_request.bodyComplete())
 	{
 		if (readBody())
 			return (-1);
 		LOG("Read Body");
-		// LOG("BODY: \n" << m_request.getBody() << '\n')
 	}
 	m_idleStart = std::time(NULL);
  	if (m_request.isReady())
@@ -122,7 +121,6 @@ int Connection::sendResponse(void)
 	m_request = Request();
 	const std::string	response = m_response.getResponse();
 	// m_response.clearBody();
-	// std::cout << "Response:\n" << response << '\n';
 	m_idleStart = std::time(NULL);
 	if (send(m_clientSocket, response.data(), response.size(), 0) == -1)
 		return (-1);

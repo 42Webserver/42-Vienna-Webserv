@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <algorithm>
 
 #define SERVERNAME "Surfing in the web (Ubuntu)"
 

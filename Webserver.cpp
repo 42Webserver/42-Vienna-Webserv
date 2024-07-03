@@ -154,7 +154,6 @@ int Webserver::pollClients(void)
 		}
 		if (m_polls.getConnection(i).getIdleTime() > 1) {
 			LOGC(TERMC_DARKGREEN, ">>> Client time out <<<")
-			std::cout << "TIMEOUT! "<< std::endl;
 			m_polls.removeConnection(i--);
 			continue;
 		}
