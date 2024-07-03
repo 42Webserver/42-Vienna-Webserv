@@ -246,7 +246,6 @@ int Response::deleteRequest()
 	{
 		if (S_ISREG(sb.st_mode))
 		{
-			std::cout << "Is a regular file!" << std::endl;
 			if (std::remove(filepath.c_str()))
 				return (404);
 			else
@@ -255,11 +254,8 @@ int Response::deleteRequest()
 				return (0);
 			}	
 		}	
-		else 
-			return(404);
 	}
-	else 
-		return(404);
+	return(404);
 }
 
 void Response::modifyUri()
