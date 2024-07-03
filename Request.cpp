@@ -107,7 +107,7 @@ void Request::initMap()
 	size_t		pos = 0, prevPos = 0;
 	while ((!m_isValid && (pos = remainder.find("\r\n", pos)) != std::string::npos))
 	{
-		std::cout << remainder << std::endl;
+		//std::cout << remainder << std::endl;
 		line = remainder.substr(prevPos, pos - prevPos);
 		if (line.empty())
 			break;
@@ -121,8 +121,8 @@ void Request::initMap()
 		LOG_ERROR("Host is missing in Request Header");
 		m_isValid = 400; 
 	}
-	for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
-		std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
+	// for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
+	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
 
 void Request::setHeadDone(void)
