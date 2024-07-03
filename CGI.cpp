@@ -73,14 +73,14 @@ CGI::~CGI()
 
 int	CGI::scriptIsExecutable(const std::string& a_filePath) const
 {
-	return (!access(a_filePath.c_str(), X_OK) ? 0 : 502);
+	return (!access(a_filePath.c_str(), X_OK) ? 0 : 500);
 }
 
 int CGI::setPath(const std::string& a_filePath)
 {
 	t_config::const_iterator extentions = m_config.find("extension");
 	if (extentions == m_config.end())
-		return (502);
+		return (500);
 	size_t i = 0;
 	for (; i < extentions->second.size(); ++i)
 	{
@@ -90,10 +90,10 @@ int CGI::setPath(const std::string& a_filePath)
 	if (i >= extentions->second.size())
 	{
 		LOG_ERROR("CGI: extension not found");
-		return (502);
+		return (500);
 	}
 	if (m_config.find("script_path") == m_config.end() || m_config.at("script_path").size() <= i)
-		return (502);
+		return (500);
 	m_path = new char[m_config.at("script_path").at(i).length() + 1];
 	std::strcpy(m_path, m_config.at("script_path").at(i).c_str());
 	return (0);
@@ -143,7 +143,6 @@ int CGI::run()
 	}
 
 	pid_t pid = fork();
-	LOG_WARNING("NOW FORKING AND EXEC???");
 	//PROTECTION
 	if (pid < 0)
 	{
@@ -161,12 +160,10 @@ int CGI::run()
         close(cgi_input[1]);
 		m_envp.push_back(NULL);
 		m_argv.push_back(NULL);
-		chdir(m_filePath.substr(0, m_filePath.find_last_of('/')).c_str());
+		if (chdir(m_filePath.substr(0, m_filePath.find_last_of('/')).c_str()) == -1)
+			exit(500);
 		if (execve(m_path, m_argv.data(), m_envp.data()) == -1)
-        {
-            std::cout << "Error while calling execve\n";
             exit(500);
-        }
         exit(0);
     }
     else

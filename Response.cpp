@@ -34,7 +34,7 @@ Response &Response::operator=(const Response &other)
 	return (*this);
 }
 
-Response::~Response() {}
+Response::~Response() {delete (m_cgi);}
 
 bool Response::getBody(std::string const &filename)
 {
@@ -302,7 +302,9 @@ bool Response::createResponseMsg()
 			if (m_request.getValue("method") == "POST")
 			{
 				LOG("CGI POST-REQUEST");
-				m_cgi =	SharedPtr<CGI>(new CGI(m_config, m_request));
+				if (m_cgi != NULL)
+					delete (m_cgi);
+				m_cgi =	new CGI(m_config, m_request);
 				m_cgi->setUrlQuery(urlQuery);
 				int ret = m_cgi->execute(filepath);
 				//HIER MUSS NOCH EINMAL DAS MIT READ FROM PIPE REINGEMACHT WERDEN UND DIE ISCGIREADY FUNCTION GECALLT WERDEN!!!!!!

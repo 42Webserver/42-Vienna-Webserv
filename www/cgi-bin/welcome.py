@@ -4,8 +4,6 @@ import os
 import cgi
 from urllib.parse import parse_qs
 
-while 1:
-	print("HI")
 # Create instance of FieldStorage
 form = cgi.FieldStorage()
 

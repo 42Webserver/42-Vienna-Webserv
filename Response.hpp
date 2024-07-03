@@ -16,7 +16,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "SharedPtr.hpp"
 
 #define SERVERNAME "Surfing in the web (Ubuntu)"
 
@@ -38,7 +37,7 @@ private:
 	Request&									m_request;
 	t_config									m_config;
 	unsigned int								m_eventFlags;
-	SharedPtr<CGI>								m_cgi;
+	CGI*										m_cgi;
 
 
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
