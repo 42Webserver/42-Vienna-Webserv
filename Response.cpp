@@ -346,6 +346,11 @@ std::size_t Response::getMaxBodySize(void) const
 	return std::size_t(0);
 }
 
+static bool operator<(dirent lhs, dirent rhs)
+{
+	return (lhs.d_type < rhs.d_type || std::strcmp(lhs.d_name, rhs.d_name) < 0);
+}
+
 void Response::createAutoIndex(std::string &a_path)
 {
 	DIR* dir = opendir(a_path.c_str());
@@ -354,21 +359,19 @@ void Response::createAutoIndex(std::string &a_path)
 	std::string uri = a_path;
 	uri.erase(0,  m_config.at("root").at(0).length());
 	m_responseBody.append("<!DOCTYPE html><body><h1>Index of " + uri + "</h1><hr><div style=\"display: flex; flex-direction: column; justify-items: center; align-items: flex-begin;\">");
-	struct dirent* de = readdir(dir);
-	std::size_t start = m_responseBody.length();
-	std::size_t dirs = 0;
-	std::size_t files = 0;
+	struct dirent* de;
+	std::vector<dirent> ents;
 	while ((de = readdir(dir)) != NULL)
+		ents.push_back(*de);
+	std::sort(ents.begin(), ents.end());
+	ents.erase(ents.begin());
+	for (std::size_t i = 0; i < ents.size(); i++)
 	{
-		std::string temp;
-		if (de->d_type == DT_DIR) {
-			temp = "<a href=\"" + uri + de->d_name  + "/\">" + de->d_name + "/</a>";
-			m_responseBody.insert(start + dirs, temp);
-			dirs += temp.length();
-		} else {
-			temp = "<a href=\"" + uri + de->d_name  + "\">" + de->d_name + "</a>";
-			m_responseBody.insert(start + dirs + files, temp);
-			files += temp.length();
+		if (ents.at(i).d_type == DT_DIR){
+			m_responseBody.append("<a href=\"" + uri + ents.at(i).d_name  + "/\">" + ents.at(i).d_name + "/</a>");
+
+		} else if (ents.at(i).d_name[0] != '.') {
+			m_responseBody.append("<a href=\"" + uri + ents.at(i).d_name  + "\">" + ents.at(i).d_name + "</a>");
 		}
 	}
 	m_responseBody.append("</div><hr></body>\r\n");
