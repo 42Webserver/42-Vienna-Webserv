@@ -144,6 +144,11 @@ const std::string &Request::getValue(const std::string &a_key)
 	return (m_requestHeader[a_key]);
 }
 
+void Request::setUri(std::string a_uri)
+{
+	m_requestHeader["uri"] = a_uri;
+}
+
 std::string Request::getRequestHost() const
 {
 	std::string host;

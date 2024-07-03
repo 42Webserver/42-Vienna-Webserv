@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "SharedPtr.hpp"
+#include <algorithm>
 
 #define SERVERNAME "Surfing in the web (Ubuntu)"
 
@@ -64,6 +65,8 @@ private:
 	int			isValidRequestHeader();
 	bool		isCgiReady();
 	bool		isCgiFile(const std::string& a_filePath) const;
+	int			deleteRequest();
+	void		modifyUri();
 
 	Response(void);
 

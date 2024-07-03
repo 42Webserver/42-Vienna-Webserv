@@ -25,6 +25,7 @@ public:
 	~Request();
 
 	const std::string&	getValue(const std::string& a_key);
+	void				setUri(std::string a_uri);
 	bool				getValue(const std::string& a_key, std::string& a_returnValue) const;
 	void				setValue(const std::string& a_key, const std::string& a_val);
 	std::string			getRequestHost() const;
