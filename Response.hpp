@@ -62,6 +62,7 @@ private:
 	int			isValidRequestHeader();
 	bool		isCgiReady();
 	int			deleteRequest();
+	void		modifyUri();
 
 	Response(void);
 
