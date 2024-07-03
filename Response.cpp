@@ -262,6 +262,21 @@ int Response::deleteRequest()
 		return(404);
 }
 
+void Response::modifyUri()
+{
+	if (m_config.find("name") != m_config.end() && m_config.at("name").at(0) != "/")
+	{
+		std::string newUri;
+		
+		if (m_request.getValue("uri").length() >= m_config.at("name").at(0).length())
+			newUri = m_request.getValue("uri").substr(m_config.at("name").at(0).length());
+		if (newUri.empty())
+			newUri.append("/");
+		m_request.setUri(newUri);
+	}
+
+}
+
 int	Response::isValidRequestHeader()
 {
 	int error_code;
@@ -279,6 +294,8 @@ bool Response::createResponseMsg()
 {
 	int error_code;
 	std::string filepath;
+
+	modifyUri();
 
 	if (isCgiResponse())
 	{
