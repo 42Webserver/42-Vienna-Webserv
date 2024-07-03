@@ -8,7 +8,8 @@ Response::Response(Request &a_request) : m_request(a_request),  m_eventFlags(0),
 
 Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0), m_cgi(NULL)
 {
-	std::cout << "ICH SETZE CGI AUF NULL" << std::endl;
+	// std::cout << "HEAD: " <<  m_request.getHead() << std::endl;
+	//std::cout << "ICH SETZE CGI AUF NULL" << std::endl;
 /* 			std::cout << "STATUS CODE =";
 			for (std::map<std::string, std::string>::iterator it = s_status_codes.begin(); it != s_status_codes.end(); ++it)
 			{
@@ -237,6 +238,30 @@ int	Response::isReturnResponse()
 	return (0);
 }
 
+int Response::deleteRequest()
+{
+	struct stat sb;
+	std::string filepath = m_config.at("root").at(0) + m_request.getValue("uri");
+	if (stat(filepath.c_str(), &sb) == 0)
+	{
+		if (S_ISREG(sb.st_mode))
+		{
+			std::cout << "Is a regular file!" << std::endl;
+			if (std::remove(filepath.c_str()))
+				return (404);
+			else
+			{
+				m_responseBody.append("<html><body><h1>Delete file successfull</h1></body></html>\r\n");
+				return (0);
+			}	
+		}	
+		else 
+			return(404);
+	}
+	else 
+		return(404);
+}
+
 int	Response::isValidRequestHeader()
 {
 	int error_code;
@@ -308,6 +333,8 @@ bool Response::createResponseMsg()
 						return (false);
 				}
 			}
+			else if(m_request.getValue("method") == "DELETE")
+				error_code = deleteRequest();
 		}
 	}
 	if (error_code)
