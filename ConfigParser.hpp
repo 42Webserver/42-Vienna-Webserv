@@ -48,8 +48,9 @@ private:
 	static void checkDuplicateLocations(struct subserver& subserver);
 
 	static void	safeData(std::vector<std::string> tokens);
+	static void	compareCgiKey(const struct subserver& a_subserver);
 	static void	initSubserver(struct subserver &subserver);
-	static void	initLocation(std::map<std::string, std::vector<std::string> > &location, const std::string &locationName);
+	static void	initLocation(std::map<std::string, std::vector<std::string> > &location);
 	static void	updateLocation(std::map<std::string, std::vector<std::string> > &location, struct subserver newSubserver);
 	static void	printData(std::vector <struct subserver> data);
 
