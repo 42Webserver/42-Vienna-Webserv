@@ -1,25 +1,33 @@
 NAME=	webserv
 FLAGS=	-Wall -Werror -Wextra -pedantic -std=c++98 -g
 
+SRC_DIR= ./src/
+OBJ_DIR= ${SRC_DIR}objs/
+
 FILES=	main.cpp Webserver.cpp Server.cpp Connection.cpp Request.cpp Response.cpp PollContainer.cpp ConfigParser.cpp Data.cpp CGI.cpp
-OBJS=	$(FILES:.cpp=.o)
+
+SRCS=	$(addprefix $(SRC_DIR), $(FILES))
+OBJS=	$(addprefix $(OBJ_DIR), $(FILES:.cpp=.o))
 
 all:	$(NAME)
 
-%.o:		%.cpp
+$(OBJ_DIR)%.o:		$(SRC_DIR)%.cpp
 	c++ $(FLAGS) -o $@ -c $<
 
-$(NAME):	$(OBJS)
+$(OBJ_DIR):
+	mkdir $(OBJ_DIR)
+
+$(NAME):	$(OBJ_DIR) $(OBJS)
 	c++ $(FLAGS) $(OBJS) -o $(NAME)
 
 debug:
 	make FLAGS="$(FLAGS) -D DEBUG"
 
 clean:
-	rm -f $(OBJS)
+	rm -r $(OBJ_DIR)
 
 fclean: clean
-	rm -f $(NAME)
+	rm $(NAME)
 
 re:	fclean all
 
