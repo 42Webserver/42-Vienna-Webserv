@@ -74,7 +74,6 @@ SharedPtr<T>::~SharedPtr()
 	{
 		delete m_sControlBlock;
 	}
-	std::cout << std::endl;
 }
 
 template <typename T>
