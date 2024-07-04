@@ -236,11 +236,12 @@ void	ConfigParser::readConfigFile(const std::string& file)
 	sortConfigVector(tokens);
 
 	safeData(tokens);
-	//printData(m_subservers);
+	printData(m_subservers);
 
 
 
 	inFile.close();
+	exit(42);
 }
 
 void	ConfigParser::checkValueAutoindex(std::string& value)
@@ -403,7 +404,7 @@ void	ConfigParser::checkValue(const std::string& key, std::vector<std::string>& 
 		checkValueRoot(value.at(0));
 	if (key == "upload")
 		checkValueUpload(value.at(0));	
-	if (key == "allowed_methods")
+	if (key == "allowed_methods" || key == "cgi_methods")
 		checkValueAllowedMethods(value);
 	if (key == "return")
 		checkValueReturn(value);
@@ -462,11 +463,9 @@ void	ConfigParser::allowAllMethods(std::vector<std::string> &value)
 bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::string> &tokens, size_t &i)
 {
 	std::map< std::string, std::vector<std::string> > location;
-	initLocation(location, tokens.at(i + 1));
+	initLocation(location);
 	std::vector<std::string> value;
 	value.push_back(tokens.at(i + 1));
-	bool isCgi;
-	value.at(0) == "/cgi-bin" ? isCgi = true : isCgi = false;
 	location["name"] = value;
 	i += 3;
 	while(tokens.at(i) != "}")
@@ -474,7 +473,7 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 		value.clear();
 		if (tokens.at(i) == "listen" || tokens.at(i) == "root" || tokens.at(i) == "index" \
 			|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex" \
-			|| (isCgi && tokens.at(i) == "upload"))
+			|| tokens.at(i) == "upload")
 		{
 			value.push_back(tokens.at(++i));
 			checkValue(tokens.at(i - 1), value);
@@ -485,7 +484,8 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 		}
 		else if (tokens.at(i) == "server_name" || tokens.at(i) == "error_page" || \
 			tokens.at(i) == "allowed_methods" || tokens.at(i) == "return" \
-			|| (isCgi && (tokens.at(i) == "extension" || tokens.at(i) == "script_path")))
+			|| tokens.at(i) == "extension" || tokens.at(i) == "script_path" \
+			|| tokens.at(i) == "cgi_methods")
 		{
 			i++;
 			while (tokens.at(i) != ";")
@@ -523,7 +523,7 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 		throw std::runtime_error("Error: config-file: Missing argument at key [serverscope]");
 	//ADD just one arg!
 	if (tokens.at(i) == "listen" || tokens.at(i) == "root" || tokens.at(i) == "index" \
-		|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex" || tokens.at(i) == "UPLOAD")
+		|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex" || tokens.at(i) == "upload")
 	{
 		i++;
 		value.push_back(tokens.at(i));
@@ -535,7 +535,9 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 	}
 	//ADD optional multiple arguments!
 	else if (tokens.at(i) == "server_name" || tokens.at(i) == "error_page" || \
-		tokens.at(i) == "allowed_methods" || tokens.at(i) == "return")
+		tokens.at(i) == "allowed_methods" || tokens.at(i) == "return" \
+			|| tokens.at(i) == "extension" || tokens.at(i) == "script_path" \
+			|| tokens.at(i) == "cgi_methods")
 	{
 		i++;
 		while (tokens.at(i) != ";")
@@ -595,6 +597,16 @@ void ConfigParser::checkDuplicateLocations(struct subserver& subserver)
 	}
 }
 
+void ConfigParser::compareCgiKey(const struct subserver& a_subserver)
+{
+	if (a_subserver.serverConfig.at("extension").size() != a_subserver.serverConfig.at("script_path").size())
+		throw std::runtime_error("Error: config-file: invalid amount of value at cgi keys");
+	for (std::vector<t_config>::const_iterator it = a_subserver.locationConfigs.begin(); it != a_subserver.locationConfigs.end(); ++it)
+		
+		if (it->at("extension").size() != it->at("script_path").size())
+			throw std::runtime_error("Error: config-file: invalid amount of value at cgi keys");
+}
+
 void ConfigParser::safeData(std::vector<std::string> tokens)
 {
 	for (size_t i = 0; i < tokens.size(); i++)
@@ -625,11 +637,13 @@ void ConfigParser::safeData(std::vector<std::string> tokens)
 				allowAllMethods(newSubserver.serverConfig["allowed_methods"]);
 			setupErrorPages(newSubserver);
 			checkDuplicateLocations(newSubserver);
+			compareCgiKey(newSubserver);
 			m_subservers.push_back(newSubserver);
 		}
 		else
 			throw std::runtime_error("Error: config-file: Trash between scopes!");
 	}
+
 }
 
 void ConfigParser::initSubserver(struct subserver &subserver)
@@ -643,7 +657,11 @@ void ConfigParser::initSubserver(struct subserver &subserver)
 	subserver.serverConfig["allowed_methods"];
 	subserver.serverConfig["autoindex"];
 	subserver.serverConfig["return"];
-	subserver.serverConfig["UPLOAD"];
+	subserver.serverConfig["upload"];
+	subserver.serverConfig["extension"];
+	subserver.serverConfig["script_path"];
+	subserver.serverConfig["cgi_methods"];
+
 }
 
 void ConfigParser::updateLocation(std::map<std::string, std::vector<std::string> > &location, struct subserver newSubserver)
@@ -660,7 +678,7 @@ void ConfigParser::updateLocation(std::map<std::string, std::vector<std::string>
 	}
 }
 
-void ConfigParser::initLocation(std::map<std::string, std::vector<std::string> > &location, const std::string &locationName)
+void ConfigParser::initLocation(std::map<std::string, std::vector<std::string> > &location)
 {
 	location["index"];
 	location["client_max_body_size"];
@@ -670,12 +688,10 @@ void ConfigParser::initLocation(std::map<std::string, std::vector<std::string> >
 	location["return"];
 	location["root"];
 	location["name"];
-	if (locationName == "/cgi-bin")
-	{
-		location["upload"];
-		location["extension"];
-		location["script_path"];
-	}
+	location["upload"];
+	location["extension"];
+	location["script_path"];
+	location["cgi_methods"];
 }
 
 std::vector<struct subserver>	ConfigParser::parseConfig(std::string& configname)
