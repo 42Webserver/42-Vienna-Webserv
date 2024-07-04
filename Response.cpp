@@ -196,6 +196,9 @@ int Response::getValidFilePath(std::string &a_filepath)
 		}
 		return (403);
 	}
+	if (ret == 301 && m_config.find("name") != m_config.end())
+		a_filepath.insert(0, m_config.at("name").at(0));
+	std::cout << a_filepath << std::endl;
 	return (ret);
 }
 
@@ -322,7 +325,7 @@ bool Response::createResponseMsg()
 			else
 			{
 				m_responseBody = m_cgi->getResponseBody();
-				std::cout << "CGI Rsponese: " << m_responseBody << '\n';
+				//std::cout << "CGI Rsponese: " << m_responseBody << '\n';
 				getResponseHeader("200", "", "html");
 			}
 		}
