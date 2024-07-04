@@ -52,7 +52,7 @@ private:
 	void		addContentLength(std::string &a_response_header);
 	int			checkHeaderline();
 	bool		getBody(std::string const &filename);
-	bool		checkAllowedMethod();
+	bool		checkAllowedMethod(const std::string& a_methodList) const;
 	int			isValidFile(std::string &a_filepath);
 	int			getValidFilePath(std::string &a_filepath);
 	std::string	decodeUri(const std::string& a_uri, std::string& a_query);

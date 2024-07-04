@@ -155,11 +155,14 @@ void Response::setDefaultErrorMsg(const std::string &a_status_code)
 	m_responseBody.append("</h1></html>\r\n");
 }
 
-bool Response::checkAllowedMethod()
+bool Response::checkAllowedMethod(const std::string& a_methodList) const
 {
-	for (size_t i = 0; i < m_config["allowed_methods"].size(); i++)
+	t_config::const_iterator methods = m_config.find(a_methodList);
+	if (methods == m_config.end() || methods->second.size() == 0)
+		return (false);
+	for (size_t i = 0; i < methods->second.size(); i++)
 	{
-		if (m_config["allowed_methods"].at(i) == m_request.getValue("method"))
+		if (methods->second.at(i) == m_request.getValue("method"))
 			return (true);
 	}
 	return (false);
@@ -169,14 +172,14 @@ int Response::checkHeaderline()
 {
 	if (m_request.getValue("http_version") != "HTTP/1.1")
 		return (505);
-	if (!checkAllowedMethod())
+	if (!checkAllowedMethod("allowed_methods"))
 		return (405);
 	return (0);
 }
 
 int Response::getValidFilePath(std::string &a_filepath)
 {
-	int    ret = isValidFile(a_filepath);
+	int ret = isValidFile(a_filepath);
 	if (ret == 4031)
 	{
 		if (m_config.at("index").size())
@@ -396,6 +399,8 @@ bool Response::isCgiFile(const std::string &a_filePath) const
 {
 	if (m_config.find("name") == m_config.end() || m_config.find("extension") == m_config.end())
 		return (false);
+	if (checkAllowedMethod("cgi_methods"))
+		return (false);
 	//make filepath class that is a string but with extra functions like get extention and isFile or isDir etc...
 	std::size_t dotPos = a_filePath.find_last_of('.');
 	if (dotPos == std::string::npos)
@@ -435,7 +440,8 @@ void Response::createAutoIndex(std::string &a_path)
 	uri.erase(0,  m_config.at("root").at(0).length());
 	if (m_config.find("name") != m_config.end())
 		uri.insert(0, m_config.at("name").at(0));
-	m_responseBody.append("<!DOCTYPE html><body><h1>Index of " + uri + "</h1><hr><div style=\"display: flex; flex-direction: column; justify-items: center; align-items: flex-begin;\">");
+	m_responseBody.append("<!DOCTYPE html><body><h1>Index of " + uri
+		+ "</h1><hr><div style=\"display: flex; flex-direction: column; justify-items: center; align-items: flex-begin;\">");
 	struct dirent* de;
 	std::vector<dirent> ents;
 	while ((de = readdir(dir)) != NULL)
