@@ -76,6 +76,8 @@ int Connection::readBody()
 		return (-1);
 	}
 	m_request.addBody(bodyPart);
+	if (ret == 0)
+		m_request.setBodyDone();
 	return (0);
 }
 
@@ -92,6 +94,8 @@ int Connection::receiveRequestRaw(void)
 			return (-1);
 		if (m_request.headComplete())
 		{
+			if (m_request.getHead().length() == 0)
+				return (-1);
 			LOG("HEAD: \n" << m_request.getHead() << '\n')
 			m_request.initMap();
 			m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));

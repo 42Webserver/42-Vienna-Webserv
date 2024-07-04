@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request(void) : m_isValid(0), m_headComplete(false), m_maxBodySize(0) {}
+Request::Request(void) : m_isValid(0), m_headComplete(false), m_bodyComplete(false), m_maxBodySize(0) {}
 
 Request::Request(const Request &other)
 {
@@ -17,6 +17,7 @@ Request &Request::operator=(const Request &other)
 		m_head = other.m_head;
 		m_body = other.m_body;
 		m_headComplete = other.m_headComplete;
+		m_bodyComplete = other.m_bodyComplete;
 	}
 	return (*this);
 }
@@ -129,6 +130,11 @@ void Request::setHeadDone(void)
 	m_headComplete = true;
 }
 
+void Request::setBodyDone(void)
+{
+	m_bodyComplete = true;
+}
+
 void Request::setMaxBodySize(std::size_t a_maxBody)
 {
 	m_maxBodySize = a_maxBody;
@@ -230,9 +236,9 @@ void Request::addBody(const std::string &a_body)
 	m_body.append(a_body);
 }
 
-bool Request::bodyComplete(void) const
+bool Request::bodyComplete(void)
 {
-	return (getContentLength() == m_body.length());
+	return (m_bodyComplete || (getContentLength() == m_body.length() && m_requestHeader["Transfer-Encoding"] != "chunked") || (m_bodyComplete = (m_body.find("0\r\n\r\n", m_body.size() - m_body.size() > 10 ? 10 : 0) != std::string::npos)));
 }
 
 bool Request::isReady(void)

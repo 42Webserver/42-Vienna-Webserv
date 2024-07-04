@@ -236,12 +236,11 @@ void	ConfigParser::readConfigFile(const std::string& file)
 	sortConfigVector(tokens);
 
 	safeData(tokens);
-	printData(m_subservers);
+	//printData(m_subservers);
 
 
 
 	inFile.close();
-	exit(42);
 }
 
 void	ConfigParser::checkValueAutoindex(std::string& value)

@@ -34,12 +34,13 @@ public:
 	void				addHead(const std::string& a_head);
 	bool				headComplete(void);
 	void				addBody(const std::string& a_body);
-	bool				bodyComplete(void) const;
+	bool				bodyComplete(void);
 	bool				isReady(void);
 	const std::string&	getHead();
 	const std::string&	getBody();
 	void				initMap();
 	void				setHeadDone(void);
+	void				setBodyDone(void);
 	void				setMaxBodySize(std::size_t a_maxBody);
 
 private:
@@ -49,6 +50,7 @@ private:
 
 	int									m_isValid;
 	bool								m_headComplete;
+	bool								m_bodyComplete;
 	std::size_t							m_maxBodySize;
 	std::string							m_head;
 	std::string							m_body;

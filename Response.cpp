@@ -196,8 +196,6 @@ int Response::getValidFilePath(std::string &a_filepath)
 		}
 		return (403);
 	}
-	if (ret == 301 && m_config.find("name") != m_config.end())
-		a_filepath.insert(0, m_config.at("name").at(0));
 	std::cout << a_filepath << std::endl;
 	return (ret);
 }
@@ -341,7 +339,10 @@ bool Response::createResponseMsg()
 			{
 				m_eventFlags |= REDIRECTION | REDIR_LOCATION;
 				m_config["return"].push_back("301");
-				m_config["return"].push_back(filepath.erase(0, m_config.at("root").at(0).length()));
+				filepath.erase(0, m_config.at("root").at(0).length());
+				if (m_config.find("name") != m_config.end())
+					filepath.insert(0, m_config.at("name").at(0));
+				m_config["return"].push_back(filepath);
 			}
 			else if(m_request.getValue("method") == "DELETE")
 				error_code = deleteRequest();
