@@ -465,8 +465,6 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 	initLocation(location, tokens.at(i + 1));
 	std::vector<std::string> value;
 	value.push_back(tokens.at(i + 1));
-	bool isCgi;
-	value.at(0) == "/cgi-bin" ? isCgi = true : isCgi = false;
 	location["name"] = value;
 	i += 3;
 	while(tokens.at(i) != "}")
@@ -474,7 +472,7 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 		value.clear();
 		if (tokens.at(i) == "listen" || tokens.at(i) == "root" || tokens.at(i) == "index" \
 			|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex" \
-			|| (isCgi && tokens.at(i) == "upload"))
+			|| tokens.at(i) == "upload")
 		{
 			value.push_back(tokens.at(++i));
 			checkValue(tokens.at(i - 1), value);
@@ -485,7 +483,7 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 		}
 		else if (tokens.at(i) == "server_name" || tokens.at(i) == "error_page" || \
 			tokens.at(i) == "allowed_methods" || tokens.at(i) == "return" \
-			|| (isCgi && (tokens.at(i) == "extension" || tokens.at(i) == "script_path")))
+			|| tokens.at(i) == "extension" || tokens.at(i) == "script_path")
 		{
 			i++;
 			while (tokens.at(i) != ";")
@@ -662,6 +660,7 @@ void ConfigParser::updateLocation(std::map<std::string, std::vector<std::string>
 
 void ConfigParser::initLocation(std::map<std::string, std::vector<std::string> > &location, const std::string &locationName)
 {
+	(void)locationName;
 	location["index"];
 	location["client_max_body_size"];
 	location["error_page"];
@@ -670,12 +669,9 @@ void ConfigParser::initLocation(std::map<std::string, std::vector<std::string> >
 	location["return"];
 	location["root"];
 	location["name"];
-	if (locationName == "/cgi-bin")
-	{
-		location["upload"];
-		location["extension"];
-		location["script_path"];
-	}
+	location["upload"];
+	location["extension"];
+	location["script_path"];
 }
 
 std::vector<struct subserver>	ConfigParser::parseConfig(std::string& configname)
