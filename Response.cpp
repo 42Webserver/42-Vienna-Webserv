@@ -162,6 +162,7 @@ bool Response::checkAllowedMethod(const std::string& a_methodList) const
 		return (false);
 	for (size_t i = 0; i < methods->second.size(); i++)
 	{
+		std::cout << methods->second.at(i) << " = " << m_request.getValue("method") << '\n';
 		if (methods->second.at(i) == m_request.getValue("method"))
 			return (true);
 	}

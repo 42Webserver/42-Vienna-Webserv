@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<link rel='stylesheet' href='main.css' type='text/css' media='all' />
+	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+	<body style="display: flex; flex-direction: column;">
+		<h1>Hello, World!</h1>
+		<button id="rotateButton" style="width: 100px;" onclick="startRotation()">Rotate!</button>
+
+		<div class="circular--portrait rotate-container">
+			<img src="bild.jpg" />
+		</div>
+		<form method="post" enctype="multipart/form-data" action="/upload">
+			<input type="file" title="file" id="file" name="file">
+			<button type="submit">Upload</button>
+		</form>
+		<form enctype="application/x-www-form-urlencoded" action="/cgi-bin/test.sh">
+			<textarea id="text" name="text"></textarea>
+			<button type="submit">Test bash</button>
+		</form>
+	</body>
+	<script type='text/javascript' src='main.js'></script>	
+</html>

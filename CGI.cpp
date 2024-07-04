@@ -94,6 +94,7 @@ void	CGI::setEnvp()
 	vars.push_back("REQUEST_METHOD=" + m_request.getValue("method"));
 	vars.push_back("CONTENT_TYPE=" + m_request.getValue("Content-Type"));
 	vars.push_back("CONTENT_LENGTH=" + m_request.getValue("Content-Length"));
+	vars.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	std::cerr << m_config.at("upload").size() << '\n';
 	if (m_config.at("upload").size() == 1)
 		vars.push_back("UPLOAD="+ m_config.at("upload").at(0));
@@ -227,11 +228,11 @@ int	CGI::execute(std::string a_filePath)
 {
 	m_filePath = a_filePath;
 	std::cout << "Check exec\n";
-	if ((m_status = scriptIsExecutable(a_filePath)))
-	{
-		std::cout << "err: " << m_status << '\n';
-		return (m_status);
-	}
+	// if ((m_status = scriptIsExecutable(a_filePath)))
+	// {
+	// 	std::cout << "err: " << m_status << '\n';
+	// 	return (m_status);
+	// }
 
 	std::cout << "set path\n";
 	if ((m_status = setPath(a_filePath)))
