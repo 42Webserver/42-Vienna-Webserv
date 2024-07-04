@@ -399,7 +399,7 @@ bool Response::isCgiFile(const std::string &a_filePath) const
 {
 	if (m_config.find("name") == m_config.end() || m_config.find("extension") == m_config.end())
 		return (false);
-	if (checkAllowedMethod("cgi_methods"))
+	if (!checkAllowedMethod("cgi_methods"))
 		return (false);
 	//make filepath class that is a string but with extra functions like get extention and isFile or isDir etc...
 	std::size_t dotPos = a_filePath.find_last_of('.');
