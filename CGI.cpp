@@ -90,11 +90,14 @@ void	CGI::setArgv(const std::string& a_filePath)
 void	CGI::setEnvp()
 {
 	std::vector<std::string>	vars;
+	std::stringstream ss;
 
+	ss << "CONTENT_LENGHT=" << m_request.getBody().length();
+	vars.push_back(ss.str());
 	vars.push_back("REQUEST_METHOD=" + m_request.getValue("method"));
 	vars.push_back("CONTENT_TYPE=" + m_request.getValue("Content-Type"));
-	vars.push_back("CONTENT_LENGTH=" + m_request.getValue("Content-Length"));
 	vars.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	vars.push_back("PATH_INFO=blah");
 	std::cerr << m_config.at("upload").size() << '\n';
 	if (m_config.at("upload").size() == 1)
 		vars.push_back("UPLOAD="+ m_config.at("upload").at(0));
@@ -150,6 +153,7 @@ int CGI::run()
     {
         close(cgi_output[1]);
         close(cgi_input[0]);
+		std::cout << "PIPE_IN: " << m_request.getBody() << '\n';
 		write(cgi_input[1], m_request.getBody().c_str(), m_request.getContentLength());
         close(cgi_input[1]);
 		m_pid = pid;

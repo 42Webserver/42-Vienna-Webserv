@@ -96,10 +96,10 @@ int Connection::receiveRequestRaw(void)
 		{
 			if (m_request.getHead().length() == 0)
 				return (-1);
-			LOG("HEAD: \n" << m_request.getHead() << '\n')
 			m_request.initMap();
 			m_response = Response(m_request, m_server.getSubServer(m_request.getRequestHost()).getValidConfig(m_request.getValue("uri")));
 			m_request.setMaxBodySize(m_response.getMaxBodySize());
+			LOG("HEAD: \n" << m_request.getHead() << '\n');
 		}
 	}
 	else if (!m_request.bodyComplete())

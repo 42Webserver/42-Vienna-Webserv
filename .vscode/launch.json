@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/webserv", // Pfad zu Ihrem ausführbaren Programm
-            "args": ["webserv.conf"], // Optional: Argumente für Ihr Programm
+            "args": ["test_config.conf"], // Optional: Argumente für Ihr Programm
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}", // Arbeitsverzeichnis
             "environment": [], // Optional: Umgebungsvariablen
