@@ -59,6 +59,7 @@ private:
 	std::size_t							m_maxBodySize;
 	std::string							m_head;
 	std::string							m_body;
+	std::string							m_buffer;
 	std::map <std::string, std::string>	m_requestHeader;
 };
 
