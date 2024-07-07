@@ -250,7 +250,7 @@ void Request::addBody(const std::string &a_body)
 
 void Request::reciveChunked(const std::string &a_body)
 {
-	std::cout << "BODY PART: " << a_body << '\n';
+	std::cout << "Recieved data length: " << a_body.length() << '\n';
 	std::size_t start = 0;
 	std::size_t amount = 0;
 	char *end_hex;
@@ -266,12 +266,12 @@ void Request::reciveChunked(const std::string &a_body)
 				setBodyDone();
 				break;
 			}
-			amount = m_chunkSize > a_body.length() ? a_body.length() - (end_hex - a_body.c_str() + start) : m_chunkSize;
 			if (static_cast<std::size_t>((end_hex + RN_CHAR_OFFSET) - a_body.c_str()) < a_body.length())
 				start = (end_hex + RN_CHAR_OFFSET) - a_body.c_str();
+			amount = m_chunkSize > a_body.length() - start ? a_body.length() - start : m_chunkSize;
 		}
 		else
-			amount = m_chunkSize > a_body.length() ? a_body.length() : m_chunkSize;
+			amount = m_chunkSize > a_body.length() - start ? a_body.length() - start : m_chunkSize;
 		m_body.append(a_body, start, amount);
 		m_chunkSize -= amount;
 		start += amount;
