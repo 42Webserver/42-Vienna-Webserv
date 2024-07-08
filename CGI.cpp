@@ -154,7 +154,7 @@ int CGI::run()
         close(cgi_output[1]);
         close(cgi_input[0]);
 		std::cout << "PIPE_IN: " << m_request.getBody().length() << '\n';
-		write(cgi_input[1], m_request.getBody().c_str(), m_request.getContentLength());
+		write(cgi_input[1], m_request.getBody().c_str(), m_request.getBody().length());
         close(cgi_input[1]);
 		m_pid = pid;
 		m_outputPipe = cgi_output[0];
