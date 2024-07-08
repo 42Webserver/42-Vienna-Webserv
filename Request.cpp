@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request(void) : m_isValid(0), m_headComplete(false), m_bodyComplete(false), m_maxBodySize(0) {}
+Request::Request(void) : m_isValid(0), m_headComplete(false), m_bodyComplete(false), m_chunkSize(0), m_maxBodySize(0) {}
 
 Request::Request(const Request &other)
 {
@@ -16,8 +16,11 @@ Request &Request::operator=(const Request &other)
 		m_maxBodySize = other.m_maxBodySize;
 		m_head = other.m_head;
 		m_body = other.m_body;
+		m_buffer = other.m_buffer;
 		m_headComplete = other.m_headComplete;
 		m_bodyComplete = other.m_bodyComplete;
+		m_chunkSize = other.m_chunkSize;
+		m_maxBodySize = other.m_maxBodySize;
 	}
 	return (*this);
 }
@@ -97,6 +100,11 @@ void Request::initMap()
 	}
 
 	std::string headline = m_head.substr(0, delimiter);
+	if (delimiter + 2 >= m_head.length())
+	{
+		m_isValid = 400;
+		return;
+	}
 	std::string	remainder = m_head.substr(delimiter + 2, m_head.length() - delimiter);
 	getRequestLine(headline);
 
@@ -210,7 +218,7 @@ void Request::addHead(const std::string &a_head)
 		return ;
 	}
 	if (sepPos < a_head.length() - 4)
-		m_body.append(a_head, sepPos + 4);
+		addBody(a_head.substr(sepPos + 4));
 	m_headComplete = true;
 }
 
@@ -233,12 +241,91 @@ void Request::addBody(const std::string &a_body)
 		m_isValid = 413;
 		return ;
 	}
+	if (m_requestHeader["Transfer-Encoding"] == "chunked")
+	{
+		if (m_buffer.length())
+		{
+			m_buffer.append(a_body);
+			std::size_t sepPos = m_buffer.rfind("\r\n");
+			if (m_buffer.length() >= 1 + RN_CHAR_OFFSET && sepPos != std::string::npos && sepPos != 0)
+			{
+				if (m_buffer.at(0) == '\r' && m_buffer.at(1) == '\n')
+					m_buffer.erase(0, 2);
+				reciveChunked(m_buffer);
+				m_buffer.clear();
+			}
+		}
+		else
+			reciveChunked(a_body);
+		return ;
+	}
 	m_body.append(a_body);
 }
 
+void Request::reciveChunked(const std::string &a_body)
+{
+	std::cout << "Recieved data length: " << a_body.length() << '\n';
+	std::size_t start = 0;
+	std::size_t amount = 0;
+	char *end_hex;
+	while (start < a_body.length())
+	{
+		if (m_chunkSize == 0)
+		{
+			if (a_body.length() - start < 3)
+			{
+				m_buffer.append(a_body, start);
+				return;
+			}
+			m_chunkSize = std::strtol(a_body.c_str() + start, &end_hex, BASE_HEX);
+			if (m_chunkSize == 0)
+			{
+				if (a_body.c_str() + start == end_hex)
+					LOG_ERROR("THERE IS SOMETHING WROOONG!");
+				setBodyDone();
+				break;
+			}
+			if (static_cast<std::size_t>((end_hex + RN_CHAR_OFFSET) - a_body.c_str()) <= a_body.length())
+				start = (end_hex + RN_CHAR_OFFSET) - a_body.c_str();
+			amount = m_chunkSize > a_body.length() - start ? a_body.length() - start : m_chunkSize;
+		}
+		else
+			amount = m_chunkSize > a_body.length() - start ? a_body.length() - start : m_chunkSize;
+		m_body.append(a_body, start, amount);
+		m_chunkSize -= amount;
+		start += amount;
+
+		if (m_chunkSize == 0)
+			start += RN_CHAR_OFFSET;
+	}
+}
+/* {
+	std::size_t	start = 0;
+	std::size_t	amount = 0;
+	std::size_t	rnPos = 0;
+	char		*end_hex;
+	while (start < a_body.length())
+	{
+		if (m_chunkSize == 0)
+		{
+			m_chunkSize = std::strtol(a_body.c_str() + start, &end_hex, BASE_HEX);
+			if (m_chunkSize == 0)
+			{
+				setBodyDone();
+				return;
+			}
+			if (static_cast<std::size_t>((end_hex + RN_CHAR_OFFSET) - a_body.c_str()) < a_body.length())
+				start = (end_hex + RN_CHAR_OFFSET) - a_body.c_str();
+		}
+		rnPos = a_body.find("\r\n");
+		amount = rnPos != m_chunkSize ? a_body.length() : m_chunkSize;
+		m_body.append(a_body, start, amount);
+	}
+} */
+
 bool Request::bodyComplete(void)
 {
-	return (m_bodyComplete || (getContentLength() == m_body.length() && m_requestHeader["Transfer-Encoding"] != "chunked") || (m_bodyComplete = (m_body.find("0\r\n\r\n", m_body.size() - m_body.size() > 10 ? 10 : 0) != std::string::npos)));
+	return (m_bodyComplete || (getContentLength() == m_body.length() && m_requestHeader["Transfer-Encoding"] != "chunked"));
 }
 
 bool Request::isReady(void)
