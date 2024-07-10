@@ -129,6 +129,7 @@ void Request::initMap()
 		LOG_ERROR("Host is missing in Request Header");
 		m_isValid = 400; 
 	}
+	addBody(""); //just so if we have added something to buffer in addHead, we will add it to body properly here.
 	// for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
 	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
@@ -218,7 +219,7 @@ void Request::addHead(const std::string &a_head)
 		return ;
 	}
 	if (sepPos < a_head.length() - 4)
-		addBody(a_head.substr(sepPos + 4));
+		m_buffer.append(a_head, sepPos + 4);
 	m_headComplete = true;
 }
 
@@ -229,8 +230,6 @@ bool Request::headComplete(void)
 
 void Request::addBody(const std::string &a_body)
 {
-	//check here if body length is > max_body_size
-
 	if (m_maxBodySize > 0 && m_body.length() + a_body.length() >= m_maxBodySize)
 	{
 		m_isValid = 413;
