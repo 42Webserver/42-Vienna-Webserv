@@ -316,8 +316,6 @@ bool Response::createResponseMsg()
 	std::string filepath;
 	std::string urlQuery;
 
-	modifyUri();
-
 	if (isCgiResponse())
 	{
 		if (isCgiReady())
@@ -336,6 +334,7 @@ bool Response::createResponseMsg()
 	}
 	else if (!(error_code = isValidRequestHeader()))
 	{
+		modifyUri();
 		filepath = decodeUri(m_request.getValue("uri"), urlQuery);
 		if ((error_code = getValidFilePath(filepath)))
 		{
