@@ -149,7 +149,7 @@ int CGI::run()
     {
         close(cgi_output[1]);
         close(cgi_input[0]);
-		write(cgi_input[1], m_request.getBody().c_str(), m_request.getContentLength());
+		write(cgi_input[1], m_request.getBody().c_str(), m_request.getBody().length());
         close(cgi_input[1]);
 		m_pid = pid;
 		m_outputPipe = cgi_output[0];
