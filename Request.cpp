@@ -258,6 +258,11 @@ void Request::addBody(const std::string &a_body)
 			reciveChunked(a_body);
 		return ;
 	}
+	if (m_buffer.length())
+	{
+		m_body.append(m_buffer);
+		m_buffer.clear();
+	}
 	m_body.append(a_body);
 }
 
