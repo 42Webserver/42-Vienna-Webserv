@@ -152,7 +152,7 @@ int Webserver::pollClients(void)
 			m_polls.getPollfdsAt(i).events ^= POLLIN;
 			m_polls.getPollfdsAt(i).events ^= POLLOUT;
 		}
-		if (m_polls.getConnection(i).getIdleTime() > 1) {
+		if (m_polls.getConnection(i).idleTime.isOver(1)) {
 			LOGC(TERMC_DARKGREEN, ">>> Client time out <<<")
 			m_polls.removeConnection(i--);
 			continue;
@@ -184,7 +184,7 @@ int	Webserver::runServer()
 			LOG_INFO("Poll timeout " << m_polls.getPollfds().size());
 			for (std::size_t i = m_polls.getPollfds().size() - 1; i >= m_servers.size(); i--)
 			{
-				if (m_polls.getConnection(i).getIdleTime() > 1) {
+				if (m_polls.getConnection(i).idleTime.isOver(1)) {
 					LOGC(TERMC_DARKGREEN, ">>> Client time out <<<")
 					m_polls.removeConnection(i);
 					continue;
