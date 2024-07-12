@@ -320,7 +320,7 @@ bool Response::createResponseMsg()
 		if (isCgiReady())
 		{
 			if (m_cgi->getStatusCode())
-				setErrorMsg(m_cgi->getStatusCode());
+				error_code = m_cgi->getStatusCode();
 			else
 			{
 				m_responseBody = m_cgi->getResponseBody();
