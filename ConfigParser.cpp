@@ -159,7 +159,7 @@ void	ConfigParser::checkSyntax(std::vector<std::string>& tokens)
 
 		if (*it == "location" && ((it + 2) == tokens.end() || *(it + 2) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid location scope."));
-			
+
 		if (*it == "Server" && ((it + 1) == tokens.end() || *(it + 1) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid Server scope."));
 	}
@@ -402,7 +402,7 @@ void	ConfigParser::checkValue(const std::string& key, std::vector<std::string>& 
 	if (key == "root")
 		checkValueRoot(value.at(0));
 	if (key == "upload")
-		checkValueUpload(value.at(0));	
+		checkValueUpload(value.at(0));
 	if (key == "allowed_methods" || key == "cgi_methods")
 		checkValueAllowedMethods(value);
 	if (key == "return")
@@ -465,6 +465,10 @@ bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::
 	initLocation(location);
 	std::vector<std::string> value;
 	value.push_back(tokens.at(i + 1));
+
+	if (value.at(0).length() > 1 && value.at(0).at(value.at(0).length() - 1) == '/')
+		value.at(0) = value.at(0).substr(0, value.at(0).length() - 1);
+
 	location["name"] = value;
 	i += 3;
 	while(tokens.at(i) != "}")
@@ -601,7 +605,7 @@ void ConfigParser::compareCgiKey(const struct subserver& a_subserver)
 	if (a_subserver.serverConfig.at("extension").size() != a_subserver.serverConfig.at("script_path").size())
 		throw std::runtime_error("Error: config-file: invalid amount of value at cgi keys");
 	for (std::vector<t_config>::const_iterator it = a_subserver.locationConfigs.begin(); it != a_subserver.locationConfigs.end(); ++it)
-		
+
 		if (it->at("extension").size() != it->at("script_path").size())
 			throw std::runtime_error("Error: config-file: invalid amount of value at cgi keys");
 }
