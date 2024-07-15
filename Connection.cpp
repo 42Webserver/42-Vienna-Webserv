@@ -3,11 +3,10 @@
 Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket), m_request(), m_response(m_request)
 {
 	// std::cout << "New connection on fd: " << m_clientSocket << '\n';
-	m_idleStart = std::time(NULL);
 }
 
 Connection::Connection(const Connection &a_other)
-	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_idleStart(std::time(NULL)), m_request(a_other.m_request), m_response(m_request, a_other.m_response) {}
+	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_request(a_other.m_request), m_response(m_request, a_other.m_response) {}
 
 Connection &Connection::operator=(const Connection &a_other)
 {
@@ -15,9 +14,9 @@ Connection &Connection::operator=(const Connection &a_other)
 	{
 		m_clientSocket = a_other.m_clientSocket;
 		m_server = a_other.m_server;
-		m_idleStart = a_other.m_idleStart;
 		m_request = a_other.m_request;
 		m_response = Response(m_request, a_other.m_response);
+		idleTime = a_other.idleTime;
 	}
 	return (*this);
 }
@@ -108,7 +107,7 @@ int Connection::receiveRequestRaw(void)
 			return (-1);
 		LOG("Read Body");
 	}
-	m_idleStart = std::time(NULL);
+	idleTime.resetTime();
  	if (m_request.isReady())
 		return (1);
 	return (0);
@@ -125,15 +124,10 @@ int Connection::sendResponse(void)
 	m_request = Request();
 	const std::string	response = m_response.getResponse();
 	m_response.clearBody();
-	m_idleStart = std::time(NULL);
+	idleTime.resetTime();
 	if (send(m_clientSocket, response.data(), response.size(), 0) == -1)
 		return (-1);
 	return (error_code);
-}
-
-time_t Connection::getIdleTime(void) const
-{
-	return (std::time(NULL) - m_idleStart);
 }
 
 bool Connection::operator==(const int a_fd) const

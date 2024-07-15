@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include "Data.hpp"
 #include "Request.hpp"
+#include "Timer.hpp"
 
 class CGI
 {
@@ -42,6 +43,8 @@ public:
 
 	CGI(t_config config, Request& a_request);
 	~CGI();
+
+	Timer				startTime;
 
 	int					readFromPipe();
 	int					execute(std::string a_filePath);

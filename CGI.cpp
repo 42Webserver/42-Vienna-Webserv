@@ -186,10 +186,18 @@ int CGI::readFromPipe()
 	ssize_t n = 0;
 	char buffer[4096];
 	int	status_code = 0;
+
+	if (startTime.isOver(15))
+	{
+		kill(m_pid, SIGINT);
+		m_status = 500;
+	}
+
 	if (waitpid(m_pid, &status_code, WNOHANG) == 0)
 	{
 		return (-1);
 	}
+
 
 	if (WIFEXITED(status_code) && WEXITSTATUS(status_code) != 0)
 		return ((m_status = 500));
