@@ -148,6 +148,7 @@ void Response::setErrorMsg(const int &a_status_code)
 
 void Response::setDefaultErrorMsg(const std::string &a_status_code)
 {
+	m_responseBody.clear();
 	m_responseBody.append("<!DOCTYPE html><html><title>");
 	m_responseBody.append(s_status_codes[a_status_code]);
 	m_responseBody.append("</title><h1>");
@@ -177,30 +178,45 @@ int Response::checkHeaderline()
 	return (0);
 }
 
-int Response::getValidFilePath(std::string &a_filepath)
+int Response::getValidFilePath(std::string &a_filepath, std::string& a_pathInfo)
 {
-	int ret = isValidFile(a_filepath);
-	if (ret == 4031)
+	FilePath path = a_filepath;
+
+	while (!path.exists())
+		path.remove_last();
+	a_filepath.erase(0, path.str().length());
+	a_pathInfo = a_filepath;
+	a_filepath = path.str();
+	if (!path.isRead())
+		return (403);
+	if (path.isDir())
 	{
-		if (m_config.at("index").size())
+		if (path.str().length() && *(path.str().end() - 1) != '/' && a_pathInfo.empty())
 		{
-			std::string temp = a_filepath + m_config.at("index").at(0);
-			ret = getValidFilePath(temp);
-			a_filepath = temp;
-			return (ret);
+			a_filepath = path.str();
+			a_filepath.push_back('/');
+			return (301);
 		}
-		if (m_config.at("autoindex").size())
+		else if (m_config.at("index").size())
+		{
+			path.append(m_config.at("index").at(0));
+			std::cout << "Index: " << path << std::endl;
+			a_filepath = path.str();
+			if (!path.exists())
+				return (404);
+			return (0);
+		}
+		else if (m_config.at("autoindex").size())
 		{
 			if (m_config.at("autoindex").at(0) == "on")
 			{
-				createAutoIndex(a_filepath);
+				createAutoIndex(path.str());
 				return (0);
 			}
 		}
 		return (403);
 	}
-	std::cout << a_filepath << std::endl;
-	return (ret);
+	return (0);
 }
 
 /// @brief Takes the a_uri and seperates it into filepath and uriQuery
@@ -209,13 +225,12 @@ int Response::getValidFilePath(std::string &a_filepath)
 /// @return returns the path to the file (config root + uri) 
 std::string Response::decodeUri(const std::string &a_uri, std::string &a_query)
 {
-	std::string filePath;
-	filePath.append(m_config["root"].at(0));
+	std::string uriPath = m_config.at("root").at(0);
 	std::size_t	encPos = a_uri.find_first_of('?');
-	filePath.append(a_uri, 0, encPos);
+	uriPath.append(a_uri, 0, encPos);
 	if (encPos != std::string::npos && encPos + 1 < a_uri.length())
 		a_query.append(a_uri, encPos + 1);
-	return (filePath);
+	return (uriPath);
 }
 
 /// @brief
@@ -225,7 +240,6 @@ std::string Response::decodeUri(const std::string &a_uri, std::string &a_query)
 ///         Returns 4031 for dir
 ///         Returns 301 for dir when searching for file
 ///         Returns 404 for no dir or file
-
 int Response::isValidFile(std::string &a_filepath)
 {
 	struct stat sb;
@@ -314,6 +328,7 @@ bool Response::createResponseMsg()
 	int error_code = 0;
 	std::string filepath;
 	std::string urlQuery;
+	std::string pathInfo;
 
 	if (isCgiResponse())
 	{
@@ -335,7 +350,7 @@ bool Response::createResponseMsg()
 	{
 		modifyUri();
 		filepath = decodeUri(m_request.getValue("uri"), urlQuery);
-		if ((error_code = getValidFilePath(filepath)))
+		if ((error_code = getValidFilePath(filepath, pathInfo)))
 		{
 			if (error_code == 301)
 			{
@@ -346,14 +361,13 @@ bool Response::createResponseMsg()
 					filepath.insert(0, m_config.at("name").at(0));
 				m_config["return"].push_back(filepath);
 			}
-			else if(m_request.getValue("method") == "DELETE")
-				error_code = deleteRequest();
 		}
 		else if (isCgiFile(filepath))
 		{
 			LOG("CGI POST-REQUEST");
 			m_cgi =	SharedPtr<CGI>(new CGI(m_config, m_request));
 			m_cgi->setUrlQuery(urlQuery);
+			m_cgi->setPathInfo(pathInfo);
 			int ret = m_cgi->execute(filepath);
 			//HIER MUSS NOCH EINMAL DAS MIT READ FROM PIPE REINGEMACHT WERDEN UND DIE ISCGIREADY FUNCTION GECALLT WERDEN!!!!!!
 			//m_responseBody = m_cgi->getResponseBody();
@@ -361,8 +375,12 @@ bool Response::createResponseMsg()
 			if (error_code == 0)
 				return (false);
 		}
+		else if (!pathInfo.empty())
+			error_code = 404;
 		else if (m_request.getValue("method") == "POST")
 			error_code = -1;
+		else if(m_request.getValue("method") == "DELETE")
+			error_code = deleteRequest();
 	}
 	int ret = isReturnResponse();
 	if (ret)
@@ -430,7 +448,7 @@ static bool operator<(dirent lhs, dirent rhs)
 	return (lhs.d_type < rhs.d_type || std::strcmp(lhs.d_name, rhs.d_name) < 0);
 }
 
-void Response::createAutoIndex(std::string &a_path)
+void Response::createAutoIndex(const std::string &a_path)
 {
 	DIR* dir = opendir(a_path.c_str());
 	if (dir == NULL)

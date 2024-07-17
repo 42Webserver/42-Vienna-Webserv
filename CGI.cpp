@@ -93,21 +93,21 @@ void	CGI::setEnvp()
 
 	vars.push_back("REQUEST_METHOD=" + m_request.getValue("method"));
 	vars.push_back("CONTENT_TYPE=" + m_request.getValue("Content-Type"));
-	vars.push_back("CONTENT_LENGTH=" + m_request.getValue("Content-Length"));
-	std::cerr << m_config.at("upload").size() << '\n';
+	vars.push_back("CONTENT_LENGTH=" + m_request.getBody().length());
+	vars.push_back(SERVER_PROTOCOL_STRING);
 	if (m_config.at("upload").size() == 1)
 		vars.push_back("UPLOAD="+ m_config.at("upload").at(0));
 
 	size_t	i = 0;
 	while (i < vars.size())
 	{
-			std::cout << "COPY STRING = '" << vars.at(i) << "' WITH SIZE = " << vars.at(i).length() << std::endl;
-			char *str = new char[vars.at(i).length() + 1];
+		std::cout << "COPY STRING = '" << vars.at(i) << "' WITH SIZE = " << vars.at(i).length() << std::endl;
+		char *str = new char[vars.at(i).length() + 1];
 
-			std::strcpy(str, vars.at(i).c_str());
-			m_envp.push_back(str);
-			std::cout << "AFTER COPY = '" << str << "'" << std::endl;
-			i++;
+		std::strcpy(str, vars.at(i).c_str());
+		m_envp.push_back(str);
+		std::cout << "AFTER COPY = '" << str << "'" << std::endl;
+		i++;
 	}
 }
 
@@ -187,7 +187,7 @@ int CGI::readFromPipe()
 	char buffer[4096];
 	int	status_code = 0;
 
-	if (startTime.isOver(15))
+	if (startTime.isOver(CGI_TIMEOUT_SECONDS))
 	{
 		kill(m_pid, SIGINT);
 		m_status = 500;
@@ -228,6 +228,14 @@ void CGI::setUrlQuery(const std::string &a_urlQuery)
 	envvar.append(a_urlQuery);
 	char* str = new char[envvar.length() + 1];
 	std::strcpy(str, envvar.c_str());
+	m_envp.push_back(str);
+}
+
+void CGI::setPathInfo(const std::string &a_pathInfo)
+{
+	char* str = new char[a_pathInfo.length() + PATH_INFO_STRING_LENGTH + 1];
+	std::strcpy(str, PATH_INFO_STRING);
+	std::strcpy(str + 10, a_pathInfo.c_str());
 	m_envp.push_back(str);
 }
 
