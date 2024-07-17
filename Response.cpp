@@ -277,22 +277,20 @@ int	Response::isReturnResponse()
 
 int Response::deleteRequest()
 {
-	struct stat sb;
-	std::string filepath = m_config.at("root").at(0) + m_request.getValue("uri");
-	if (stat(filepath.c_str(), &sb) == 0)
+	FilePath filep = m_config.at("root").at(0) + m_request.getValue("uri");
+	std::cout << "DELETE FILE: " << filep << std::endl;
+	if (filep.exists())
 	{
-		if (S_ISREG(sb.st_mode))
+		if (filep.isFile())
 		{
-			if (std::remove(filepath.c_str()))
+			if (std::remove(filep.c_str()))
 				return (404);
-			else
-			{
-				m_responseBody.append("<html><body><h1>Delete file successfull</h1></body></html>\r\n");
-				return (0);
-			}	
-		}	
+			m_responseBody.append("<html><body><h1>Delete file successfull</h1></body></html>\r\n");
+			return (0);		
+		}
+		return (403);
 	}
-	return(404);
+	return (404);
 }
 
 void Response::modifyUri()
