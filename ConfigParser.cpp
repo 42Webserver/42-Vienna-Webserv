@@ -255,28 +255,6 @@ void	ConfigParser::checkValueClientMaxBodySize(std::string& value)
 		throw(std::runtime_error("Error: config-file: invalid value at key 'client_max_body_size'."));
 }
 
-unsigned long ConfigParser::ipToL(std::string ip)
-{
-	std::string octet;
-	std::istringstream input(ip);
-	unsigned long result = 0;
-	unsigned long value;
-	int shiftSize = 24;
-	if (ip.find_first_not_of("0123456789.") != std::string::npos)
-		throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
-	while (std::getline(input, octet, '.') && shiftSize >= 0)
-	{
-    	if (octet.length() <= 0 || octet.length() > 3 || strtol(octet.c_str(), NULL, 10) > 255)
-			throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
-		value = strtol(octet.c_str(), NULL, 10);
-		result +=	value << shiftSize;
-		shiftSize -= 8;
-	}
-    if (shiftSize != -8)
-		throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
-	return (result);
-}
-
 void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 {
 	if (value.at(0).find_first_not_of("0123456789") == std::string::npos)
