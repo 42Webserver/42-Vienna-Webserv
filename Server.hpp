@@ -19,7 +19,7 @@ class Server
 private:
 
 	int									m_serverSocket;
-	sockaddr_in							m_serverAddress;
+	sockaddr_in							*m_serverAddress;
 	std::vector<struct subserver>		m_subServers;
 
 public:
