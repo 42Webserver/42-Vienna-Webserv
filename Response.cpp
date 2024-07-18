@@ -275,10 +275,9 @@ int	Response::isReturnResponse()
 	return (0);
 }
 
-int Response::deleteRequest()
+int Response::deleteRequest(const std::string& a_filePath)
 {
-	FilePath filep = m_config.at("root").at(0) + m_request.getValue("uri");
-	std::cout << "DELETE FILE: " << filep << std::endl;
+	FilePath filep = a_filePath;
 	if (filep.exists())
 	{
 		if (filep.isFile())
@@ -378,7 +377,7 @@ bool Response::createResponseMsg()
 		else if (m_request.getValue("method") == "POST")
 			error_code = -1;
 		else if(m_request.getValue("method") == "DELETE")
-			error_code = deleteRequest();
+			error_code = deleteRequest(filepath);
 	}
 	int ret = isReturnResponse();
 	if (ret)

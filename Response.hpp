@@ -66,7 +66,7 @@ private:
 	int			isValidRequestHeader();
 	bool		isCgiReady();
 	bool		isCgiFile(const std::string& a_filePath) const;
-	int			deleteRequest();
+	int			deleteRequest(const std::string& a_filePath);
 	void		modifyUri();
 
 	Response(void);
