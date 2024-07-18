@@ -34,7 +34,7 @@ public:
 	u_int16_t	getPort(void) const;
 	u_int64_t	getIp(void) const;
 	std::string	getHost(void) const;
-	void	setServerAddress();
+	addrinfo*	setServerAddress();
 
 	struct subserver&	getSubServer(const std::string& a_hostname);
 
