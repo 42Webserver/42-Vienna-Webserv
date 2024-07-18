@@ -80,6 +80,9 @@ void Server::setServerAddress()
 	if ((error_code = getaddrinfo(m_subServers.at(0).getHost().c_str(), "http", &input, &result)) != 0)
 		throw (std::runtime_error("Error: server: Host not found"));
 	
+	m_serverAddress = (struct sockaddr_in *)result->ai_addr;
+	m_serverAddress->sin_port = htons(m_subServers.at(0).getPort());
+	std::cout << "Host address = " << m_serverAddress->sin_addr.s_addr << '\n';
 }
 
 
@@ -89,9 +92,9 @@ int Server::initServerSocket()
 		throw (std::runtime_error("Error: server: No server config."));
 	}
 	setServerAddress();
-	m_serverAddress.sin_family = AF_INET;
+	/* m_serverAddress.sin_family = AF_INET;
 	m_serverAddress.sin_port = htons(m_subServers.at(0).getPort());
-	m_serverAddress.sin_addr.s_addr = htonl(m_subServers.at(0).getIp());
+	m_serverAddress.sin_addr.s_addr = htonl(m_subServers.at(0).getIp()); */
 
 	int sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (sock == -1)
@@ -103,7 +106,7 @@ int Server::initServerSocket()
 	{
 		throw (std::runtime_error("Error: server: setsockopt failed."));
 	}
-	if (bind(sock, (struct sockaddr *)&m_serverAddress, sizeof(m_serverAddress)) == -1)
+	if (bind(sock, (struct sockaddr *)m_serverAddress, sizeof(*m_serverAddress)) == -1)
 	{
 		throw (std::runtime_error("Error: server: binding socket to ip failed."));
 	}
