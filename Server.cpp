@@ -67,7 +67,7 @@ subserver& Server::getSubServer(const std::string &a_hostname)
     return (defaultSubServer);
 }
 
-void Server::setServerAddress()
+addrinfo* Server::setServerAddress()
 {
 	int error_code;
 	struct addrinfo input, *result; 
@@ -81,29 +81,35 @@ void Server::setServerAddress()
 	
 	m_serverAddress = (struct sockaddr_in *)result->ai_addr;
 	m_serverAddress->sin_port = htons(m_subServers.at(0).getPort());
+	//freeaddrinfo(result);
+	return (result);
 }
+
 
 int Server::initServerSocket()
 {
 	if (m_subServers.size() == 0) {
 		throw (std::runtime_error("Error: server: No server config."));
 	}
-	setServerAddress();
-
+	addrinfo *resultFree = setServerAddress();
 	int sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (sock == -1)
 	{
+		freeaddrinfo(resultFree);		
 		throw (std::runtime_error("Error: server: socket creation failed."));
 	}
 	int enable = 1;
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)))
 	{
+		freeaddrinfo(resultFree);
 		throw (std::runtime_error("Error: server: setsockopt failed."));
 	}
 	if (bind(sock, (struct sockaddr *)m_serverAddress, sizeof(*m_serverAddress)) == -1)
 	{
+		freeaddrinfo(resultFree);
 		throw (std::runtime_error("Error: server: binding socket to ip failed."));
 	}
+	freeaddrinfo(resultFree);
 	// std::cout << m_serverAddress.sin_addr.s_addr << " " << m_serverAddress.sin_port << std::endl;
 	if (listen(sock, 16) == -1)
 	{
