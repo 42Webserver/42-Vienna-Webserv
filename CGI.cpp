@@ -90,10 +90,12 @@ void	CGI::setArgv(const std::string& a_filePath)
 void	CGI::setEnvp()
 {
 	std::vector<std::string>	vars;
+	std::stringstream ss;
 
+	ss << "CONTENT_LENGTH=" << m_request.getBody().length();
 	vars.push_back("REQUEST_METHOD=" + m_request.getValue("method"));
 	vars.push_back("CONTENT_TYPE=" + m_request.getValue("Content-Type"));
-	vars.push_back("CONTENT_LENGTH=" + m_request.getBody().length());
+	vars.push_back(ss.str());
 	vars.push_back(SERVER_PROTOCOL_STRING);
 	if (m_config.at("upload").size() == 1)
 		vars.push_back("UPLOAD="+ m_config.at("upload").at(0));
