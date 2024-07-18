@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include "Data.hpp"
+#include <netdb.h>
 
 class Server
 {
@@ -32,6 +33,8 @@ public:
 	void		addSubServer(const struct subserver& a_subServer);
 	u_int16_t	getPort(void) const;
 	u_int64_t	getIp(void) const;
+	std::string	getHost(void) const;
+	void	setServerAddress();
 
 	struct subserver&	getSubServer(const std::string& a_hostname);
 
