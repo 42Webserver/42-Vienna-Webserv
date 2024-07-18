@@ -297,27 +297,20 @@ void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 
 	std::string	ip = value.at(0).substr(0, last);
 	std::string	port = value.at(0).substr(last + 1, value.at(0).length() - last);
-
-	if (ip != "localhost")
-	{
-		std::stringstream ipStr;
-		ipStr << ipToL(ip);
-		value.at(0) = ipStr.str();
-	}
-
+	
+	if (ip.empty())
+		throw(std::runtime_error("Error: config-file: invalid host at key 'listen'."));
+		
+	value.at(0) = ip;
 	if (port.find_first_not_of("0123456789") == std::string::npos)
 	{
 		long	nb = std::atol(port.c_str());
-
-		if (nb > std::numeric_limits<unsigned short>::max())
+		if (nb > std::numeric_limits<unsigned short>::max() || nb < 1)
 			throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
-
-		if (ip == "localhost")
-			value.at(0) = "2130706433";
-
 		value.push_back(port);
-		return;
 	}
+	else
+		throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
 }
 
 void	ConfigParser::checkValueRoot(std::string& value)
