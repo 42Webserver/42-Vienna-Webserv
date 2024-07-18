@@ -42,7 +42,6 @@ private:
 	static void	checkErrorPage(std::vector<std::string>& value);
 	static void checkValueExtension(std::vector<std::string>& value);
 	static void checkValueScriptPath(std::vector<std::string>& value);
-	static unsigned long ipToL(std::string ip);
 
 	static void	setupErrorPages(struct subserver& subserver);
 	static void checkDuplicateLocations(struct subserver& subserver);

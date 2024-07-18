@@ -255,28 +255,6 @@ void	ConfigParser::checkValueClientMaxBodySize(std::string& value)
 		throw(std::runtime_error("Error: config-file: invalid value at key 'client_max_body_size'."));
 }
 
-unsigned long ConfigParser::ipToL(std::string ip)
-{
-	std::string octet;
-	std::istringstream input(ip);
-	unsigned long result = 0;
-	unsigned long value;
-	int shiftSize = 24;
-	if (ip.find_first_not_of("0123456789.") != std::string::npos)
-		throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
-	while (std::getline(input, octet, '.') && shiftSize >= 0)
-	{
-    	if (octet.length() <= 0 || octet.length() > 3 || strtol(octet.c_str(), NULL, 10) > 255)
-			throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
-		value = strtol(octet.c_str(), NULL, 10);
-		result +=	value << shiftSize;
-		shiftSize -= 8;
-	}
-    if (shiftSize != -8)
-		throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
-	return (result);
-}
-
 void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 {
 	if (value.at(0).find_first_not_of("0123456789") == std::string::npos)
@@ -297,27 +275,20 @@ void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 
 	std::string	ip = value.at(0).substr(0, last);
 	std::string	port = value.at(0).substr(last + 1, value.at(0).length() - last);
-
-	if (ip != "localhost")
-	{
-		std::stringstream ipStr;
-		ipStr << ipToL(ip);
-		value.at(0) = ipStr.str();
-	}
-
+	
+	if (ip.empty())
+		throw(std::runtime_error("Error: config-file: invalid host at key 'listen'."));
+		
+	value.at(0) = ip;
 	if (port.find_first_not_of("0123456789") == std::string::npos)
 	{
 		long	nb = std::atol(port.c_str());
-
-		if (nb > std::numeric_limits<unsigned short>::max())
+		if (nb > std::numeric_limits<unsigned short>::max() || nb < 1)
 			throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
-
-		if (ip == "localhost")
-			value.at(0) = "2130706433";
-
 		value.push_back(port);
-		return;
 	}
+	else
+		throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
 }
 
 void	ConfigParser::checkValueRoot(std::string& value)
