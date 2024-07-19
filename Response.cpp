@@ -363,6 +363,8 @@ bool Response::createResponseMsg()
 		}
 		else if (m_request.getValue("method") == "POST")
 			error_code = -1;
+		if (m_eventFlags & CGI_METH_DENY)
+			error_code = 403;
 	}
 	int ret = isReturnResponse();
 	if (ret)
@@ -394,11 +396,9 @@ bool	Response::isCgiReady()
 	return (m_cgi->readFromPipe() != -1);
 }
 
-bool Response::isCgiFile(const std::string &a_filePath) const
+bool Response::isCgiFile(const std::string &a_filePath)
 {
 	if (m_config.find("name") == m_config.end() || m_config.find("extension") == m_config.end())
-		return (false);
-	if (!checkAllowedMethod("cgi_methods"))
 		return (false);
 	//make filepath class that is a string but with extra functions like get extention and isFile or isDir etc...
 	std::size_t dotPos = a_filePath.find_last_of('.');
@@ -409,7 +409,11 @@ bool Response::isCgiFile(const std::string &a_filePath) const
 	for (std::size_t i = 0; i < extensions.size(); i++)
 	{
 		if (fileEnd == extensions.at(i))
+		{
+			if (!checkAllowedMethod("cgi_methods"))
+				return (m_eventFlags |= CGI_METH_DENY, std::cout << "WE ARE HERE " << '\n', false);
 			return (true);
+		}
 	}
 	return (false);
 }
