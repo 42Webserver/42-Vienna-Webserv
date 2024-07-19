@@ -42,8 +42,6 @@ bool Response::getBody(std::string const &filename)
 		return true;
 	std::ifstream input_file(filename.c_str());
 	std::stringstream body;
-	//std::cout << "Filename = " << filename << std::endl;
-
 	if (!input_file.is_open() || !input_file.good())
 	{
 		std::cerr << "Error: open error file" << '\n';
@@ -104,20 +102,10 @@ void Response::setValidMsg(const std::string &filepath)
 		getResponseHeader("200", "", getFileType(filepath));
 }
 
-std::string Response::getFileType(const std::string &filepath)
+std::string Response::getFileType(const FilePath &filepath)
 {
-	if (filepath.empty())
-		return ("html");
-	size_t pos;
-	std::string print;
-	if ((pos = filepath.find_last_of(".")) != std::string::npos)
-	{
-		if (pos < filepath.length())
-			return (filepath.substr(pos + 1, filepath.length()));
-	}
-	else if (filepath.at(filepath.length() - 1) == '/')
-		return ("html");
-	return ("NOTHING");
+	std::string ext = filepath.extension();
+	return (ext.empty()? "html" : ext);
 }
 
 void Response::setErrorMsg(const int &a_status_code)
@@ -233,35 +221,6 @@ std::string Response::decodeUri(const std::string &a_uri, std::string &a_query)
 	return (uriPath);
 }
 
-/// @brief
-/// @param a_filepath
-/// @return Returns 0 for file.
-///			Returns 403 for no perms;
-///         Returns 4031 for dir
-///         Returns 301 for dir when searching for file
-///         Returns 404 for no dir or file
-int Response::isValidFile(std::string &a_filepath)
-{
-	struct stat sb;
-	if (stat(a_filepath.c_str(), &sb) == 0)
-	{
-		if ((sb.st_mode & S_IRUSR) == 0)
-			return (403);
-		if (S_ISREG(sb.st_mode))
-			return (0);
-		if (S_ISDIR(sb.st_mode))
-		{
-			if (a_filepath.size() > 0 && a_filepath.at(a_filepath.size() - 1) != '/')
-			{
-				a_filepath.push_back('/');
-				return (301);
-			}
-			return (4031);
-		}
-	}
-	return (404);
-}
-
 int	Response::isReturnResponse()
 {
 	if (m_config["return"].size())
@@ -275,14 +234,13 @@ int	Response::isReturnResponse()
 	return (0);
 }
 
-int Response::deleteRequest(const std::string& a_filePath)
+int Response::deleteRequest(const FilePath& a_filePath)
 {
-	FilePath filep = a_filePath;
-	if (filep.exists())
+	if (a_filePath.exists())
 	{
-		if (filep.isFile())
+		if (a_filePath.isFile())
 		{
-			if (std::remove(filep.c_str()))
+			if (std::remove(a_filePath.c_str()))
 				return (404);
 			m_responseBody.append("<html><body><h1>Delete file successfull</h1></body></html>\r\n");
 			return (0);		
@@ -336,7 +294,6 @@ bool Response::createResponseMsg()
 			else
 			{
 				m_responseBody = m_cgi->getResponseBody();
-				//std::cout << "CGI Rsponese: " << m_responseBody << '\n';
 				getResponseHeader("200", "", "html");
 			}
 		}
@@ -365,10 +322,7 @@ bool Response::createResponseMsg()
 			m_cgi =	SharedPtr<CGI>(new CGI(m_config, m_request));
 			m_cgi->setUrlQuery(urlQuery);
 			m_cgi->setPathInfo(pathInfo);
-			int ret = m_cgi->execute(filepath);
-			//HIER MUSS NOCH EINMAL DAS MIT READ FROM PIPE REINGEMACHT WERDEN UND DIE ISCGIREADY FUNCTION GECALLT WERDEN!!!!!!
-			//m_responseBody = m_cgi->getResponseBody();
-			error_code = ret;
+			error_code = m_cgi->execute(filepath);
 			if (error_code == 0)
 				return (false);
 		}
@@ -389,16 +343,6 @@ bool Response::createResponseMsg()
 	return (true);
 }
 
-
-
-
-// is GET METHOD => check if uri if it is a PATH_INFO, then if there is an query string, safe it in envp!
-// call with execve the file! 
-// if method post and is uri is path info => pipe body and execve the python script 
-// Everything what is inside in PATH_INFO has to be a script so it will be executed!!
-// UPLOAD value will be stored in envp that the script knows where to upload! 
-
-
 void Response::clearBody()
 {
 	m_responseBody.clear();
@@ -409,21 +353,17 @@ bool	Response::isCgiReady()
 	return (m_cgi->readFromPipe() != -1);
 }
 
-bool Response::isCgiFile(const std::string &a_filePath) const
+bool Response::isCgiFile(const FilePath &a_filePath) const
 {
 	if (m_config.find("name") == m_config.end() || m_config.find("extension") == m_config.end())
 		return (false);
 	if (!checkAllowedMethod("cgi_methods"))
 		return (false);
-	//make filepath class that is a string but with extra functions like get extention and isFile or isDir etc...
-	std::size_t dotPos = a_filePath.find_last_of('.');
-	if (dotPos == std::string::npos)
-		return (false);
 	const std::vector<std::string>& extensions = m_config.at("extension");
-	std::string fileEnd = a_filePath.substr(dotPos);
+	std::string fileExtention = a_filePath.extension();
 	for (std::size_t i = 0; i < extensions.size(); i++)
 	{
-		if (fileEnd == extensions.at(i))
+		if (fileExtention == extensions.at(i))
 			return (true);
 	}
 	return (false);
@@ -570,14 +510,3 @@ void Response::addContentType(std::string &a_response_header, const std::string 
 		a_response_header.append("text/plain");
 	a_response_header.append("\r\n");
 }
-
-
-// check is Request is valid? => if (false ) ? badRequest : weiter
-// check httpVersion!
-// check check and set uri!
-// check method
-// get Method
-//  check if return => if (true) ? return statuscode and redirection with key Location:
-//  check valid root
-//	check autoindex if (true) ? root => displayen directory tree : send index
-//  send index: file

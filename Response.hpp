@@ -54,7 +54,6 @@ private:
 	int			checkHeaderline();
 	bool		getBody(std::string const &filename);
 	bool		checkAllowedMethod(const std::string& a_methodList) const;
-	int			isValidFile(std::string &a_filepath);
 	int			getValidFilePath(std::string &a_filepath, std::string& a_pathInfo);
 	std::string	decodeUri(const std::string& a_uri, std::string& a_query);
 	int			isReturnResponse();
@@ -62,11 +61,11 @@ private:
 	void		addServerName(std::string &a_response_header);
 	void		addContentType(std::string &a_response_header, const std::string &a_content_type);
   	void    	createAutoIndex(const std::string &a_path);
-	std::string	getFileType(const std::string &filepath);
+	std::string	getFileType(const FilePath &filepath);
 	int			isValidRequestHeader();
 	bool		isCgiReady();
-	bool		isCgiFile(const std::string& a_filePath) const;
-	int			deleteRequest(const std::string& a_filePath);
+	bool		isCgiFile(const FilePath& a_filePath) const;
+	int			deleteRequest(const FilePath& a_filePath);
 	void		modifyUri();
 
 	Response(void);
