@@ -105,7 +105,7 @@ void Response::setValidMsg(const std::string &filepath)
 std::string Response::getFileType(const FilePath &filepath)
 {
 	std::string ext = filepath.extension();
-	return (ext.empty()? "html" : ext);
+	return (ext.empty()? "html" : ext.erase(0, 1));
 }
 
 void Response::setErrorMsg(const int &a_status_code)
