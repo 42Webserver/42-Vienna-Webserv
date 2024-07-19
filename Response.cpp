@@ -411,7 +411,7 @@ bool Response::isCgiFile(const std::string &a_filePath)
 		if (fileEnd == extensions.at(i))
 		{
 			if (!checkAllowedMethod("cgi_methods"))
-				return (m_eventFlags |= CGI_METH_DENY, std::cout << "WE ARE HERE " << '\n', false);
+				return (m_eventFlags |= CGI_METH_DENY, false);
 			return (true);
 		}
 	}
