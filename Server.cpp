@@ -41,6 +41,11 @@ u_int64_t Server::getIp(void) const
 	return (m_subServers.at(0).getIp());
 }
 
+void Server::setIp(u_int32_t n_host)
+{
+	m_subServers.at(0).setIp(n_host);
+}
+
 std::string Server::getHost(void) const
 {
 	if (m_subServers.size() == 0)
@@ -81,7 +86,9 @@ addrinfo* Server::setServerAddress()
 	
 	m_serverAddress = (struct sockaddr_in *)result->ai_addr;
 	m_serverAddress->sin_port = htons(m_subServers.at(0).getPort());
-	//freeaddrinfo(result);
+
+	this->setIp(m_serverAddress->sin_addr.s_addr);
+	
 	return (result);
 }
 
