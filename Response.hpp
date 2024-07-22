@@ -24,6 +24,7 @@
 #define	REDIRECTION 1U << 0		//WIR HABEN EINE RETURN VALUE;
 #define	REDIR_LOCATION 1U << 1	//WIR HABEN EINE LOCATION MIT ANGEGEBEN AUS CONFIG
 #define REDIR_DIRECTORY 1U << 2	//REQUEST IST EIN DIRECTORY!
+#define CGI_METH_DENY 1U << 3	//CGI METHODE NOT ALLOWED
 
 #define BYTE_TO_KB 1000
 
@@ -64,7 +65,7 @@ private:
 	std::string	getFileType(const std::string &filepath);
 	int			isValidRequestHeader();
 	bool		isCgiReady();
-	bool		isCgiFile(const std::string& a_filePath) const;
+	bool		isCgiFile(const std::string& a_filePath);
 	int			deleteRequest();
 	void		modifyUri();
 
