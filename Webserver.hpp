@@ -11,9 +11,7 @@
 #include "ConfigParser.hpp"
 #include <map>
 #include <csignal>
-#include "Log.hpp"
-
-
+#include "Logger.hpp"
 
 class Webserver
 {

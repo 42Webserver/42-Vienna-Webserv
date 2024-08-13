@@ -1,21 +1,23 @@
-#ifndef LOG_HPP
-# define LOG_HPP
+#ifndef LOGGER_HPP
+# define LOGGER_HPP
 
+#include "Singleton.hpp"
+#include <string>
+#include <unistd.h>
+#include <fcntl.h>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
-class Log
+#define LOGF Logger::get()
+
+class Logger : public Singleton<Logger>
 {
 public:
 	class LogType
 	{
 	private:
-
-		std::string		m_fileName;
-		std::ofstream	m_file;
-
-		int				openInit(void);
+		int	m_fd;
 
 	public:
 
@@ -32,27 +34,22 @@ public:
 			std::string	str;
 			ss << msg;
 			str = ss.str();
-			m_file.write(str.c_str(), str.length());
+			write(m_fd, str.c_str(), str.length());
 			return (*this);
 		}
 
-		LogType& ts();
-
+		void	closeFile(void);
+		bool	isGood(void) const;
 	};
-private:
 
-	Log(void);
-	Log(const Log& a_other);
-	Log& operator=(const Log& a_other);
-	~Log();
-
-public:
+	// Logger();
+	// ~Logger();
 	
-	static int 		Initialize(const std::string& errorLogFileName, const std::string& accesLogFileName);
+	int		initLogs(const std::string& errorFileName, const std::string& accesFileName);
+	void	closeLogs(void);
 
 	static LogType Error;
 	static LogType Access;
-	// operator Log&(void);
 };
 
-#endif // !LOG_HPP
+#endif //!LOGGER_HPP
