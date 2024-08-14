@@ -82,7 +82,7 @@ void	ConfigParser::processLine(std::string& line, std::vector<std::string>& toke
 	while (std::getline(stream, current, ' '))
 	{
 		if (current == ";" && checkBegin == 0)
-			throw(std::runtime_error("Error: config-file: line begins with semicolon''."));
+			throw(std::runtime_error("Error: config-file: line begins with semicolon."));
 		if (!current.empty())
 		{
 			tokens.push_back(current);
@@ -430,6 +430,13 @@ void	ConfigParser::allowAllMethods(std::vector<std::string> &value)
 	value.push_back("DELETE");
 }
 
+void ConfigParser::basicRequirement(const t_config &serverConfig)
+{
+	if (!serverConfig.at("root").size() || !serverConfig.at("listen").size())
+		throw std::runtime_error("Error: config-file: required keys are missing (root and listen).");
+
+}
+
 bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::string> &tokens, size_t &i)
 {
 	std::map< std::string, std::vector<std::string> > location;
@@ -607,6 +614,7 @@ void ConfigParser::safeData(std::vector<std::string> tokens)
 				else
 					throw std::runtime_error("Error: config-file: Trash not allowed [serverscope]");
 			}
+			basicRequirement(newSubserver.serverConfig);
 			if (!newSubserver.serverConfig["allowed_methods"].size())
 				allowAllMethods(newSubserver.serverConfig["allowed_methods"]);
 			setupErrorPages(newSubserver);
