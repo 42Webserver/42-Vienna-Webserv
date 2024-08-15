@@ -82,7 +82,7 @@ void	ConfigParser::processLine(std::string& line, std::vector<std::string>& toke
 	while (std::getline(stream, current, ' '))
 	{
 		if (current == ";" && checkBegin == 0)
-			throw(std::runtime_error("Error: config-file: line begins with semicolon''."));
+			throw(std::runtime_error("Error: config-file: line begins with semicolon."));
 		if (!current.empty())
 		{
 			tokens.push_back(current);
@@ -159,7 +159,7 @@ void	ConfigParser::checkSyntax(std::vector<std::string>& tokens)
 
 		if (*it == "location" && ((it + 2) == tokens.end() || *(it + 2) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid location scope."));
-			
+
 		if (*it == "Server" && ((it + 1) == tokens.end() || *(it + 1) != "{"))
 			throw(std::runtime_error("Error: config-file: invalid Server scope."));
 	}
@@ -255,28 +255,6 @@ void	ConfigParser::checkValueClientMaxBodySize(std::string& value)
 		throw(std::runtime_error("Error: config-file: invalid value at key 'client_max_body_size'."));
 }
 
-unsigned long ConfigParser::ipToL(std::string ip)
-{
-	std::string octet;
-	std::istringstream input(ip);
-	unsigned long result = 0;
-	unsigned long value;
-	int shiftSize = 24;
-	if (ip.find_first_not_of("0123456789.") != std::string::npos)
-		throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
-	while (std::getline(input, octet, '.') && shiftSize >= 0)
-	{
-    	if (octet.length() <= 0 || octet.length() > 3 || strtol(octet.c_str(), NULL, 10) > 255)
-			throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
-		value = strtol(octet.c_str(), NULL, 10);
-		result +=	value << shiftSize;
-		shiftSize -= 8;
-	}
-    if (shiftSize != -8)
-		throw std::runtime_error("Error: config-file: invalid ip at key 'listen'.");
-	return (result);
-}
-
 void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 {
 	if (value.at(0).find_first_not_of("0123456789") == std::string::npos)
@@ -297,27 +275,20 @@ void	ConfigParser::checkValueListen(std::vector<std::string>& value)
 
 	std::string	ip = value.at(0).substr(0, last);
 	std::string	port = value.at(0).substr(last + 1, value.at(0).length() - last);
-
-	if (ip != "localhost")
-	{
-		std::stringstream ipStr;
-		ipStr << ipToL(ip);
-		value.at(0) = ipStr.str();
-	}
-
+	
+	if (ip.empty())
+		throw(std::runtime_error("Error: config-file: invalid host at key 'listen'."));
+		
+	value.at(0) = ip;
 	if (port.find_first_not_of("0123456789") == std::string::npos)
 	{
 		long	nb = std::atol(port.c_str());
-
-		if (nb > std::numeric_limits<unsigned short>::max())
+		if (nb > std::numeric_limits<unsigned short>::max() || nb < 1)
 			throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
-
-		if (ip == "localhost")
-			value.at(0) = "2130706433";
-
 		value.push_back(port);
-		return;
 	}
+	else
+		throw(std::runtime_error("Error: config-file: invalid port at key 'listen'."));
 }
 
 void	ConfigParser::checkValueRoot(std::string& value)
@@ -402,7 +373,7 @@ void	ConfigParser::checkValue(const std::string& key, std::vector<std::string>& 
 	if (key == "root")
 		checkValueRoot(value.at(0));
 	if (key == "upload")
-		checkValueUpload(value.at(0));	
+		checkValueUpload(value.at(0));
 	if (key == "allowed_methods" || key == "cgi_methods")
 		checkValueAllowedMethods(value);
 	if (key == "return")
@@ -459,12 +430,23 @@ void	ConfigParser::allowAllMethods(std::vector<std::string> &value)
 	value.push_back("DELETE");
 }
 
+void ConfigParser::basicRequirement(const t_config &serverConfig)
+{
+	if (!serverConfig.at("root").size() || !serverConfig.at("listen").size())
+		throw std::runtime_error("Error: config-file: required keys are missing (root and listen).");
+
+}
+
 bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::string> &tokens, size_t &i)
 {
 	std::map< std::string, std::vector<std::string> > location;
 	initLocation(location);
 	std::vector<std::string> value;
 	value.push_back(tokens.at(i + 1));
+
+	if (value.at(0).length() > 1 && value.at(0).at(value.at(0).length() - 1) == '/')
+		value.at(0) = value.at(0).substr(0, value.at(0).length() - 1);
+
 	location["name"] = value;
 	i += 3;
 	while(tokens.at(i) != "}")
@@ -601,7 +583,7 @@ void ConfigParser::compareCgiKey(const struct subserver& a_subserver)
 	if (a_subserver.serverConfig.at("extension").size() != a_subserver.serverConfig.at("script_path").size())
 		throw std::runtime_error("Error: config-file: invalid amount of value at cgi keys");
 	for (std::vector<t_config>::const_iterator it = a_subserver.locationConfigs.begin(); it != a_subserver.locationConfigs.end(); ++it)
-		
+
 		if (it->at("extension").size() != it->at("script_path").size())
 			throw std::runtime_error("Error: config-file: invalid amount of value at cgi keys");
 }
@@ -632,6 +614,7 @@ void ConfigParser::safeData(std::vector<std::string> tokens)
 				else
 					throw std::runtime_error("Error: config-file: Trash not allowed [serverscope]");
 			}
+			basicRequirement(newSubserver.serverConfig);
 			if (!newSubserver.serverConfig["allowed_methods"].size())
 				allowAllMethods(newSubserver.serverConfig["allowed_methods"]);
 			setupErrorPages(newSubserver);

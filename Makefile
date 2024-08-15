@@ -4,7 +4,7 @@ FLAGS=	-Wall -Werror -Wextra -pedantic -std=c++98 -g
 SRC_DIR= ./src/
 OBJ_DIR= ${SRC_DIR}objs/
 
-FILES=	main.cpp Webserver.cpp Server.cpp Connection.cpp Request.cpp Response.cpp PollContainer.cpp ConfigParser.cpp Data.cpp CGI.cpp
+FILES=	main.cpp Webserver.cpp Server.cpp Connection.cpp Request.cpp Response.cpp PollContainer.cpp ConfigParser.cpp Data.cpp CGI.cpp Timer.cpp
 
 SRCS=	$(addprefix $(SRC_DIR), $(FILES))
 OBJS=	$(addprefix $(OBJ_DIR), $(FILES:.cpp=.o))

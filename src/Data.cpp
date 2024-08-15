@@ -11,6 +11,16 @@ u_int64_t subserver::getIp(void) const
 	return (std::strtol(serverConfig.at("listen").at(0).c_str(), NULL, 10));
 }
 
+void	subserver::setIp(u_int32_t n_host)
+{
+	serverConfig.at("listen").at(0) = ntohl(n_host);
+}
+
+std::string subserver::getHost(void) const
+{
+    return serverConfig.at("listen").at(0);
+}
+
 serveradress subserver::getAdress(void) const
 {
 	return (serveradress(getIp(), getPort()));

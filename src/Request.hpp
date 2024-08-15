@@ -14,6 +14,9 @@
 
 #define MAX_HEAD_SIZE 8192
 #define MAX_BODY_SIZE 1073741824
+//offset for "\\r\\n"
+#define RN_CHAR_OFFSET 2
+#define BASE_HEX 16
 
 class Request
 {
@@ -34,6 +37,7 @@ public:
 	void				addHead(const std::string& a_head);
 	bool				headComplete(void);
 	void				addBody(const std::string& a_body);
+	void 				reciveChunked(const std::string & a_body);
 	bool				bodyComplete(void);
 	bool				isReady(void);
 	const std::string&	getHead();
@@ -51,9 +55,11 @@ private:
 	int									m_isValid;
 	bool								m_headComplete;
 	bool								m_bodyComplete;
+	std::size_t							m_chunkSize;
 	std::size_t							m_maxBodySize;
 	std::string							m_head;
 	std::string							m_body;
+	std::string							m_buffer;
 	std::map <std::string, std::string>	m_requestHeader;
 };
 

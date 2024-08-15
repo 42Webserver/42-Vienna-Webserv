@@ -8,6 +8,7 @@
 #include "Response.hpp"
 #include "Server.hpp"
 #include "Debug.h"
+#include "Timer.hpp"
 
 #define BUFFER_SIZE 80000
 
@@ -20,7 +21,6 @@ private:
 	Server&		m_server;
 	int			m_clientSocket;
 
-	time_t		m_idleStart;
 	Request		m_request;
 	Response	m_response;
 
@@ -33,6 +33,7 @@ private:
 
 public:
 
+	Timer		idleTime;
 	Connection(Server& a_server, int a_clientSocket);
 	Connection(const Connection& a_other);
 	~Connection();
@@ -43,8 +44,6 @@ public:
 	int	getSocketFd(void) const;
 	int	receiveRequestRaw(void);
 	int	sendResponse(void);
-
-	time_t	getIdleTime(void) const;
 };
 
 #endif // !CONNECTION_HPP
