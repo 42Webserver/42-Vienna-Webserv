@@ -1,8 +1,5 @@
 #include "Logger.hpp"
 
-Logger::LogType Logger::Error;
-Logger::LogType Logger::Access;
-
 Logger::LogType::LogType() : m_fd(-1) {}
 
 Logger::LogType::LogType(const std::string& a_filePath)
@@ -25,7 +22,7 @@ Logger::LogType& Logger::LogType::operator=(const LogType& a_other)
 {
 	if (this != &a_other)
 	{
-		if (m_fd != -1)
+		if (m_fd != a_other.m_fd)
 			closeFile();
 		m_fd = a_other.m_fd;
 	}
@@ -36,7 +33,18 @@ Logger::LogType::~LogType()
 {
 }
 
-void	Logger::LogType::closeFile(void)
+Logger::LogType &Logger::LogType::ts()
+{
+	time_t rawtime;
+	struct tm* timeinfo;
+	char buffer [80];
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(buffer, 80, "%Y-%m-%d %H:%M:%S | ", timeinfo);
+	return(*this << buffer);
+}
+
+void Logger::LogType::closeFile(void)
 {
 	if (m_fd != -1 && m_fd > 2)
 		close(m_fd);
@@ -47,6 +55,10 @@ bool Logger::LogType::isGood(void) const
 {
 	return (m_fd != -1);
 }
+
+Logger::Logger() : Error(), Access() {}
+
+Logger::~Logger() {}
 
 int	Logger::initLogs(const std::string& errorFileName, const std::string& accessFileName)
 {

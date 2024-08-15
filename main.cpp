@@ -19,17 +19,18 @@ int	main(int argc, char **argv)
         configName = std::string(argv[1]);
     }
 
-	Logger::get().initLogs("logs/error", "logs/access");
 	try
 	{
+		Logger::get().initLogs("logs/error", "logs/access");
         Webserver webserv = Webserver(ConfigParser::parseConfig(configName));
         Response::initStatusCodes();
 		Response::initContentType();
 	    webserv.runServer();
+		Logger::get().closeLogs();
 	}
 	catch(const std::exception& e)
 	{
 		std::cerr << e.what() << '\n';
+		Logger::get().closeLogs();
 	}
-	Logger::get().closeLogs();
 }

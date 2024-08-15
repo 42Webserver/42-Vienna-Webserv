@@ -38,18 +38,20 @@ public:
 			return (*this);
 		}
 
+		LogType&	ts(void);
+
 		void	closeFile(void);
 		bool	isGood(void) const;
 	};
 
-	// Logger();
-	// ~Logger();
+	Logger();
+	~Logger();
 	
 	int		initLogs(const std::string& errorFileName, const std::string& accesFileName);
 	void	closeLogs(void);
 
-	static LogType Error;
-	static LogType Access;
+	LogType Error;
+	LogType Access;
 };
 
 #endif //!LOGGER_HPP
