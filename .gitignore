@@ -33,3 +33,4 @@
 
 # Executable
 webserv
+*.conf
