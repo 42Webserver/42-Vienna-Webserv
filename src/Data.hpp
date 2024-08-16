@@ -6,6 +6,7 @@
 #include <map>
 #include <cstdlib>
 #include <ostream>
+#include <arpa/inet.h>
 
 typedef std::map<std::string, std::vector<std::string> > t_config;
 
@@ -28,6 +29,7 @@ struct subserver
 
 	u_int16_t		getPort(void) const;
 	u_int64_t		getIp(void) const;
+	void			setIp(u_int32_t n_host);
 	std::string		getHost(void) const;
 	serveradress	getAdress(void) const;
 	const t_config&	getValidConfig(std::string a_uri);

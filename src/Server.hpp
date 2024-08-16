@@ -33,6 +33,7 @@ public:
 	void		addSubServer(const struct subserver& a_subServer);
 	u_int16_t	getPort(void) const;
 	u_int64_t	getIp(void) const;
+	void		setIp(u_int32_t n_host);
 	std::string	getHost(void) const;
 	addrinfo*	setServerAddress();
 
