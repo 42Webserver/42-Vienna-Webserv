@@ -24,6 +24,7 @@
 #define	REDIRECTION 1U << 0		//WIR HABEN EINE RETURN VALUE;
 #define	REDIR_LOCATION 1U << 1	//WIR HABEN EINE LOCATION MIT ANGEGEBEN AUS CONFIG
 #define REDIR_DIRECTORY 1U << 2	//REQUEST IST EIN DIRECTORY!
+#define CGI_METH_DENY 1U << 3	//CGI METHODE NOT ALLOWED
 
 #define BYTE_TO_KB 1000
 
@@ -58,7 +59,7 @@ private:
 	int			isReturnResponse(void);
 	void		addRedirection(const std::string &redLoc);
 	void		addContentType(const std::string &a_content_type);
-  	void    	createAutoIndex(std::string &a_path);
+  void    	createAutoIndex(std::string &a_path);
 	std::string	getFileType(const std::string &filepath);
 	int			isValidRequestHeader(void);
 	bool		isCgiReady(void);
