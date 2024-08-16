@@ -302,9 +302,8 @@ void Response::modifyUri()
 
 }
 
-void Response::insertCgiResponse(const std::string &a_cgiResponse)
+void Response::insertCgiResponse()
 {
-	m_responseBody = a_cgiResponse;
 	std::size_t sepPos = m_responseBody.find("\r\n\r\n");
 	std::stringstream headStuff;
 	if (sepPos != std::string::npos)
@@ -354,7 +353,7 @@ bool Response::createResponseMsg()
 				error_code = m_cgi->getStatusCode();
 			else
 			{
-				insertCgiResponse(m_cgi->getResponseBody());
+				insertCgiResponse();
 				return (true);
 			}
 		}

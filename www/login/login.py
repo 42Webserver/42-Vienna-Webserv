@@ -16,9 +16,9 @@ def addNewSessionId():
     files = glob.glob(os.path.join("/tmp/webserv_sessions", '*'))
     num_files = len(files)
 
-    if num_files > 10:
+    if num_files > 9:
         sorted_files = sorted(files, key=os.path.getmtime)
-        while num_files > 10:
+        while num_files > 9:
             os.remove(sorted_files.pop(0))
             num_files -= 1
 

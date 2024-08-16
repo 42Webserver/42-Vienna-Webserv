@@ -102,13 +102,11 @@ void	CGI::setEnvp()
 	size_t	i = 0;
 	while (i < vars.size())
 	{
-			std::cout << "COPY STRING = '" << vars.at(i) << "' WITH SIZE = " << vars.at(i).length() << std::endl;
-			char *str = new char[vars.at(i).length() + 1];
+		char *str = new char[vars.at(i).length() + 1];
 
-			std::strcpy(str, vars.at(i).c_str());
-			m_envp.push_back(str);
-			std::cout << "AFTER COPY = '" << str << "'" << std::endl;
-			i++;
+		std::strcpy(str, vars.at(i).c_str());
+		m_envp.push_back(str);
+		i++;
 	}
 }
 
