@@ -14,6 +14,9 @@ last_name = form.getvalue('last_name')
 query_string = os.environ.get('QUERY_STRING')
 params = parse_qs(query_string)
 
+print("Content-Type: text/html")
+print("Set-Cookie: Random=cookie\r\n\r\n")
+
 print("<html>")
 print("<head>")
 print("<title>CGI Script Output</title>")

@@ -94,6 +94,7 @@ void	CGI::setEnvp()
 	vars.push_back("REQUEST_METHOD=" + m_request.getValue("method"));
 	vars.push_back("CONTENT_TYPE=" + m_request.getValue("Content-Type"));
 	vars.push_back("CONTENT_LENGTH=" + m_request.getValue("Content-Length"));
+	vars.push_back("HTTP_COOKIE=" + m_request.getValue("Cookie"));
 	std::cerr << m_config.at("upload").size() << '\n';
 	if (m_config.at("upload").size() == 1)
 		vars.push_back("UPLOAD="+ m_config.at("upload").at(0));
@@ -101,13 +102,11 @@ void	CGI::setEnvp()
 	size_t	i = 0;
 	while (i < vars.size())
 	{
-			std::cout << "COPY STRING = '" << vars.at(i) << "' WITH SIZE = " << vars.at(i).length() << std::endl;
-			char *str = new char[vars.at(i).length() + 1];
+		char *str = new char[vars.at(i).length() + 1];
 
-			std::strcpy(str, vars.at(i).c_str());
-			m_envp.push_back(str);
-			std::cout << "AFTER COPY = '" << str << "'" << std::endl;
-			i++;
+		std::strcpy(str, vars.at(i).c_str());
+		m_envp.push_back(str);
+		i++;
 	}
 }
 
@@ -116,23 +115,17 @@ int CGI::run()
 	int cgi_input[2], cgi_output[2];
 
     if (pipe(cgi_input) == -1 || pipe(cgi_output) == -1)
-	{
-		std::cout << "Error while opening pipe\n";
 		return (500);
-	}
 
 	pid_t pid = fork();
-	//PROTECTION
 	if (pid < 0)
-	{
-		std::cout << "Error while forking\n";
 		return (500);
-	}
  	if (pid == 0)
     {
         dup2(cgi_output[1], STDOUT_FILENO);
         dup2(cgi_input[0], STDIN_FILENO);
-
+		dup2(cgi_output[1], STDERR_FILENO);
+		
         close(cgi_output[0]);
         close(cgi_output[1]);
         close(cgi_input[0]);
@@ -200,13 +193,9 @@ int CGI::readFromPipe()
 
 
 	if (WIFEXITED(status_code) && WEXITSTATUS(status_code) != 0)
-		return ((m_status = 500));
-
+		m_status = 500;
 	while ((n = read(m_outputPipe, buffer, sizeof(buffer))) > 0)
-	{
-		std::cout << "OUTPUT PIPE = " << m_outputPipe << " | N = " << n << std::endl;
 		m_responseBody.append(buffer, n);
-	}
 	close(m_outputPipe);
 	m_outputPipe = -1;
     return (0);
@@ -234,27 +223,14 @@ void CGI::setUrlQuery(const std::string &a_urlQuery)
 int	CGI::execute(std::string a_filePath)
 {
 	m_filePath = a_filePath;
-	std::cout << "Check exec\n";
 	if ((m_status = scriptIsExecutable(a_filePath)))
-	{
-		std::cout << "err: " << m_status << '\n';
 		return (m_status);
-	}
 
-	std::cout << "set path\n";
 	if ((m_status = setPath(a_filePath)))
 		return (m_status);
 
-	std::cout << "set argv envp\n" << std::endl;
 	setArgv(a_filePath);
 	setEnvp();
-
-	std::cout << "PATH: " << m_path << std::endl;
-	std::cout << "ARGS: " << m_argv[0] << " | " << m_argv[1] << std::endl;
-	std::cout << "ENVP: ";
-	for (size_t i = 0; i < m_envp.size(); i++)
-		std::cout << " | " << m_envp.at(i);
-	
 
 	m_status = run();
 	deleteData();

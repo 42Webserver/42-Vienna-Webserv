@@ -34,39 +34,38 @@ private:
 	static std::map<std::string, std::string>	s_status_codes;
 	static std::map<std::string, std::string>	s_content_type;
 
-	std::string									m_responseHeader;
+	std::map<std::string, std::string>			m_responseHeader;
 	std::string									m_responseBody;
 	Request&									m_request;
 	t_config									m_config;
 	unsigned int								m_eventFlags;
 	SharedPtr<CGI>								m_cgi;
 
-
+	std::string	headerMapToString(void) const;
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
-	void		addStatusLine(const std::string &a_status_code, std::string& a_response_header);
-	void		addDateAndTime(std::string &a_response_header);
-	void		addConnection(const std::string& a_status_code, std::string& a_response_header);
+	void		addDateAndTime(void);
+	void		addConnection(const std::string& a_status_code);
 	void		setErrorMsg(const int &a_status_code);
 	void		setDefaultErrorMsg(const std::string &a_status_code);
 	void		setValidMsg(const std::string &filepath);
-	void		addContentLength(std::string &a_response_header);
-	int			checkHeaderline();
+	void		addContentLength(void);
+	int			checkHeaderline(void);
 	bool		getBody(std::string const &filename);
 	bool		checkAllowedMethod(const std::string& a_methodList) const;
 	int			isValidFile(std::string &a_filepath);
 	int			getValidFilePath(std::string &a_filepath);
 	std::string	decodeUri(const std::string& a_uri, std::string& a_query);
-	int			isReturnResponse();
-	void		addRedirection(std::string &a_response_header, const std::string &redLoc);
-	void		addServerName(std::string &a_response_header);
-	void		addContentType(std::string &a_response_header, const std::string &a_content_type);
+	int			isReturnResponse(void);
+	void		addRedirection(const std::string &redLoc);
+	void		addContentType(const std::string &a_content_type);
   	void    	createAutoIndex(std::string &a_path);
 	std::string	getFileType(const std::string &filepath);
-	int			isValidRequestHeader();
-	bool		isCgiReady();
+	int			isValidRequestHeader(void);
+	bool		isCgiReady(void);
 	bool		isCgiFile(const std::string& a_filePath) const;
-	int			deleteRequest();
-	void		modifyUri();
+	int			deleteRequest(void);
+	void		modifyUri(void);
+	void		insertCgiResponse();
 
 	Response(void);
 
