@@ -296,6 +296,29 @@ void Response::modifyUri()
 
 }
 
+void Response::insertCgiResponse(const std::string &a_cgiResponse)
+{
+	m_responseBody = a_cgiResponse;
+	std::size_t sepPos = m_responseBody.find("\r\n\r\n");
+	std::stringstream headStuff;
+	if (sepPos != std::string::npos)
+	{
+		headStuff << m_responseBody.substr(0, sepPos + 4);
+		m_responseBody.erase(0, sepPos + 4);
+	}
+	getResponseHeader("200", "", "html");
+	std::string line;
+	while (std::getline(headStuff, line, '\n'))
+	{
+		std::size_t colPos = line.find_first_of(':');
+		if (colPos != std::string::npos)
+		{
+			std::size_t valBegin = line.find_first_not_of(" \t:", colPos);
+			m_responseHeader[line.substr(0, colPos)] = line.substr(valBegin == std::string::npos ? colPos : valBegin);
+		}
+	}
+}
+
 int	Response::isValidRequestHeader()
 {
 	int error_code;
@@ -323,9 +346,8 @@ bool Response::createResponseMsg()
 				error_code = m_cgi->getStatusCode();
 			else
 			{
-				m_responseBody = m_cgi->getResponseBody();
-				//std::cout << "CGI Rsponese: " << m_responseBody << '\n';
-				getResponseHeader("200", "", "html");
+				insertCgiResponse(m_cgi->getResponseBody());
+				return (true);
 			}
 		}
 		else

@@ -65,6 +65,7 @@ private:
 	bool		isCgiFile(const std::string& a_filePath) const;
 	int			deleteRequest(void);
 	void		modifyUri(void);
+	void		insertCgiResponse(const std::string& a_cgiResponse);
 
 	Response(void);
 
