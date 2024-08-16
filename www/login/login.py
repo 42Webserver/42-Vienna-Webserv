@@ -3,6 +3,7 @@ import cgi
 import os
 import uuid
 import datetime
+import glob
 
 def generateSessionId():
     return str(uuid.uuid4())
@@ -11,6 +12,15 @@ def addNewSessionId():
 
     if not os.path.exists("/tmp/webserv_sessions"):
         os.makedirs("/tmp/webserv_sessions")
+
+    files = glob.glob(os.path.join("/tmp/webserv_sessions", '*'))
+    num_files = len(files)
+
+    if num_files > 10:
+        sorted_files = sorted(files, key=os.path.getmtime)
+        while num_files > 10:
+            os.remove(sorted_files.pop(0))
+            num_files -= 1
 
     id = generateSessionId()
 
@@ -31,7 +41,7 @@ def checkSessionId(id):
     now = datetime.datetime.now()
     time_difference = now - creation_datetime
     
-    if time_difference > datetime.timedelta(hours=3):
+    if time_difference > datetime.timedelta(hours=1):
         os.remove(file_path)
         return (False)
     else:
@@ -86,7 +96,7 @@ def responseWelcomePage(id):
 
 cookie = os.environ.get('HTTP_COOKIE')
 
-# cookie = "37d01189-a40e-4b49-be64-6e5b6fe44a2e"
+cookie = cookie.replace("id=", "")
 
 if cookie and checkSessionId(cookie):
     print("VALID SESSION-ID IN DIRECTORY!!!")
@@ -105,9 +115,9 @@ else:
             responseLoginPage()
             exit()
         else:
-            addNewSessionId()
-            print("Set-Cookie: id=", id, "\r\n\r\n")
-            responseWelcomePage(addNewSessionId())
+            id = addNewSessionId()
+            print("Set-Cookie: id=" + id + "; Max-Age=3600" + "\r\n\r\n")
+            responseWelcomePage(id)
 
     responseLoginPage()
 
