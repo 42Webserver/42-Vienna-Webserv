@@ -194,16 +194,8 @@ int	Webserver::runServer()
 		else
 		{
 			LOGC(TERMC_ORANGE, pollRet << '/' << m_polls.getPollfds().size() - m_servers.size() << " Poll(s) triggered\n")
-			if (pollServers() == -1)
-			{
-				std::cerr << "Poll server error\n";
-				continue; //try save by clean function?
-			}
-			if (pollClients() == -1)
-			{
-				std::cerr << "Poll client error\n";
-				continue; //? überlegen ob das sinn macht. Error handling geschichte
-			}
+			pollServers();
+			pollClients();
 		}
 	}
 	return (pollRet);
