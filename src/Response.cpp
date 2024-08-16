@@ -46,7 +46,6 @@ bool Response::getBody(std::string const &filename)
 
 	if (!input_file.is_open() || !input_file.good())
 	{
-		std::cerr << "Error: open error file" << '\n';
 		return (false);
 	}
 	body << input_file.rdbuf();
@@ -98,6 +97,8 @@ const std::string Response::getResponse() const
 
 void Response::setValidMsg(const std::string &filepath)
 {
+	if (m_cgi)
+		return ;
 	if (!getBody(filepath))
 		setErrorMsg(404);
 	else
@@ -126,6 +127,11 @@ void Response::setErrorMsg(const int &a_status_code)
 	{
 		getResponseHeader("200", "", "");
 		return;
+	}
+	else if (m_cgi && !m_responseBody.empty())
+	{
+		getResponseHeader("500", "", "html");		
+		return ;
 	}
 	std::ostringstream convert;
 
@@ -319,14 +325,12 @@ bool Response::createResponseMsg()
 	{
 		if (isCgiReady())
 		{
+
+			m_responseBody = m_cgi->getResponseBody();
 			if (m_cgi->getStatusCode())
 				error_code = m_cgi->getStatusCode();
 			else
-			{
-				m_responseBody = m_cgi->getResponseBody();
-				//std::cout << "CGI Rsponese: " << m_responseBody << '\n';
 				getResponseHeader("200", "", "html");
-			}
 		}
 		else
 			return (false);
