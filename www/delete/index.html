@@ -39,8 +39,8 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="mb-4">Dateien verwalten</h1>
-        <button id="loadFiles" class="btn btn-primary mb-4">Dateien laden</button>
+        <h1 class="mb-4">Manage Files</h1>
+        <button id="loadFiles" class="btn btn-primary mb-4">Load Files</button>
         <div class="card">
             <div class="card-body">
                 <div id="fileList" class="list-group"></div>
@@ -53,16 +53,16 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="errorModalLabel">Fehler</h5>
+                    <h5 class="modal-title" id="errorModalLabel">Error</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" id="errorModalBody">
-                    Es ist ein Fehler aufgetreten.
+                    An error occurred.
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Schließen</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -76,14 +76,14 @@
             fetch('/delete/listfiles.py')
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Netzwerkantwort war nicht ok');
+                        throw new Error('Network response was not ok');
                     }
                     return response.json();
                 })
                 .then(data => {
                     const fileList = document.getElementById('fileList');
                     if (!fileList) {
-                        console.error('Element mit der ID "fileList" wurde nicht gefunden.');
+                        console.error('Element with ID "fileList" not found.');
                         return;
                     }
 
@@ -98,7 +98,7 @@
                         fileName.textContent = file;
 
                         const deleteLink = document.createElement('a');
-                        deleteLink.textContent = 'Löschen';
+                        deleteLink.textContent = 'Delete';
                         deleteLink.href = '#';
                         deleteLink.className = 'btn btn-delete btn-sm';
                         deleteLink.addEventListener('click', function(event) {
@@ -108,14 +108,16 @@
                             })
                             .then(response => {
                                 if (!response.ok) {
-                                    throw new Error('Netzwerkantwort war nicht ok');
+                                    throw new Error('Network response was not ok');
                                 }
                                 // Optionally, remove the file from the list after deletion
                                 listItem.remove();
+                                // Alert the user that the file was successfully deleted
+                                alert('Successfully deleted');
                             })
                             .catch(error => {
-                                console.error('Fehler:', error);
-                                document.getElementById('errorModalBody').textContent = 'Es ist ein Fehler aufgetreten: ' + error.message;
+                                console.error('Error:', error);
+                                document.getElementById('errorModalBody').textContent = 'An error occurred: ' + error.message;
                                 $('#errorModal').modal('show');
                             });
                         });
@@ -126,8 +128,8 @@
                     });
                 })
                 .catch(error => {
-                    console.error('Fehler:', error);
-                    document.getElementById('errorModalBody').textContent = 'Es ist ein Fehler aufgetreten: ' + error.message;
+                    console.error('Error:', error);
+                    document.getElementById('errorModalBody').textContent = 'An error occurred: ' + error.message;
                     $('#errorModal').modal('show');
                 });
         });
