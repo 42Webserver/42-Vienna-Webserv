@@ -1,18 +1,19 @@
 #include "Connection.hpp"
 
-Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket), m_request(), m_response(m_request)
+Connection::Connection(Server& a_server, int a_clientSocket) : m_server(a_server), m_clientSocket(a_clientSocket), m_cgiFd(0), m_request(), m_response(m_request)
 {
 	// std::cout << "New connection on fd: " << m_clientSocket << '\n';
 }
 
 Connection::Connection(const Connection &a_other)
-	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_request(a_other.m_request), m_response(m_request, a_other.m_response) {}
+	: m_server(a_other.m_server), m_clientSocket(a_other.m_clientSocket), m_cgiFd(a_other.m_cgiFd), m_request(a_other.m_request), m_response(m_request, a_other.m_response) {}
 
 Connection &Connection::operator=(const Connection &a_other)
 {
 	if (this != &a_other)
 	{
 		m_clientSocket = a_other.m_clientSocket;
+		m_cgiFd = a_other.m_cgiFd;
 		m_server = a_other.m_server;
 		m_request = a_other.m_request;
 		m_response = Response(m_request, a_other.m_response);
@@ -82,11 +83,18 @@ int Connection::readBody()
 
 int Connection::getSocketFd(void) const
 {
-	return (m_clientSocket);
+	if (m_cgiFd)
+		std::cout << "USING SOME PIPE FD: " << m_cgiFd << '\n';
+	return (m_cgiFd != 0 ? m_cgiFd : m_clientSocket);
 }
 
 int Connection::receiveRequestRaw(void)
 {
+	if (m_response.isCgiResponse())
+	{
+		m_cgiFd = m_response.createResponseMsg();
+		return (0);
+	}
 	if (!m_request.headComplete())
 	{
 		if (readHead())
@@ -118,7 +126,7 @@ int Connection::sendResponse(void)
 	int error_code = 0;
 	if (!m_request.isReady())
 		return (0);
-	if (!m_response.createResponseMsg())
+	if ((m_cgiFd = m_response.createResponseMsg()))
 		return (1);
 	error_code = m_request.getIsValid();
 	m_request = Request();
@@ -128,6 +136,11 @@ int Connection::sendResponse(void)
 	if (send(m_clientSocket, response.data(), response.size(), 0) == -1)
 		return (-1);
 	return (error_code);
+}
+
+bool Connection::isResponseCgi(void) const
+{
+	return (m_cgiFd);
 }
 
 bool Connection::operator==(const int a_fd) const

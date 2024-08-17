@@ -83,8 +83,8 @@ public:
 	static void	initContentType();
 	static void	initStatusCodes();
 	const std::string	getResponse() const;
-	bool	createResponseMsg();
-	void	clearBody();
+	int			createResponseMsg();
+	void		clearBody();
 	std::size_t	getMaxBodySize(void) const;
 };
 

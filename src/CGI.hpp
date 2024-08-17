@@ -23,7 +23,8 @@ private:
 	t_config					m_config;
 	Request&					m_request;
 	int							m_pid;
-	int							m_outputPipe;
+	int							m_inputPipe[2];
+	int							m_outputPipe[2];
 	int							m_status;
 	std::string					m_responseBody;
 	std::string					m_filePath;
@@ -51,6 +52,11 @@ public:
 	const std::string& 	getResponseBody() const;
 	int					getStatusCode() const;
 	void				setUrlQuery(const std::string& a_urlQuery);
+	int					io(void);
+	int					getFd(void)
+	{
+		return (m_inputPipe[1] != -1 ? m_inputPipe[1] : m_outputPipe[0]);
+	}
 };
 
 #endif // !CGI_HPP
