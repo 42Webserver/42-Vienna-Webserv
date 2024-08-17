@@ -105,12 +105,9 @@ void FilePath::remove_last(void)
 	std::size_t	startPos;
 	if (m_string.length() < 2)
 		return ;
-	startPos = (startPos = m_string.find_last_of('/', m_string.length() - 2)) == m_string.npos ? m_string.length() : startPos;
-	if (startPos + 1 >= m_string.length())
-		return;
+	startPos = (startPos = m_string.find_last_of('/')) == m_string.npos ? m_string.length() : startPos;
 	m_string.erase(startPos, -1);
 	setStat();
-	
 }
 
 void FilePath::replace_filename(const std::string &filename)
