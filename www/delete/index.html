@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Fetch zu CGI</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #6482AD;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background-color: #ffffff;
+        }
+        .file-item a {
+            color: #FFFFFF; /* Changed to a teal color */
+            text-decoration: none;
+        }
+        .file-item a:hover {
+            text-decoration: underline;
+        }
+        .btn-delete {
+            color: #ffffff;
+            background-color: #c37f88; /* Changed to a Bootstrap danger color */
+        }
+        h1
+        {
+            color: #E2DAD6;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Dateien verwalten</h1>
+        <button id="loadFiles" class="btn btn-primary mb-4">Dateien laden</button>
+        <div class="card">
+            <div class="card-body">
+                <div id="fileList" class="list-group"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorModalLabel">Fehler</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="errorModalBody">
+                    Es ist ein Fehler aufgetreten.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Schließen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.getElementById('loadFiles').addEventListener('click', function() {
+            fetch('/delete/listfiles.py')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Netzwerkantwort war nicht ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const fileList = document.getElementById('fileList');
+                    if (!fileList) {
+                        console.error('Element mit der ID "fileList" wurde nicht gefunden.');
+                        return;
+                    }
+
+                    // Clear the file list before appending new items
+                    fileList.innerHTML = '';
+
+                    data.files.forEach(file => {
+                        const listItem = document.createElement('div');
+                        listItem.className = 'file-item list-group-item';
+
+                        const fileName = document.createElement('span');
+                        fileName.textContent = file;
+
+                        const deleteLink = document.createElement('a');
+                        deleteLink.textContent = 'Löschen';
+                        deleteLink.href = '#';
+                        deleteLink.className = 'btn btn-delete btn-sm';
+                        deleteLink.addEventListener('click', function(event) {
+                            event.preventDefault();
+                            fetch(`/delete/${file}`, {
+                                method: 'DELETE'
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Netzwerkantwort war nicht ok');
+                                }
+                                // Optionally, remove the file from the list after deletion
+                                listItem.remove();
+                            })
+                            .catch(error => {
+                                console.error('Fehler:', error);
+                                document.getElementById('errorModalBody').textContent = 'Es ist ein Fehler aufgetreten: ' + error.message;
+                                $('#errorModal').modal('show');
+                            });
+                        });
+
+                        listItem.appendChild(fileName);
+                        listItem.appendChild(deleteLink);
+                        fileList.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Fehler:', error);
+                    document.getElementById('errorModalBody').textContent = 'Es ist ein Fehler aufgetreten: ' + error.message;
+                    $('#errorModal').modal('show');
+                });
+        });
+    </script>
+</body>
+</html>
