@@ -139,7 +139,6 @@ int Webserver::pollClients(void)
 			LOG_INFO("Pollout triggered")
 			int error_code = m_polls.getConnection(i).sendResponse();
 			m_polls.updateConntectionFd(i);
-			std::cout << "Connection fd: " << m_polls.getPollfdsAt(i) << '\n';
 			if (m_polls.getConnection(i).isResponseCgi())
 				m_polls.getPollfdsAt(i).events |= POLLIN;
 			if (error_code == 1)

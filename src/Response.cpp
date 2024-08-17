@@ -358,10 +358,7 @@ int Response::createResponseMsg()
 			}
 		}
 		else
-		{
-			std::cout << "CGI NOT READY\n";
 			return (m_cgi->getFd());
-		}
 	}
 	else if (!(error_code = isValidRequestHeader()))
 	{

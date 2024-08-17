@@ -83,8 +83,6 @@ int Connection::readBody()
 
 int Connection::getSocketFd(void) const
 {
-	if (m_cgiFd)
-		std::cout << "USING SOME PIPE FD: " << m_cgiFd << '\n';
 	return (m_cgiFd != 0 ? m_cgiFd : m_clientSocket);
 }
 

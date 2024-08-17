@@ -53,10 +53,8 @@ public:
 	int					getStatusCode() const;
 	void				setUrlQuery(const std::string& a_urlQuery);
 	int					io(void);
-	int					getFd(void)
-	{
-		return (m_inputPipe[1] != -1 ? m_inputPipe[1] : m_outputPipe[0]);
-	}
+	int					getFd(void) const;
+
 };
 
 #endif // !CGI_HPP

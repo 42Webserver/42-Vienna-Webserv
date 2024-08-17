@@ -163,7 +163,7 @@ int CGI::run()
 		// std::cout << "WRITE RET: " << write(m_inputPipe[1], m_request.getBody().c_str(), m_request.getBody().length()) << '\n';
         // close(m_inputPipe[1]);
 		m_pid = pid;
-		std::cout << "Input: " << m_inputPipe[1] << " Output: " << m_outputPipe[0] << '\n';
+		// std::cout << "Input: " << m_inputPipe[1] << " Output: " << m_outputPipe[0] << '\n';
     }
 	return (0);
 }
@@ -202,10 +202,8 @@ int	CGI::io()
 	{
 		ssize_t n = write(m_inputPipe[1], m_request.getBody().c_str() + written, m_request.getBody().length() > 5000 ? 5000 : m_request.getBody().length());
 		written += n;
-		std::cout << "WRITING TO CGI! N: " << n << '\n';
 		if (written == m_request.getBody().length())
 		{
-			std::cout << "EVERYTHING WRITTEN TO CGI! CLOSING INPUT PIPE\n";
 			close(m_inputPipe[1]);
 			close(m_inputPipe[0]);
 			m_inputPipe[1] = -1;
@@ -236,8 +234,12 @@ int	CGI::io()
 	}
 	else
 		return (0);
-	std::cout << "LAH\n";
 	return (-1);
+}
+
+int CGI::getFd(void) const
+{
+	return (m_inputPipe[1] != -1 ? m_inputPipe[1] : m_outputPipe[0]);
 }
 
 int CGI::readFromPipe()
