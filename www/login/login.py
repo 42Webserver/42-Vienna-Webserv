@@ -1,51 +1,11 @@
 #!/usr/bin/env python3
 import cgi
 import os
-import uuid
-import datetime
-import glob
+import sys
 
-def generateSessionId():
-    return str(uuid.uuid4())
+sys.path.insert(0, './../cgi-bin')
 
-def addNewSessionId():
-
-    if not os.path.exists("/tmp/webserv_sessions"):
-        os.makedirs("/tmp/webserv_sessions")
-
-    files = glob.glob(os.path.join("/tmp/webserv_sessions", '*'))
-    num_files = len(files)
-
-    if num_files > 9:
-        sorted_files = sorted(files, key=os.path.getmtime)
-        while num_files > 9:
-            os.remove(sorted_files.pop(0))
-            num_files -= 1
-
-    id = generateSessionId()
-
-    file_path = os.path.join("/tmp/webserv_sessions", id)
-    open(file_path, 'w').close()
-    print("Successfully created new file for session-id: ", id)
-    return (id)
-
-def checkSessionId(id):
-
-    file_path = os.path.join("/tmp/webserv_sessions", id)
-
-    if not os.path.exists(file_path):
-        return (False)
-    
-    creation_time = os.path.getctime(file_path)
-    creation_datetime = datetime.datetime.fromtimestamp(creation_time)
-    now = datetime.datetime.now()
-    time_difference = now - creation_datetime
-    
-    if time_difference > datetime.timedelta(hours=1):
-        os.remove(file_path)
-        return (False)
-    else:
-        return (True)
+import session_handler
 
 def responseLoginPage():
     print("It seems like you're a new visitor, please login...<br></br>")
@@ -98,7 +58,7 @@ cookie = os.environ.get('HTTP_COOKIE')
 
 cookie = cookie.replace("id=", "")
 
-if cookie and checkSessionId(cookie):
+if cookie and session_handler.checkSessionId(cookie):
     print("VALID SESSION-ID IN DIRECTORY!!!")
     responseWelcomePage(cookie)
 
@@ -115,7 +75,8 @@ else:
             responseLoginPage()
             exit()
         else:
-            id = addNewSessionId()
+            print("IT WORKED!!!")
+            id = session_handler.addNewSessionId()
             print("Set-Cookie: id=" + id + "; Max-Age=3600" + "\r\n\r\n")
             responseWelcomePage(id)
 
