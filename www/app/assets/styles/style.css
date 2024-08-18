@@ -99,7 +99,8 @@ h3 {
 }
 .btn-delete {
     color: #ffffff;
-    background-color: #7AB2B2; /* Changed to a Bootstrap danger color */
+    background-color: #FF0000;
+    font-weight: bolder; /* Changed to a Bootstrap danger color */
 }
 
 form {
