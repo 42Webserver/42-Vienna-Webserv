@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>File upload</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./../../assets/styles/style.css">
+</head>
+<body>
+    <div class="container">
+
+        <div class="navbar">
+            <img src="./../../assets/img/Logo.jpg" width="40px" alt="Logo">
+            <a href="/">Home</a>
+            <a href="#about">About</a>
+            <a href="#services">Services</a>
+            <a href="#contact">Contact</a>
+        </div>
+	<form action="./../cgi-bin/file-upload.py" method="post" enctype="multipart/form-data">
+		<input type="file" name="file">
+		<input type="submit">
+	</form>
+    </div>
+</body>
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html>
+   <head>
+       <meta charset="UTF-8">
+       <title> CGI </title>
+   </head>
+
+   <body>
+        <form action="./../cgi-bin/welcome.py" method="post" enctype="application/x-www-form-urlencoded">
+            Firstname: <input type="text" name="first_name" />
+
+            <br />
+
+           	Lastname: <input type="text" name="last_name" />
+
+            <input type="submit" value="Submit" />
+        </form>
+   </body>
+</html> -->
