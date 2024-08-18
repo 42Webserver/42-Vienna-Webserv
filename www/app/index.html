@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #6482AD;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #E2DAD6;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .card-title {
+            color: #17a2b8;
+        }
+        .btn-primary {
+            background-color: #6482AD;
+            border-color: #17a2b8;
+        }
+            .circle-img-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .circle-img {
+            border-radius: 50%;
+            overflow: hidden;
+            max-width: 300px; /* Adjust the size of the images */
+            max-height: 300px; /* Adjust the size of the images */
+        }
+
+        .hover-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: 6482AD;
+            font-size: 20px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .circle-img-container:hover .hover-text {
+            opacity: 1;
+        }
+
+        .circle-img-container:hover .circle-img {
+            opacity: 0.3; /* Adjust the opacity to make the image more transparent */
+        }
+        ul {
+            list-style-type: none; /* Remove the dots from list elements */
+            padding: 0; /* Remove default padding */
+            margin: 0; /* Remove default margin */
+            font-size: 14px;
+        }
+        h3 {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Demo WebSurfer</h1>
+        <div class="center-container">
+            <div class="container">
+                <div class="row d-flex justify-content-center">
+                    <div class="col-sm-12 col-lg-4 mb-4">
+                        <div class="circle-img-container">
+                            <img src="./assets/img/nsassenb.jpg" alt="Profile 1" class="img-fluid circle-img">
+                            <div class="hover-text"><h2>Nikolai Sassenbach</h2><br>
+                                    <h3>Responsible</h3> 
+                                    <ul>
+                                        <li>Poll-Master</li>
+                                        <li>Response</li>
+                                    </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-lg-4 mb-4">
+                        <div class="circle-img-container">
+                            <img src="./assets/img/fheid.jpg" alt="Profile 2" class="img-fluid circle-img">
+                            <div class="hover-text"><h2>Florian Heid</h2><br>
+                                <h3>Responsible</h3>
+                                <ul>
+                                    <li>CGI-Master</li>
+                                    <li>Configuration</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-lg-4 mb-4">
+                        <div class="circle-img-container">
+                            <img src="./assets/img/fwechsle.jpg" alt="Profile 3" class="img-fluid circle-img">
+                            <div class="hover-text"><h2>Felix Wechsler</h2><br>
+                                <h3>Responsible</h3>
+                                <ul>
+                                    <li>Response-Master</li>
+                                    <li>Configuration </li>
+                                </ul>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Manage Files</h5>
+                        <p class="card-text">View and manage your files.</p>
+                        <a href="./public/delete" class="btn btn-primary">Go to Manage Files</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Upload Files</h5>
+                        <p class="card-text">Upload new files to the system.</p>
+                        <a href="./public/upload/" class="btn btn-primary">Go to Upload Files</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            $('[data-toggle="popover"]').popover({
+                trigger: 'hover',
+                placement: 'right'
+            })
+        })
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
