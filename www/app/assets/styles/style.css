@@ -1,21 +1,21 @@
 body {
     padding: 20px;
-    background-color: #6482AD;
+    background-color: #CDE8E5;
 }
 .card {
     margin-bottom: 20px;
 }
 h1 {
-    color: #E2DAD6;
+    color: #4D869C;
     text-align: center;
     margin: 40px;
 
 }
 .card-title {
-    color: #17a2b8;
+    color: #4D869C;
 }
 .btn-primary {
-    background-color: #6482AD;
+    background-color: #7AB2B2;
     border-color: #17a2b8;
 }
     .circle-img-container {
@@ -62,14 +62,15 @@ h3 {
 
 .navbar {
     overflow: hidden;
-    background-color: #333;
+    background-color: #4D869C;
     padding: 5px;
+    border-radius: 10px;
 }
 
 .navbar a {
     float: left;
     display: block;
-    color: #f2f2f2;
+    color: #EEF7FF;
     text-align: center;
     padding: 14px 16px;
     text-decoration: none;
@@ -98,9 +99,24 @@ h3 {
 }
 .btn-delete {
     color: #ffffff;
-    background-color: #c37f88; /* Changed to a Bootstrap danger color */
+    background-color: #7AB2B2; /* Changed to a Bootstrap danger color */
 }
 
 form {
     padding: 30px;
 }
+
+.login-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: white;
+}
+.login-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
