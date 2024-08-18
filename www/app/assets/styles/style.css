@@ -1,0 +1,102 @@
+body {
+    padding: 20px;
+    background-color: #6482AD;
+}
+.card {
+    margin-bottom: 20px;
+}
+h1 {
+    color: #E2DAD6;
+    text-align: center;
+    margin: 40px;
+
+}
+.card-title {
+    color: #17a2b8;
+}
+.btn-primary {
+    background-color: #6482AD;
+    border-color: #17a2b8;
+}
+    .circle-img-container {
+    position: relative;
+    display: inline-block;
+}
+
+.circle-img {
+    border-radius: 50%;
+    overflow: hidden;
+    max-width: 300px; /* Adjust the size of the images */
+    max-height: 300px; /* Adjust the size of the images */
+}
+
+.hover-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: 6482AD;
+    font-size: 20px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.circle-img-container:hover .hover-text {
+    opacity: 1;
+}
+
+.circle-img-container:hover .circle-img {
+    opacity: 0.3; /* Adjust the opacity to make the image more transparent */
+}
+ul {
+    list-style-type: none; /* Remove the dots from list elements */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
+    font-size: 14px;
+}
+h3 {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.navbar {
+    overflow: hidden;
+    background-color: #333;
+    padding: 5px;
+}
+
+.navbar a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    background-color: #ddd;
+    color: black;
+}
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    background-color: #ffffff;
+}
+.file-item a {
+    color: #FFFFFF; /* Changed to a teal color */
+    text-decoration: none;
+}
+.file-item a:hover {
+    text-decoration: underline;
+}
+.btn-delete {
+    color: #ffffff;
+    background-color: #c37f88; /* Changed to a Bootstrap danger color */
+}
