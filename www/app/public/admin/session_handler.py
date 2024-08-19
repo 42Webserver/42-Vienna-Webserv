@@ -63,5 +63,6 @@ def addNewSessionId():
 def deleteSessionId(id):
     id = id.replace("id=", "")
     file_path = os.path.join("/tmp/webserv_sessions", id)
+    if not os.path.exists(file_path):
+        return 
     os.remove(file_path)
-

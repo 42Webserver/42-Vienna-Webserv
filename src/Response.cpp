@@ -185,7 +185,6 @@ int Response::getValidFilePath(std::string &a_filepath, std::string& a_pathInfo)
 		else if (m_config.at("index").size())
 		{
 			path.append(m_config.at("index").at(0));
-			std::cout << "Index: " << path << std::endl;
 			a_filepath = path.str();
 			if (!path.exists())
 				return (404);
@@ -381,14 +380,16 @@ bool Response::isCgiFile(const FilePath &a_filePath)
 {
 	if (m_config.find("name") == m_config.end() || m_config.find("extension") == m_config.end())
 		return (false);
-	if (!checkAllowedMethod("cgi_methods"))
-		return (m_eventFlags |= CGI_METH_DENY, false);
 	const std::vector<std::string>& extensions = m_config.at("extension");
 	std::string fileExtention = a_filePath.extension();
 	for (std::size_t i = 0; i < extensions.size(); i++)
 	{
 		if (fileExtention == extensions.at(i))
+		{
+			if (!checkAllowedMethod("cgi_methods"))
+				return (m_eventFlags |= CGI_METH_DENY, false);
 			return (true);
+		}
 	}
 	return (false);
 }

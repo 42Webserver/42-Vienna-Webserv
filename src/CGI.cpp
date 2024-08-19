@@ -98,7 +98,6 @@ void	CGI::setEnvp()
 	vars.push_back(ss.str());
 	vars.push_back(SERVER_PROTOCOL_STRING);
 	vars.push_back("HTTP_COOKIE=" + m_request.getValue("Cookie"));
-	std::cerr << m_config.at("upload").size() << '\n';
 	if (m_config.at("upload").size() == 1)
 		vars.push_back("UPLOAD="+ m_config.at("upload").at(0));
 

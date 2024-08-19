@@ -30,7 +30,7 @@ if 'file' in formdata:
 		# Speichern der Datei im Verzeichnis '/tmp'
 		upload_location = os.environ.get('UPLOAD')
 		if not upload_location:
-			upload_location = '/sgoinfre/goinfre/Perso/fheid/test/'
+			upload_location = './../delete/remove'
 		with open(upload_location + filename, 'wb') as f:
 			f.write(content)
 		uploaded = True  # Simulierte Bedingung, um zu zeigen, ob das Hochladen erfolgreich war

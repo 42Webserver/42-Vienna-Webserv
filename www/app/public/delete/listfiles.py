@@ -4,7 +4,7 @@ import json
 from cgi import FieldStorage
 
 # Definiere das Verzeichnis, aus dem die Dateien gelesen werden sollen
-directory_path = '/home/fwechsle/webserv/www/delete/remove'
+directory_path = '/home/nsassenb/Documents/Core/42-Vienna-Webserv/www/app/public/delete/remove'
 
 # Lese alle Dateien im Verzeichnis
 files = os.listdir(directory_path)

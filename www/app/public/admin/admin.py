@@ -24,7 +24,7 @@ def loginPage():
             </div>
             <div class="login-container">
                 <h2 class="login-header">Login</h2>
-                <form action="/admin/admin.py" method="POST">
+                <form action="/admin/" method="POST">
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" class="form-control" id="username" name="username" required>
@@ -172,7 +172,7 @@ def deleteRsp():
                             deleteLink.className = 'btn btn-delete btn-sm';
                             deleteLink.addEventListener('click', function(event) {
                                 event.preventDefault();
-                                fetch(`/delete/${file}`, {
+                                fetch(`../delete/remove/${file}`, {
                                     method: 'DELETE'
                                 })
                                 .then(response => {
@@ -286,7 +286,7 @@ def welcomeRsp():
                         <div class="card-body">
                             <h5 class="card-title">Manage Files</h5>
                             <p class="card-text">View and manage your files.</p>
-                            <a href="/admin/admin.py?delete" class="btn btn-primary">Go to Manage Files</a>
+                            <a href="/admin/delete" class="btn btn-primary">Go to Manage Files</a>
                         </div>
                     </div>
                 </div>
@@ -295,7 +295,7 @@ def welcomeRsp():
                         <div class="card-body">
                             <h5 class="card-title">Upload Files</h5>
                             <p class="card-text">Upload new files to the system.</p>
-                            <a href="/admin/admin.py?upload" class="btn btn-primary">Go to Upload Files</a>
+                            <a href="/admin/upload" class="btn btn-primary">Go to Upload Files</a>
                         </div>
                     </div>
                 </div>
@@ -307,14 +307,14 @@ def welcomeRsp():
         <script>
             document.getElementById('loginButton').addEventListener('click', function() {
                 // Redirect to login page or show login modal
-                window.location.href = '/admin/admin.py';
+                window.location.href = '/admin/';
             });
 
             document.getElementById('logoutButton').addEventListener('click', function() {
                 // Perform logout action, e.g., clear session and redirect to home page
                 // This is a simple example, you might need to call an API to handle logout
                 alert('You have been logged out.');
-                window.location.href = '/admin/admin.py?logout';
+                window.location.href = '/admin/logout';
             });
         </script>    
     </body>
@@ -322,9 +322,9 @@ def welcomeRsp():
     """)
 
 cookie = os.environ.get('HTTP_COOKIE')
-query = os.environ.get('QUERY_STRING')
+query = os.environ.get('PATH_INFO')
 
-if query == 'logout':
+if query == '/logout':
     deleteSessionId(cookie)
     welcomeRsp()
     exit()
@@ -333,9 +333,9 @@ if cookie:
     cookie = cookie.replace("id=", "")
 
 if cookie and checkSessionId(cookie):
-    if query == 'upload':
+    if query == '/upload':
         uploadRsp()
-    elif query == 'delete':
+    elif query == '/delete':
         deleteRsp()
     else:
         welcomeRsp()
