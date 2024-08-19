@@ -64,7 +64,7 @@ private:
 	std::string	getFileType(const FilePath &filepath);
 	int			isValidRequestHeader(void);
 	bool		isCgiReady(void);
-	bool		isCgiFile(const FilePath& a_filePath) const;
+	bool		isCgiFile(const FilePath& a_filePath);
 	int			deleteRequest(const FilePath& a_filePath);
 	void		modifyUri(void);
 	void		insertCgiResponse();

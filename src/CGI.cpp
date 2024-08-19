@@ -117,7 +117,7 @@ int CGI::run()
 {
 	int cgi_input[2], cgi_output[2];
 
-  if (pipe(cgi_input) == -1 || pipe(cgi_output) == -1)
+	if (pipe(cgi_input) == -1 || pipe(cgi_output) == -1)
 	{
 		std::cout << "Error while opening pipe\n";
 		return (500);
