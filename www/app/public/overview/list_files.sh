@@ -4,7 +4,7 @@
 echo -e "Content-type: application/json\r\n\r\n"
 
 # Directory to list
-directory="/home/felix/Dokumente/webserver/src"
+directory="/home/fwechsle/webserv/src"
 
 # List the directory contents and format as JSON
 json_output="{\"files\": ["
