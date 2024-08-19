@@ -42,7 +42,6 @@ private:
 	static void	checkErrorPage(std::vector<std::string>& value);
 	static void checkValueExtension(std::vector<std::string>& value);
 	static void checkValueScriptPath(std::vector<std::string>& value);
-	static unsigned long ipToL(std::string ip);
 
 	static void	setupErrorPages(struct subserver& subserver);
 	static void checkDuplicateLocations(struct subserver& subserver);
@@ -58,7 +57,7 @@ private:
 	static bool	endOfServerScope(std::string &str, size_t &countScopes);
 	static void	addValue(const std::vector<std::string> &tokens, struct subserver &newSubserver, size_t &i);
 	static void allowAllMethods(std::vector<std::string> &value);
-
+	static void basicRequirement(const t_config &serverConfig);
 public:
 	static std::vector<struct subserver>	parseConfig(std::string& configname);
 };

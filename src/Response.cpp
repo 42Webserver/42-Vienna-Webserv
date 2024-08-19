@@ -82,11 +82,13 @@ void Response::initContentType()
 
 const std::string Response::getResponse() const
 {
-	return (m_responseHeader + m_responseBody);
+	return (headerMapToString() + m_responseBody);
 }
 
 void Response::setValidMsg(const std::string &filepath)
 {
+	if (m_cgi)
+		return ;
 	if (!getBody(filepath))
 		setErrorMsg(404);
 	else
@@ -105,6 +107,11 @@ void Response::setErrorMsg(const int &a_status_code)
 	{
 		getResponseHeader("200", "", "");
 		return;
+	}
+	else if (m_cgi && !m_responseBody.empty())
+	{
+		getResponseHeader("500", "", "html");		
+		return ;
 	}
 	std::ostringstream convert;
 
@@ -127,7 +134,6 @@ void Response::setErrorMsg(const int &a_status_code)
 
 void Response::setDefaultErrorMsg(const std::string &a_status_code)
 {
-	m_responseBody.clear();
 	m_responseBody.append("<!DOCTYPE html><html><title>");
 	m_responseBody.append(s_status_codes[a_status_code]);
 	m_responseBody.append("</title><h1>");
@@ -256,6 +262,28 @@ void Response::modifyUri()
 
 }
 
+void Response::insertCgiResponse()
+{
+	std::size_t sepPos = m_responseBody.find("\r\n\r\n");
+	std::stringstream headStuff;
+	if (sepPos != std::string::npos)
+	{
+		headStuff << m_responseBody.substr(0, sepPos + 4);
+		m_responseBody.erase(0, sepPos + 4);
+	}
+	getResponseHeader("200", "", "html");
+	std::string line;
+	while (std::getline(headStuff, line, '\n'))
+	{
+		std::size_t colPos = line.find_first_of(':');
+		if (colPos != std::string::npos)
+		{
+			std::size_t valBegin = line.find_first_not_of(" \t:", colPos);
+			m_responseHeader[line.substr(0, colPos)] = line.substr(valBegin == std::string::npos ? colPos : valBegin);
+		}
+	}
+}
+
 int	Response::isValidRequestHeader()
 {
 	int error_code;
@@ -280,12 +308,13 @@ bool Response::createResponseMsg()
 	{
 		if (isCgiReady())
 		{
+			m_responseBody = m_cgi->getResponseBody();
 			if (m_cgi->getStatusCode())
 				error_code = m_cgi->getStatusCode();
 			else
 			{
-				m_responseBody = m_cgi->getResponseBody();
-				getResponseHeader("200", "", "html");
+				insertCgiResponse();
+				return (true);
 			}
 		}
 		else
@@ -323,6 +352,8 @@ bool Response::createResponseMsg()
 			error_code = -1;
 		else if(m_request.getValue("method") == "DELETE")
 			error_code = deleteRequest(filepath);
+    if (m_eventFlags & CGI_METH_DENY)
+			error_code = 403;
 	}
 	int ret = isReturnResponse();
 	if (ret)
@@ -408,96 +439,80 @@ void Response::createAutoIndex(const std::string &a_path)
 
 //////////////////////+++++Response Header+++++++++++//////////////////////
 
+std::string Response::headerMapToString(void) const
+{
+	std::string headerStr;
+	std::map<std::string, std::string>::const_iterator statusLine = m_responseHeader.find("HTTP/1.1");
+	if (statusLine != m_responseHeader.end())
+		headerStr += "HTTP/1.1 " + statusLine->second + "\r\n";
+	for (std::map<std::string, std::string>::const_iterator i = m_responseHeader.begin(); i != m_responseHeader.end(); i++)
+	{
+		if (i == statusLine)
+			continue;
+		headerStr += i->first + ": " + i->second + "\r\n";
+	}
+	headerStr.append("\r\n");
+	return (headerStr);	
+}
+
 void Response::getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type)
 {
-	std::string response_header;
 	m_responseHeader.clear();
-	addStatusLine(a_status_code, response_header);
-	addServerName(response_header);
-	addDateAndTime(response_header);
+	m_responseHeader["HTTP/1.1"] = a_status_code + ' ' + s_status_codes[a_status_code];
+	m_responseHeader["Server"] = SERVERNAME;
+	addDateAndTime();
 	//Content-type!
-	addContentType(response_header, a_content_type);
-	addContentLength(response_header);
+	addContentType(a_content_type);
+	addContentLength();
 	//Connection: keep-alive!
-	addConnection(a_status_code, response_header);
-	addRedirection(response_header, a_redirLoc);
-	response_header.append("\r\n");
-	m_responseHeader += response_header;
+	addConnection(a_status_code);
+	addRedirection(a_redirLoc);
 }
 
-void	Response::addStatusLine(const std::string &a_status_code, std::string& a_response_header)
-{
-	a_response_header.append("HTTP/1.1");
-	a_response_header += ' ';
-	a_response_header.append(a_status_code);
-	a_response_header += ' ';
-	a_response_header.append(s_status_codes[a_status_code]);
-	a_response_header.append("\r\n");
-}
-
-void Response::addDateAndTime(std::string &a_response_header)
+void Response::addDateAndTime()
 {
 	std::time_t t = std::time(NULL);
 	std::tm* now = std::localtime(&t);
 
 	char buffer[32];
-	a_response_header.append("Date: ");
 	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S CEST", now);
 
-	a_response_header.append(buffer);
-	a_response_header.append("\r\n");
+	m_responseHeader["Date"] = buffer;
 }
 
-void Response::addConnection(const std::string& a_status_code, std::string &a_response_header)
+void Response::addConnection(const std::string& a_status_code)
 {
 	const std::string& requestConnection = m_request.getValue("Connection");
 	if (a_status_code > "302")
-		a_response_header.append("Connection: close\r\n");
+		m_responseHeader["Connection"] = "close";
 	else if (!requestConnection.empty())
-	{
-		a_response_header.append("Connection: ");
-		a_response_header.append(requestConnection);
-		a_response_header.append("\r\n");
-	}
+		m_responseHeader["Connection"] = requestConnection;
 }
 
-void Response::addContentLength(std::string &a_response_header)
+void Response::addContentLength()
 {
 	std::ostringstream convert;
 
 	convert << m_responseBody.length();
-	a_response_header.append("Content-Length: ");
-	a_response_header.append(convert.str());
-	a_response_header.append("\r\n");
+	m_responseHeader["Content-Length"] = convert.str();
 }
 
-void Response::addRedirection(std::string &a_response_header, const std::string &a_redLoc)
+void Response::addRedirection(const std::string &a_redLoc)
 {
 	if (m_eventFlags & REDIRECTION)
 	{
-		a_response_header.append("Location: ");
 		if (m_eventFlags & REDIR_LOCATION)
-			a_response_header.append(m_config.at("return").at(1));
+			m_responseHeader["Location"] = m_config.at("return").at(1);
 		else
-			a_response_header.append(a_redLoc);
-		a_response_header.append("\r\n");
-
+			m_responseHeader["Location"] = a_redLoc;
 	}
 }
 
-void Response::addServerName(std::string &a_response_header)
+void Response::addContentType(const std::string &a_content_type)
 {
-	a_response_header.append("Server: ");
-	a_response_header.append(SERVERNAME);
-	a_response_header.append("\r\n");
+	if (s_content_type.find(a_content_type) != s_content_type.end())
+		m_responseHeader["Content-Type"] = s_content_type[a_content_type];
+	else
+		m_responseHeader["Content-Type"] = "text/plain";
 }
 
-void Response::addContentType(std::string &a_response_header, const std::string &a_content_type)
-{
-	a_response_header.append("Content-Type: ");
-	if (s_content_type.find(a_content_type) != s_content_type.end())
-		a_response_header.append(s_content_type[a_content_type]);
-	else
-		a_response_header.append("text/plain");
-	a_response_header.append("\r\n");
-}

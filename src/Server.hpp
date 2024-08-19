@@ -12,13 +12,14 @@
 #include <unistd.h>
 #include <algorithm>
 #include "Data.hpp"
+#include <netdb.h>
 
 class Server
 {
 private:
 
 	int									m_serverSocket;
-	sockaddr_in							m_serverAddress;
+	sockaddr_in							*m_serverAddress;
 	std::vector<struct subserver>		m_subServers;
 
 public:
@@ -32,6 +33,9 @@ public:
 	void		addSubServer(const struct subserver& a_subServer);
 	u_int16_t	getPort(void) const;
 	u_int64_t	getIp(void) const;
+	void		setIp(u_int32_t n_host);
+	std::string	getHost(void) const;
+	addrinfo*	setServerAddress();
 
 	struct subserver&	getSubServer(const std::string& a_hostname);
 
