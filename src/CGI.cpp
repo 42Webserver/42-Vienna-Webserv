@@ -150,9 +150,9 @@ int CGI::run()
 	}
  	if (pid == 0)
     {
-        dup2(cgi_output[1], STDOUT_FILENO);
-        dup2(cgi_input[0], STDIN_FILENO);
-		    dup2(cgi_output[1], STDERR_FILENO);
+		dup2(m_outputPipe[1], STDOUT_FILENO);
+		dup2(m_inputPipe[0], STDIN_FILENO);
+		dup2(m_outputPipe[1], STDERR_FILENO);
 		
         close(m_outputPipe[0]);
         close(m_outputPipe[1]);
@@ -168,12 +168,7 @@ int CGI::run()
     }
     else
     {
-        // close(m_outputPipe[1]);
-        // close(m_inputPipe[0]);
-		// std::cout << "WRITE RET: " << write(m_inputPipe[1], m_request.getBody().c_str(), m_request.getBody().length()) << '\n';
-        // close(m_inputPipe[1]);
 		m_pid = pid;
-		// std::cout << "Input: " << m_inputPipe[1] << " Output: " << m_outputPipe[0] << '\n';
     }
 	return (0);
 }
@@ -250,36 +245,6 @@ int	CGI::io()
 int CGI::getFd(void) const
 {
 	return (m_inputPipe[1] != -1 ? m_inputPipe[1] : m_outputPipe[0]);
-}
-
-int CGI::readFromPipe()
-{
-	// if (m_outputPipe == -1)
-	// 	return (0);
-
-	// ssize_t n = 0;
-	// char buffer[4096];
-	// int	status_code = 0;
-
-	// if (startTime.isOver(15))
-	// {
-	// 	kill(m_pid, SIGINT);
-	// 	m_status = 500;
-	// }
-
-	// if (waitpid(m_pid, &status_code, WNOHANG) == 0)
-	// {
-	// 	return (-1);
-	// }
-
-
-	// if (WIFEXITED(status_code) && WEXITSTATUS(status_code) != 0)
-	// 	m_status = 500;
-	// while ((n = read(m_outputPipe, buffer, sizeof(buffer))) > 0)
-	// 	m_responseBody.append(buffer, n);
-	// close(m_outputPipe);
-	// m_outputPipe = -1;
-    return (0);
 }
 
 const std::string& CGI::getResponseBody() const

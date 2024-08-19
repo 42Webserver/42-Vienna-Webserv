@@ -52,7 +52,6 @@ public:
 
 	Timer				startTime;
 
-	int					readFromPipe();
 	int					execute(std::string a_filePath);
 	const std::string& 	getResponseBody() const;
 	int					getStatusCode() const;
