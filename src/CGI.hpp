@@ -28,7 +28,8 @@ private:
 	t_config					m_config;
 	Request&					m_request;
 	int							m_pid;
-	int							m_outputPipe;
+	int							m_inputPipe[2];
+	int							m_outputPipe[2];
 	int							m_status;
 	std::string					m_responseBody;
 	std::string					m_filePath;
@@ -51,11 +52,12 @@ public:
 
 	Timer				startTime;
 
-	int					readFromPipe();
 	int					execute(std::string a_filePath);
 	const std::string& 	getResponseBody() const;
 	int					getStatusCode() const;
 	void				setUrlQuery(const std::string& a_urlQuery);
+	int					io(void);
+	int					getFd(void) const;
 	void				setPathInfo(const std::string& a_pathInfo);
 };
 

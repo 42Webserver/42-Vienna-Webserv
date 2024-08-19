@@ -298,7 +298,7 @@ bool Response::isCgiResponse()
 	return (m_cgi);
 }
 
-bool Response::createResponseMsg()
+int Response::createResponseMsg()
 {
 	int error_code = 0;
 	std::string filepath;
@@ -313,13 +313,10 @@ bool Response::createResponseMsg()
 			if (m_cgi->getStatusCode())
 				error_code = m_cgi->getStatusCode();
 			else
-			{
 				insertCgiResponse();
-				//return (true);
-			}
 		}
 		else
-			return (false);
+			return (m_cgi->getFd());
 	}
 	else if (!(error_code = isValidRequestHeader()))
 	{
@@ -345,7 +342,7 @@ bool Response::createResponseMsg()
 			m_cgi->setPathInfo(pathInfo);
 			error_code = m_cgi->execute(filepath);
 			if (error_code == 0)
-				return (false);
+				return (m_cgi->getFd());
 		}
 		else if (!pathInfo.empty())
 			error_code = 404;
@@ -363,7 +360,7 @@ bool Response::createResponseMsg()
 		setErrorMsg(error_code);
 	else
 		setValidMsg(filepath);
-	return (true);
+	return (0);
 }
 
 void Response::clearBody()
@@ -373,7 +370,7 @@ void Response::clearBody()
 
 bool	Response::isCgiReady()
 {
-	return (m_cgi->readFromPipe() != -1);
+	return (m_cgi->io() != -1);
 }
 
 bool Response::isCgiFile(const FilePath &a_filePath)

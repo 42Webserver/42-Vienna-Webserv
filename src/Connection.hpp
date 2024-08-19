@@ -20,6 +20,7 @@ private:
 
 	Server&		m_server;
 	int			m_clientSocket;
+	int			m_cgiFd;
 
 	Request		m_request;
 	Response	m_response;
@@ -44,6 +45,8 @@ public:
 	int	getSocketFd(void) const;
 	int	receiveRequestRaw(void);
 	int	sendResponse(void);
+
+	bool isResponseCgi(void) const;
 };
 
 #endif // !CONNECTION_HPP

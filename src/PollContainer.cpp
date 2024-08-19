@@ -49,6 +49,12 @@ void PollContainer::removeConnection(int a_idx)
 	m_connections.erase(m_connections.begin() + a_idx - (m_pollfds.size() - m_connections.size() + 1));
 }
 
+void PollContainer::updateConntectionFd(int a_idx)
+{
+	pollfd& pfd = m_pollfds.at(a_idx);
+	pfd.fd = getConnection(a_idx).getSocketFd();
+}
+
 pollfd PollContainer::newPollfd(int a_socket, int a_events) const
 {
 	pollfd	pfd;

@@ -123,6 +123,7 @@ int Webserver::pollClients(void)
 		{
 			LOG_INFO("Do read/accept request.")
 			int ret = m_polls.getConnection(i).receiveRequestRaw();
+			m_polls.updateConntectionFd(i);
 			if (ret == 1){
 				m_polls.getPollfdsAt(i).events ^= POLLOUT;
 				m_polls.getPollfdsAt(i).events ^= POLLIN;
@@ -137,6 +138,9 @@ int Webserver::pollClients(void)
 		{
 			LOG_INFO("Pollout triggered")
 			int error_code = m_polls.getConnection(i).sendResponse();
+			m_polls.updateConntectionFd(i);
+			if (m_polls.getConnection(i).isResponseCgi())
+				m_polls.getPollfdsAt(i).events |= POLLIN;
 			if (error_code == 1)
 				continue;
 			else if (error_code != 0)
@@ -176,6 +180,10 @@ int	Webserver::runServer()
 		if (pollRet == -1 && !g_isRunning)
 		{
 			std::cout << "Stopping Server :)" << std::endl;
+			for (size_t i = 0; i < m_polls.getPollfds().size(); i++)
+			{
+				close(m_polls.getPollfdsAt(i).fd);
+			}
 			return (0);
 		}
 		else if (pollRet == -1)
