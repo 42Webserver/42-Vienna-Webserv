@@ -5,21 +5,6 @@ void FilePath::setStat(void)
 	m_statValid = (stat(m_string.c_str(), &m_sb) == 0);
 }
 
-std::size_t FilePath::calcLength(void) const
-{
-	std::size_t	l = 0, currPos = 0, prevPos = 0;
-
-	while (currPos < m_string.length() && (currPos = m_string.find_first_of('/', currPos)) != m_string.npos)
-	{
-		if (currPos - prevPos > 1)
-			++l;
-		prevPos = currPos++;
-	}
-	if (prevPos < m_string.length() - 1)
-		++l;
-	return (l);
-}
-
 FilePath::FilePath(void)
 {
 	setStat();

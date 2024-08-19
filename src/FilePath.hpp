@@ -13,7 +13,6 @@ private:
 	struct stat	m_sb;
 	bool		m_statValid;
 	void		setStat(void);
-	std::size_t	calcLength(void) const;
 
 public:
 	FilePath(void);
