@@ -434,7 +434,6 @@ void ConfigParser::basicRequirement(const t_config &serverConfig)
 {
 	if (!serverConfig.at("root").size() || !serverConfig.at("listen").size())
 		throw std::runtime_error("Error: config-file: required keys are missing (root and listen).");
-
 }
 
 bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::string> &tokens, size_t &i)
@@ -614,6 +613,7 @@ void ConfigParser::safeData(std::vector<std::string> tokens)
 				else
 					throw std::runtime_error("Error: config-file: Trash not allowed [serverscope]");
 			}
+
 			basicRequirement(newSubserver.serverConfig);
 			if (!newSubserver.serverConfig["allowed_methods"].size())
 				allowAllMethods(newSubserver.serverConfig["allowed_methods"]);
