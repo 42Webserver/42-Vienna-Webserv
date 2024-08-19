@@ -5,16 +5,7 @@ std::map<std::string, std::string>	Response::s_content_type;
 
 Response::Response(Request &a_request) : m_request(a_request),  m_eventFlags(0), m_cgi(NULL) {}
 
-
-Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0), m_cgi(NULL)
-{
-/* 			std::cout << "STATUS CODE =";
-			for (std::map<std::string, std::string>::iterator it = s_status_codes.begin(); it != s_status_codes.end(); ++it)
-			{
-				std::cout << it->first + ": " + it->second + "\n";
-			} */
-
-}
+Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0), m_cgi(NULL) {}
 
 Response::Response(Request &a_request, const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(a_request), m_config(other.m_config), m_eventFlags(other.m_eventFlags), m_cgi(other.m_cgi){}
 
@@ -42,10 +33,9 @@ bool Response::getBody(std::string const &filename)
 		return true;
 	std::ifstream input_file(filename.c_str());
 	std::stringstream body;
-	//std::cout << "Filename = " << filename << std::endl;
-
 	if (!input_file.is_open() || !input_file.good())
 	{
+		std::cerr << "Error: open error file" << '\n';
 		return (false);
 	}
 	body << input_file.rdbuf();
@@ -105,20 +95,10 @@ void Response::setValidMsg(const std::string &filepath)
 		getResponseHeader("200", "", getFileType(filepath));
 }
 
-std::string Response::getFileType(const std::string &filepath)
+std::string Response::getFileType(const FilePath &filepath)
 {
-	if (filepath.empty())
-		return ("html");
-	size_t pos;
-	std::string print;
-	if ((pos = filepath.find_last_of(".")) != std::string::npos)
-	{
-		if (pos < filepath.length())
-			return (filepath.substr(pos + 1, filepath.length()));
-	}
-	else if (filepath.at(filepath.length() - 1) == '/')
-		return ("html");
-	return ("NOTHING");
+	std::string ext = filepath.extension();
+	return (ext.empty()? "html" : ext.erase(0, 1));
 }
 
 void Response::setErrorMsg(const int &a_status_code)
@@ -183,30 +163,47 @@ int Response::checkHeaderline()
 	return (0);
 }
 
-int Response::getValidFilePath(std::string &a_filepath)
+int Response::getValidFilePath(std::string &a_filepath, std::string& a_pathInfo)
 {
-	int ret = isValidFile(a_filepath);
-	if (ret == 4031)
+	FilePath path = a_filepath;
+
+	while (!path.exists())
+		path.remove_last();
+	a_filepath.erase(0, path.str().length());
+	a_pathInfo = a_filepath;
+	a_filepath = path.str();
+	if (!path.isRead())
+		return (403);
+	if (path.isDir())
 	{
-		if (m_config.at("index").size())
+		if (path.str().length() && *(path.str().end() - 1) != '/' && a_pathInfo.empty())
 		{
-			std::string temp = a_filepath + m_config.at("index").at(0);
-			ret = getValidFilePath(temp);
-			a_filepath = temp;
-			return (ret);
+			a_filepath = path.str();
+			a_filepath.push_back('/');
+			return (301);
 		}
-		if (m_config.at("autoindex").size())
+		else if (m_config.at("index").size())
+		{
+			path.append(m_config.at("index").at(0));
+			std::cout << "Index: " << path << std::endl;
+			a_filepath = path.str();
+			if (!path.exists())
+				return (404);
+			return (0);
+		}
+		else if (!a_pathInfo.empty())
+			return (404);
+		else if (m_config.at("autoindex").size())
 		{
 			if (m_config.at("autoindex").at(0) == "on")
 			{
-				createAutoIndex(a_filepath);
+				createAutoIndex(path.str());
 				return (0);
 			}
 		}
 		return (403);
 	}
-	std::cout << a_filepath << std::endl;
-	return (ret);
+	return (0);
 }
 
 /// @brief Takes the a_uri and seperates it into filepath and uriQuery
@@ -215,43 +212,12 @@ int Response::getValidFilePath(std::string &a_filepath)
 /// @return returns the path to the file (config root + uri) 
 std::string Response::decodeUri(const std::string &a_uri, std::string &a_query)
 {
-	std::string filePath;
-	filePath.append(m_config["root"].at(0));
+	std::string uriPath = m_config.at("root").at(0);
 	std::size_t	encPos = a_uri.find_first_of('?');
-	filePath.append(a_uri, 0, encPos);
+	uriPath.append(a_uri, 0, encPos);
 	if (encPos != std::string::npos && encPos + 1 < a_uri.length())
 		a_query.append(a_uri, encPos + 1);
-	return (filePath);
-}
-
-/// @brief
-/// @param a_filepath
-/// @return Returns 0 for file.
-///			Returns 403 for no perms;
-///         Returns 4031 for dir
-///         Returns 301 for dir when searching for file
-///         Returns 404 for no dir or file
-
-int Response::isValidFile(std::string &a_filepath)
-{
-	struct stat sb;
-	if (stat(a_filepath.c_str(), &sb) == 0)
-	{
-		if ((sb.st_mode & S_IRUSR) == 0)
-			return (403);
-		if (S_ISREG(sb.st_mode))
-			return (0);
-		if (S_ISDIR(sb.st_mode))
-		{
-			if (a_filepath.size() > 0 && a_filepath.at(a_filepath.size() - 1) != '/')
-			{
-				a_filepath.push_back('/');
-				return (301);
-			}
-			return (4031);
-		}
-	}
-	return (404);
+	return (uriPath);
 }
 
 int	Response::isReturnResponse()
@@ -267,24 +233,20 @@ int	Response::isReturnResponse()
 	return (0);
 }
 
-int Response::deleteRequest()
+int Response::deleteRequest(const FilePath& a_filePath)
 {
-	struct stat sb;
-	std::string filepath = m_config.at("root").at(0) + m_request.getValue("uri");
-	if (stat(filepath.c_str(), &sb) == 0)
+	if (a_filePath.exists())
 	{
-		if (S_ISREG(sb.st_mode))
+		if (a_filePath.isFile())
 		{
-			if (std::remove(filepath.c_str()))
+			if (std::remove(a_filePath.c_str()))
 				return (404);
-			else
-			{
-				m_responseBody.append("<html><body><h1>Delete file successfull</h1></body></html>\r\n");
-				return (0);
-			}	
-		}	
+			m_responseBody.append("<html><body><h1>Delete file successfull</h1></body></html>\r\n");
+			return (0);		
+		}
+		return (403);
 	}
-	return(404);
+	return (404);
 }
 
 void Response::modifyUri()
@@ -342,20 +304,17 @@ int Response::createResponseMsg()
 	int error_code = 0;
 	std::string filepath;
 	std::string urlQuery;
+	std::string pathInfo;
 
 	if (isCgiResponse())
 	{
 		if (isCgiReady())
 		{
-
 			m_responseBody = m_cgi->getResponseBody();
 			if (m_cgi->getStatusCode())
 				error_code = m_cgi->getStatusCode();
 			else
-			{
 				insertCgiResponse();
-				return (0);
-			}
 		}
 		else
 			return (m_cgi->getFd());
@@ -364,7 +323,7 @@ int Response::createResponseMsg()
 	{
 		modifyUri();
 		filepath = decodeUri(m_request.getValue("uri"), urlQuery);
-		if ((error_code = getValidFilePath(filepath)))
+		if ((error_code = getValidFilePath(filepath, pathInfo)))
 		{
 			if (error_code == 301)
 			{
@@ -375,25 +334,25 @@ int Response::createResponseMsg()
 					filepath.insert(0, m_config.at("name").at(0));
 				m_config["return"].push_back(filepath);
 			}
-			else if(m_request.getValue("method") == "DELETE")
-				error_code = deleteRequest();
 		}
 		else if (isCgiFile(filepath))
 		{
 			LOG("CGI POST-REQUEST");
 			m_cgi =	SharedPtr<CGI>(new CGI(m_config, m_request));
 			m_cgi->setUrlQuery(urlQuery);
-			int ret = m_cgi->execute(filepath);
-			//HIER MUSS NOCH EINMAL DAS MIT READ FROM PIPE REINGEMACHT WERDEN UND DIE ISCGIREADY FUNCTION GECALLT WERDEN!!!!!!
-			//m_responseBody = m_cgi->getResponseBody();
-			error_code = ret;
+			m_cgi->setPathInfo(pathInfo);
+			error_code = m_cgi->execute(filepath);
 			if (error_code == 0)
 				return (m_cgi->getFd());
 		}
+		else if (!pathInfo.empty())
+			error_code = 404;
 		else if (m_request.getValue("method") == "POST")
 			error_code = -1;
+		else if(m_request.getValue("method") == "DELETE")
+			error_code = deleteRequest(filepath);
 		if (m_eventFlags & CGI_METH_DENY)
-			error_code = 403;
+				error_code = 403;
 	}
 	int ret = isReturnResponse();
 	if (ret)
@@ -405,16 +364,6 @@ int Response::createResponseMsg()
 	return (0);
 }
 
-
-
-
-// is GET METHOD => check if uri if it is a PATH_INFO, then if there is an query string, safe it in envp!
-// call with execve the file! 
-// if method post and is uri is path info => pipe body and execve the python script 
-// Everything what is inside in PATH_INFO has to be a script so it will be executed!!
-// UPLOAD value will be stored in envp that the script knows where to upload! 
-
-
 void Response::clearBody()
 {
 	m_responseBody.clear();
@@ -425,24 +374,18 @@ bool	Response::isCgiReady()
 	return (m_cgi->io() != -1);
 }
 
-bool Response::isCgiFile(const std::string &a_filePath)
+bool Response::isCgiFile(const FilePath &a_filePath)
 {
 	if (m_config.find("name") == m_config.end() || m_config.find("extension") == m_config.end())
 		return (false);
-	//make filepath class that is a string but with extra functions like get extention and isFile or isDir etc...
-	std::size_t dotPos = a_filePath.find_last_of('.');
-	if (dotPos == std::string::npos)
-		return (false);
+	if (!checkAllowedMethod("cgi_methods"))
+		return (m_eventFlags |= CGI_METH_DENY, false);
 	const std::vector<std::string>& extensions = m_config.at("extension");
-	std::string fileEnd = a_filePath.substr(dotPos);
+	std::string fileExtention = a_filePath.extension();
 	for (std::size_t i = 0; i < extensions.size(); i++)
 	{
-		if (fileEnd == extensions.at(i))
-		{
-			if (!checkAllowedMethod("cgi_methods"))
-				return (m_eventFlags |= CGI_METH_DENY, false);
+		if (fileExtention == extensions.at(i))
 			return (true);
-		}
 	}
 	return (false);
 }
@@ -463,7 +406,7 @@ static bool operator<(dirent lhs, dirent rhs)
 	return (lhs.d_type < rhs.d_type || std::strcmp(lhs.d_name, rhs.d_name) < 0);
 }
 
-void Response::createAutoIndex(std::string &a_path)
+void Response::createAutoIndex(const std::string &a_path)
 {
 	DIR* dir = opendir(a_path.c_str());
 	if (dir == NULL)
@@ -571,14 +514,3 @@ void Response::addContentType(const std::string &a_content_type)
 	else
 		m_responseHeader["Content-Type"] = "text/plain";
 }
-
-
-// check is Request is valid? => if (false ) ? badRequest : weiter
-// check httpVersion!
-// check check and set uri!
-// check method
-// get Method
-//  check if return => if (true) ? return statuscode and redirection with key Location:
-//  check valid root
-//	check autoindex if (true) ? root => displayen directory tree : send index
-//  send index: file

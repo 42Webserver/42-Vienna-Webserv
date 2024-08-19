@@ -12,6 +12,11 @@
 #include "Request.hpp"
 #include "Timer.hpp"
 
+#define PATH_INFO_STRING "PATH_INFO="
+#define SERVER_PROTOCOL_STRING "SERVER_PROTOCOL=HTTP/1.1"
+#define PATH_INFO_STRING_LENGTH 10
+#define CGI_TIMEOUT_SECONDS 15
+
 class CGI
 {
 private:
@@ -54,7 +59,7 @@ public:
 	void				setUrlQuery(const std::string& a_urlQuery);
 	int					io(void);
 	int					getFd(void) const;
-
+	void				setPathInfo(const std::string& a_pathInfo);
 };
 
 #endif // !CGI_HPP

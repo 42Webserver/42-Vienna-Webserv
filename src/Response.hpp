@@ -18,6 +18,7 @@
 #include <sys/wait.h>
 #include "SharedPtr.hpp"
 #include <algorithm>
+#include "FilePath.hpp"
 
 #define SERVERNAME "Surfing in the web (Ubuntu)"
 
@@ -54,17 +55,17 @@ private:
 	bool		getBody(std::string const &filename);
 	bool		checkAllowedMethod(const std::string& a_methodList) const;
 	int			isValidFile(std::string &a_filepath);
-	int			getValidFilePath(std::string &a_filepath);
+	int			getValidFilePath(std::string &a_filepath, std::string& a_pathInfo);
 	std::string	decodeUri(const std::string& a_uri, std::string& a_query);
 	int			isReturnResponse(void);
 	void		addRedirection(const std::string &redLoc);
 	void		addContentType(const std::string &a_content_type);
-  void    	createAutoIndex(std::string &a_path);
-	std::string	getFileType(const std::string &filepath);
+  void    	createAutoIndex(const std::string &a_path);
+	std::string	getFileType(const FilePath &filepath);
 	int			isValidRequestHeader(void);
 	bool		isCgiReady(void);
-	bool		isCgiFile(const std::string& a_filePath);
-	int			deleteRequest(void);
+	bool		isCgiFile(const FilePath& a_filePath);
+	int			deleteRequest(const FilePath& a_filePath);
 	void		modifyUri(void);
 	void		insertCgiResponse();
 

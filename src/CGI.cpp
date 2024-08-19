@@ -110,10 +110,13 @@ void	CGI::setArgv(const std::string& a_filePath)
 void	CGI::setEnvp()
 {
 	std::vector<std::string>	vars;
+	std::stringstream ss;
 
+	ss << "CONTENT_LENGTH=" << m_request.getBody().length();
 	vars.push_back("REQUEST_METHOD=" + m_request.getValue("method"));
 	vars.push_back("CONTENT_TYPE=" + m_request.getValue("Content-Type"));
-	vars.push_back("CONTENT_LENGTH=" + m_request.getValue("Content-Length"));
+	vars.push_back(ss.str());
+	vars.push_back(SERVER_PROTOCOL_STRING);
 	vars.push_back("HTTP_COOKIE=" + m_request.getValue("Cookie"));
 	std::cerr << m_config.at("upload").size() << '\n';
 	if (m_config.at("upload").size() == 1)
@@ -132,17 +135,24 @@ void	CGI::setEnvp()
 
 int CGI::run()
 {
-    if (pipe(m_inputPipe) == -1 || pipe(m_outputPipe) == -1)
+  if (pipe(m_inputPipe) == -1 || pipe(m_outputPipe) == -1)
+	{
+		std::cout << "Error while opening pipe\n";
+
 		return (500);
+	}
 
 	pid_t pid = fork();
 	if (pid < 0)
+	{
+		std::cout << "Error while forking\n";
 		return (500);
+	}
  	if (pid == 0)
     {
-        dup2(m_outputPipe[1], STDOUT_FILENO);
-        dup2(m_inputPipe[0], STDIN_FILENO);
-		dup2(m_outputPipe[1], STDERR_FILENO);
+        dup2(cgi_output[1], STDOUT_FILENO);
+        dup2(cgi_input[0], STDIN_FILENO);
+		    dup2(cgi_output[1], STDERR_FILENO);
 		
         close(m_outputPipe[0]);
         close(m_outputPipe[1]);
@@ -192,7 +202,7 @@ void CGI::deleteData()
 int	CGI::io()
 {
 	static size_t written = 0;
-	if (startTime.isOver(15))
+	if (startTime.isOver(CGI_TIMEOUT_SECONDS))
 	{
 		kill(m_pid, SIGINT);
 		m_status = 500;
@@ -288,6 +298,14 @@ void CGI::setUrlQuery(const std::string &a_urlQuery)
 	envvar.append(a_urlQuery);
 	char* str = new char[envvar.length() + 1];
 	std::strcpy(str, envvar.c_str());
+	m_envp.push_back(str);
+}
+
+void CGI::setPathInfo(const std::string &a_pathInfo)
+{
+	char* str = new char[a_pathInfo.length() + PATH_INFO_STRING_LENGTH + 1];
+	std::strcpy(str, PATH_INFO_STRING);
+	std::strcpy(str + 10, a_pathInfo.c_str());
 	m_envp.push_back(str);
 }
 
