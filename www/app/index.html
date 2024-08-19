@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/styles/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="navbar navbar-expand-lg navbar-light">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div class="d-flex align-items-center">
+                        <img src="./assets/img/Logo.jpg" width="40px" alt="Logo" class="mr-3">
+                        <a href="/" class="nav-link">Home</a>
+                        <a href="/game" class="nav-link">Game</a>
+                        <a href="/overview" class="nav-link">Overview</a>
+                        <a href="/contact" class="nav-link">Contact</a>
+                    </div>
+                    <div class="d-flex">
+                        <button id="loginButton" class="btn btn-primary mr-2">Login</button>
+                        <button id="logoutButton" class="btn btn-secondary">Logout</button>
+                    </div>
+                </div>
+        </div>
+        <h1>Welcome to Demo WebSurfer</h1>
+        <div class="center-container">
+            <div class="container">
+                <div class="row d-flex justify-content-center">
+                    <div class="col-sm-12 col-lg-4 mb-4">
+                        <div class="circle-img-container">
+                            <img src="./assets/img/nsassenb.jpg" alt="Profile 1" class="img-fluid circle-img">
+                            <div class="hover-text"><h2>Nikolai Sassenbach</h2><br>
+                                    <h3>Responsible</h3> 
+                                    <ul>
+                                        <li>Poll-Master</li>
+                                        <li>Response</li>
+                                    </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-lg-4 mb-4">
+                        <div class="circle-img-container">
+                            <img src="./assets/img/fheid.jpg" alt="Profile 2" class="img-fluid circle-img">
+                            <div class="hover-text"><h2>Florian Heid</h2><br>
+                                <h3>Responsible</h3>
+                                <ul>
+                                    <li>CGI-Master</li>
+                                    <li>Configuration</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-lg-4 mb-4">
+                        <div class="circle-img-container">
+                            <img src="./assets/img/fwechsle.jpg" alt="Profile 3" class="img-fluid circle-img">
+                            <div class="hover-text"><h2>Felix Wechsler</h2><br>
+                                <h3>Responsible</h3>
+                                <ul>
+                                    <li>Response-Master</li>
+                                    <li>Configuration </li>
+                                </ul>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Manage Files</h5>
+                        <p class="card-text">View and manage your files.</p>
+                        <a href="/admin/admin.py?delete" class="btn btn-primary">Go to Manage Files</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Upload Files</h5>
+                        <p class="card-text">Upload new files to the system.</p>
+                        <a href="/admin/admin.py?upload" class="btn btn-primary">Go to Upload Files</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.getElementById('loginButton').addEventListener('click', function() {
+            // Redirect to login page or show login modal
+            window.location.href = '/admin/admin.py';
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', function() {
+            // Perform logout action, e.g., clear session and redirect to home page
+            // This is a simple example, you might need to call an API to handle logout
+            alert('You have been logged out.');
+            window.location.href = '/admin/admin.py?logout';
+        });
+    </script>
+</body>
+</html>

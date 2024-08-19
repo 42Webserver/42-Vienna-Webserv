@@ -316,7 +316,7 @@ bool Response::createResponseMsg()
 			else
 			{
 				insertCgiResponse();
-				return (true);
+				//return (true);
 			}
 		}
 		else
