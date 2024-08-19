@@ -8,12 +8,20 @@
 </head>
 <body>
     <div class="container">
-        <div class="navbar">
-            <img src="./assets/img/Logo.jpg" width="40px" alt="Logo">
-            <a href="/">Home</a>
-            <a href="/game">Game</a>
-            <a href="/overview">Overview</a>
-            <a href="/contact">Contact</a>
+        <div class="navbar navbar-expand-lg navbar-light">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div class="d-flex align-items-center">
+                        <img src="./assets/img/Logo.jpg" width="40px" alt="Logo" class="mr-3">
+                        <a href="/" class="nav-link">Home</a>
+                        <a href="/game" class="nav-link">Game</a>
+                        <a href="/overview" class="nav-link">Overview</a>
+                        <a href="/contact" class="nav-link">Contact</a>
+                    </div>
+                    <div class="d-flex">
+                        <button id="loginButton" class="btn btn-primary mr-2">Login</button>
+                        <button id="logoutButton" class="btn btn-secondary">Logout</button>
+                    </div>
+                </div>
         </div>
         <h1>Welcome to Demo WebSurfer</h1>
         <div class="center-container">
@@ -84,5 +92,18 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.getElementById('loginButton').addEventListener('click', function() {
+            // Redirect to login page or show login modal
+            window.location.href = '/admin/admin.py';
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', function() {
+            // Perform logout action, e.g., clear session and redirect to home page
+            // This is a simple example, you might need to call an API to handle logout
+            alert('You have been logged out.');
+            window.location.href = '/admin/admin.py?logout';
+        });
+    </script>
 </body>
 </html>

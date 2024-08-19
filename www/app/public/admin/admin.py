@@ -1,4 +1,4 @@
-from session_handler import generateSessionId, checkSessionId, checkCookie, addNewSessionId
+from session_handler import generateSessionId, checkSessionId, checkCookie, addNewSessionId, deleteSessionId
 import os
 import cgi
 
@@ -53,8 +53,9 @@ def uploadRsp():
     <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>File upload</title>
+        <title>File Upload</title>
         <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
         <link rel="stylesheet" href="./../../assets/styles/style.css">
     </head>
     <body>
@@ -67,11 +68,23 @@ def uploadRsp():
                 <a href="/overview">Overview</a>
                 <a href="/contact">Contact</a>
             </div>
-        <form action="./../cgi-bin/file-upload.py" method="post" enctype="multipart/form-data">
-            <input type="file" name="file">
-            <input type="submit">
-        </form>
+            <h1 >Upload Files</h1>
+            <div class="card">
+                <div class="card-body">
+                    <form action="./../cgi-bin/file-upload.py" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <h5 class="card-title">File Upload</h5>
+                            <input type="file" class="form-control-file" id="file" name="file">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </form>
+                </div>
+            </div>
         </div>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     </body>
     </html>
     """)
@@ -206,14 +219,22 @@ def welcomeRsp():
         <link rel="stylesheet" href="./../../assets/styles/style.css">
     </head>
     <body>
-        <div class="container">
-            <div class="navbar">
-                <img src="./../../assets/img/Logo.jpg" width="40px" alt="Logo">
-                <a href="/">Home</a>
-                <a href="/game">Game</a>
-                <a href="/overview">Overview</a>
-                <a href="/contact">Contact</a>
-            </div>
+     <div class="container">
+        <div class="navbar navbar-expand-lg navbar-light">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div class="d-flex align-items-center">
+                        <img src="./../../assets/img/Logo.jpg" width="40px" alt="Logo" class="mr-3">
+                        <a href="/" class="nav-link">Home</a>
+                        <a href="/game" class="nav-link">Game</a>
+                        <a href="/overview" class="nav-link">Overview</a>
+                        <a href="/contact" class="nav-link">Contact</a>
+                    </div>
+                    <div class="d-flex">
+                        <button id="loginButton" class="btn btn-primary mr-2">Login</button>
+                        <button id="logoutButton" class="btn btn-secondary">Logout</button>
+                    </div>
+                </div>
+        </div>
             <h1>Welcome to Demo WebSurfer</h1>
             <div class="center-container">
                 <div class="container">
@@ -283,12 +304,30 @@ def welcomeRsp():
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script>
+            document.getElementById('loginButton').addEventListener('click', function() {
+                // Redirect to login page or show login modal
+                window.location.href = '/admin/admin.py';
+            });
+
+            document.getElementById('logoutButton').addEventListener('click', function() {
+                // Perform logout action, e.g., clear session and redirect to home page
+                // This is a simple example, you might need to call an API to handle logout
+                alert('You have been logged out.');
+                window.location.href = '/admin/admin.py?logout';
+            });
+        </script>    
     </body>
     </html>    
     """)
 
 cookie = os.environ.get('HTTP_COOKIE')
 query = os.environ.get('QUERY_STRING')
+
+if query == 'logout':
+    deleteSessionId(cookie)
+    welcomeRsp()
+    exit()
 
 if cookie:
     cookie = cookie.replace("id=", "")
@@ -315,7 +354,7 @@ else:
             exit()
         else:
             id = addNewSessionId()
-            print("Set-Cookie: id=" + id + "; Max-Age=10" + "\r\n\r\n")
+            print("Set-Cookie: id=" + id + "; Max-Age=3600" + "\r\n\r\n")
             if query == 'upload':
                 uploadRsp()
                 exit()
