@@ -23,8 +23,12 @@ $(NAME):	$(OBJ_DIR) $(OBJS)
 debug:
 	make FLAGS="$(FLAGS) -D DEBUG"
 
+run: $(NAME)
+	envsubst < webserv.conf > webserv_run.conf
+	./webserv webserv_run.conf
+
 clean:
-	rm -r $(OBJ_DIR)
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
 	rm $(NAME)

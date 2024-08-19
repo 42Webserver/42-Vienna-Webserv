@@ -33,7 +33,6 @@
 
 # Executable
 webserv
-*.conf
 
 # Pycache
 __pycache__
