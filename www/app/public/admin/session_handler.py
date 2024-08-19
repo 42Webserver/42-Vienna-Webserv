@@ -59,3 +59,9 @@ def addNewSessionId():
     open(file_path, 'w').close()
     print("Successfully created new file for session-id: ", id)
     return (id)
+
+def deleteSessionId(id):
+    id = id.replace("id=", "")
+    file_path = os.path.join("/tmp/webserv_sessions", id)
+    os.remove(file_path)
+
