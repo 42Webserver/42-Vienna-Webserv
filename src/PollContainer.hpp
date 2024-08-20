@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <sys/poll.h>
+#include <unistd.h>
 #include "Connection.hpp"
 #include "Server.hpp"
 

@@ -204,7 +204,10 @@ int	CGI::io()
 
 	if (m_inputPipe[1] > 2)
 	{
-		ssize_t n = write(m_inputPipe[1], m_request.getBody().c_str() + written, m_request.getBody().length() > 5000 ? 5000 : m_request.getBody().length());
+		ssize_t n = write(
+			m_inputPipe[1],
+			m_request.getBody().c_str() + written, 
+			m_request.getBody().length() - written > 5000 ? 5000 : m_request.getBody().length() - written);
 		written += n;
 		if (written == m_request.getBody().length())
 		{

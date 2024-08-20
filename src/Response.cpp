@@ -27,7 +27,7 @@ Response &Response::operator=(const Response &other)
 
 Response::~Response() {}
 
-bool Response::getBody(std::string const &filename)
+bool	Response::getBody(std::string const &filename)
 {
 	if (!m_responseBody.empty())
 		return true;
@@ -45,7 +45,7 @@ bool Response::getBody(std::string const &filename)
 	return (true);
 }
 
-void Response::initStatusCodes()
+void	Response::initStatusCodes()
 {
 	s_status_codes["200"] = "OK";
 	s_status_codes["301"] = "Moved Permanently";
@@ -59,11 +59,9 @@ void Response::initStatusCodes()
 	s_status_codes["431"] = "Request Header Fields Too Large";
 	s_status_codes["500"] = "Internal Server Error";
 	s_status_codes["505"] = "HTTP Version not supported";
-
-	s_status_codes["0"] = "LANDING PAGE!";
 }
 
-void Response::initContentType()
+void	Response::initContentType()
 {
 	s_content_type["htm"] = "text/html";
 	s_content_type["html"] = "text/html";
@@ -77,17 +75,19 @@ void Response::initContentType()
 	s_content_type["ico"] = "image/x-icon";
 	s_content_type["png"] = "image/png";
 	s_content_type["webp"] = "image/webp";
+	s_content_type["json"] = "application/json";
+	s_content_type["pdf"] = "application/pdf";
 
 }
 
-const std::string Response::getResponse() const
+const std::string	Response::getResponse() const
 {
 	return (headerMapToString() + m_responseBody);
 }
 
-void Response::setValidMsg(const std::string &filepath)
+void	Response::setValidMsg(const std::string &filepath)
 {
-	if (m_cgi)
+	if (m_cgi || m_eventFlags & RESPONSE_COMPLETE)
 		return ;
 	if (!getBody(filepath))
 		setErrorMsg(404);
@@ -95,13 +95,13 @@ void Response::setValidMsg(const std::string &filepath)
 		getResponseHeader("200", "", getFileType(filepath));
 }
 
-std::string Response::getFileType(const FilePath &filepath)
+std::string	Response::getFileType(const FilePath &filepath)
 {
 	std::string ext = filepath.extension();
 	return (ext.empty()? "html" : ext.erase(0, 1));
 }
 
-void Response::setErrorMsg(const int &a_status_code)
+void	Response::setErrorMsg(const int &a_status_code)
 {
 	if (a_status_code == -1)
 	{
@@ -116,7 +116,7 @@ void Response::setErrorMsg(const int &a_status_code)
 	std::ostringstream convert;
 
 	convert << a_status_code;
-	std::map<std::string, std::vector<std::string> >::iterator found = m_config.find(convert.str());
+	t_config::iterator found = m_config.find(convert.str());
 	if (found == m_config.end())
 	{
 		setDefaultErrorMsg(convert.str());
@@ -132,7 +132,7 @@ void Response::setErrorMsg(const int &a_status_code)
 	}
 }
 
-void Response::setDefaultErrorMsg(const std::string &a_status_code)
+void	Response::setDefaultErrorMsg(const std::string &a_status_code)
 {
 	m_responseBody.append("<!DOCTYPE html><html><title>");
 	m_responseBody.append(s_status_codes[a_status_code]);
@@ -141,7 +141,7 @@ void Response::setDefaultErrorMsg(const std::string &a_status_code)
 	m_responseBody.append("</h1></html>\r\n");
 }
 
-bool Response::checkAllowedMethod(const std::string& a_methodList) const
+bool	Response::checkAllowedMethod(const std::string& a_methodList) const
 {
 	t_config::const_iterator methods = m_config.find(a_methodList);
 	if (methods == m_config.end() || methods->second.size() == 0)
@@ -154,7 +154,7 @@ bool Response::checkAllowedMethod(const std::string& a_methodList) const
 	return (false);
 }
 
-int Response::checkHeaderline()
+int	Response::checkHeaderline()
 {
 	if (m_request.getValue("http_version") != "HTTP/1.1")
 		return (505);
@@ -163,7 +163,7 @@ int Response::checkHeaderline()
 	return (0);
 }
 
-int Response::getValidFilePath(std::string &a_filepath, std::string& a_pathInfo)
+int	Response::getValidFilePath(std::string &a_filepath, std::string& a_pathInfo)
 {
 	FilePath path = a_filepath;
 
@@ -205,11 +205,7 @@ int Response::getValidFilePath(std::string &a_filepath, std::string& a_pathInfo)
 	return (0);
 }
 
-/// @brief Takes the a_uri and seperates it into filepath and uriQuery
-/// @param a_uri the request uri
-/// @param a_query the string where we write the query into
-/// @return returns the path to the file (config root + uri) 
-std::string Response::decodeUri(const std::string &a_uri, std::string &a_query)
+std::string	Response::decodeUri(const std::string &a_uri, std::string &a_query)
 {
 	std::string uriPath = m_config.at("root").at(0);
 	std::size_t	encPos = a_uri.find_first_of('?');
@@ -232,7 +228,7 @@ int	Response::isReturnResponse()
 	return (0);
 }
 
-int Response::deleteRequest(const FilePath& a_filePath)
+int	Response::deleteRequest(const FilePath& a_filePath)
 {
 	if (a_filePath.exists())
 	{
@@ -248,7 +244,7 @@ int Response::deleteRequest(const FilePath& a_filePath)
 	return (404);
 }
 
-void Response::modifyUri()
+void	Response::modifyUri()
 {
 	if (m_config.find("name") != m_config.end() && m_config.at("name").at(0) != "/")
 	{
@@ -263,7 +259,7 @@ void Response::modifyUri()
 
 }
 
-void Response::insertCgiResponse()
+void	Response::insertCgiResponse()
 {
 	std::size_t sepPos = m_responseBody.find("\r\n\r\n");
 	std::stringstream headStuff;
@@ -293,12 +289,12 @@ int	Response::isValidRequestHeader()
 	return (error_code);
 }
 
-bool Response::isCgiResponse()
+bool	Response::isCgiResponse()
 {
 	return (m_cgi);
 }
 
-int Response::createResponseMsg()
+int	Response::createResponseMsg()
 {
 	int error_code = 0;
 	std::string filepath;
@@ -368,7 +364,7 @@ int Response::createResponseMsg()
 	return (0);
 }
 
-void Response::clearBody()
+void	Response::clearBody()
 {
 	m_responseBody.clear();
 }
@@ -378,7 +374,7 @@ bool	Response::isCgiReady()
 	return (m_cgi->io() != -1);
 }
 
-bool Response::isCgiFile(const FilePath &a_filePath)
+bool	Response::isCgiFile(const FilePath &a_filePath)
 {
 	if (m_config.find("name") == m_config.end() || m_config.find("extension") == m_config.end())
 		return (false);
@@ -396,7 +392,7 @@ bool Response::isCgiFile(const FilePath &a_filePath)
 	return (false);
 }
 
-std::size_t Response::getMaxBodySize(void) const
+std::size_t	Response::getMaxBodySize(void) const
 {
 	t_config::const_iterator found = m_config.find("client_max_body_size");
 	if (found != m_config.end())
@@ -407,12 +403,7 @@ std::size_t Response::getMaxBodySize(void) const
 	return std::size_t(0);
 }
 
-static bool operator<(dirent lhs, dirent rhs)
-{
-	return (lhs.d_type < rhs.d_type || std::strcmp(lhs.d_name, rhs.d_name) < 0);
-}
-
-void Response::createAutoIndex(const std::string &a_path)
+void	Response::createAutoIndex(const std::string &a_path)
 {
 	DIR* dir = opendir(a_path.c_str());
 	if (dir == NULL)
@@ -444,7 +435,7 @@ void Response::createAutoIndex(const std::string &a_path)
 
 //////////////////////+++++Response Header+++++++++++//////////////////////
 
-std::string Response::headerMapToString(void) const
+std::string	Response::headerMapToString(void) const
 {
 	std::string headerStr;
 	std::map<std::string, std::string>::const_iterator statusLine = m_responseHeader.find("HTTP/1.1");
@@ -460,21 +451,19 @@ std::string Response::headerMapToString(void) const
 	return (headerStr);	
 }
 
-void Response::getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type)
+void	Response::getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type)
 {
 	m_responseHeader.clear();
 	m_responseHeader["HTTP/1.1"] = a_status_code + ' ' + s_status_codes[a_status_code];
 	m_responseHeader["Server"] = SERVERNAME;
 	addDateAndTime();
-	//Content-type!
 	addContentType(a_content_type);
 	addContentLength();
-	//Connection: keep-alive!
 	addConnection(a_status_code);
 	addRedirection(a_redirLoc);
 }
 
-void Response::addDateAndTime()
+void	Response::addDateAndTime()
 {
 	std::time_t t = std::time(NULL);
 	std::tm* now = std::localtime(&t);
@@ -485,7 +474,7 @@ void Response::addDateAndTime()
 	m_responseHeader["Date"] = buffer;
 }
 
-void Response::addConnection(const std::string& a_status_code)
+void	Response::addConnection(const std::string& a_status_code)
 {
 	const std::string& requestConnection = m_request.getValue("Connection");
 	if (a_status_code > "302")
@@ -494,7 +483,7 @@ void Response::addConnection(const std::string& a_status_code)
 		m_responseHeader["Connection"] = requestConnection;
 }
 
-void Response::addContentLength()
+void	Response::addContentLength()
 {
 	std::ostringstream convert;
 
@@ -502,7 +491,7 @@ void Response::addContentLength()
 	m_responseHeader["Content-Length"] = convert.str();
 }
 
-void Response::addRedirection(const std::string &a_redLoc)
+void	Response::addRedirection(const std::string &a_redLoc)
 {
 	if (m_eventFlags & REDIRECTION)
 	{
@@ -513,10 +502,15 @@ void Response::addRedirection(const std::string &a_redLoc)
 	}
 }
 
-void Response::addContentType(const std::string &a_content_type)
+void 	Response::addContentType(const std::string &a_content_type)
 {
 	if (s_content_type.find(a_content_type) != s_content_type.end())
 		m_responseHeader["Content-Type"] = s_content_type[a_content_type];
 	else
 		m_responseHeader["Content-Type"] = "text/plain";
+}
+
+static bool	operator<(dirent lhs, dirent rhs)
+{
+	return (lhs.d_type < rhs.d_type || std::strcmp(lhs.d_name, rhs.d_name) < 0);
 }

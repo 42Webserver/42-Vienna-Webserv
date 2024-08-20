@@ -43,6 +43,8 @@ private:
 	t_config									m_config;
 	unsigned int								m_eventFlags;
 	SharedPtr<CGI>								m_cgi;
+	
+	Response(void);
 
 	std::string	headerMapToString(void) const;
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
@@ -55,13 +57,12 @@ private:
 	int			checkHeaderline(void);
 	bool		getBody(std::string const &filename);
 	bool		checkAllowedMethod(const std::string& a_methodList) const;
-	int			isValidFile(std::string &a_filepath);
 	int			getValidFilePath(std::string &a_filepath, std::string& a_pathInfo);
 	std::string	decodeUri(const std::string& a_uri, std::string& a_query);
 	int			isReturnResponse(void);
 	void		addRedirection(const std::string &redLoc);
 	void		addContentType(const std::string &a_content_type);
-  void    	createAutoIndex(const std::string &a_path);
+  	void    	createAutoIndex(const std::string &a_path);
 	std::string	getFileType(const FilePath &filepath);
 	int			isValidRequestHeader(void);
 	bool		isCgiReady(void);
@@ -70,7 +71,6 @@ private:
 	void		modifyUri(void);
 	void		insertCgiResponse();
 
-	Response(void);
 
 public:
 
@@ -81,13 +81,13 @@ public:
 	Response& operator=(const Response& other);
 	~Response();
 
-	bool		isCgiResponse();
-	static void	initContentType();
-	static void	initStatusCodes();
+	bool				isCgiResponse();
+	static void			initContentType();
+	static void			initStatusCodes();
 	const std::string	getResponse() const;
-	int			createResponseMsg();
-	void		clearBody();
-	std::size_t	getMaxBodySize(void) const;
+	int					createResponseMsg();
+	void				clearBody();
+	std::size_t			getMaxBodySize(void) const;
 };
 
 #endif // !RESPONSE_HPP
