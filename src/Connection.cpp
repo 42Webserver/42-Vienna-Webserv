@@ -24,7 +24,7 @@ Connection &Connection::operator=(const Connection &a_other)
 
 Connection::~Connection(void) {}
 
-int Connection::readAppend(std::string& a_appendString)
+int	Connection::readAppend(std::string& a_appendString)
 {
 	static char	buffer[BUFFER_SIZE];
 	int		ret;
@@ -37,20 +37,7 @@ int Connection::readAppend(std::string& a_appendString)
 	return (ret);
 }
 
-int Connection::readAppend(std::string& a_appendString, std::size_t a_size)
-{
-	std::vector<char> buffer(a_size);
-	int		ret;
-
-	ret = recv(m_clientSocket, buffer.data(), a_size, MSG_DONTWAIT);
-	if (ret == -1)
-		return (-1);
-	a_appendString.append(buffer.begin(), buffer.begin() + ret);
-	LOGC(TERMC_RED, "READ: " << ret << " BYTES")
-	return (ret);
-}
-
-int Connection::readHead()
+int	Connection::readHead()
 {
 	std::string	head;
 	int			ret;
@@ -63,7 +50,7 @@ int Connection::readHead()
 	return (0);
 }
 
-int Connection::readBody()
+int	Connection::readBody()
 {
 	std::string bodyPart;
 	int			ret;
@@ -72,7 +59,6 @@ int Connection::readBody()
 	if (ret == -1)
 	{
 		LOG_ERROR("This happened: ret: " << ret << " head:\n" << m_request.getHead() << "\nbody:\n" << m_request.getBody());
-		exit(42); //TO SEE IF IT EVER HAPPENS. !
 		return (-1);
 	}
 	m_request.addBody(bodyPart);
@@ -81,12 +67,12 @@ int Connection::readBody()
 	return (0);
 }
 
-int Connection::getSocketFd(void) const
+int	Connection::getSocketFd(void) const
 {
 	return (m_cgiFd != 0 ? m_cgiFd : m_clientSocket);
 }
 
-int Connection::receiveRequestRaw(void)
+int	Connection::receiveRequestRaw(void)
 {
 	if (m_response.isCgiResponse())
 	{
@@ -119,7 +105,7 @@ int Connection::receiveRequestRaw(void)
 	return (0);
 }
 
-int Connection::sendResponse(void)
+int	Connection::sendResponse(void)
 {
 	int error_code = 0;
 	if (!m_request.isReady())
@@ -136,12 +122,12 @@ int Connection::sendResponse(void)
 	return (error_code);
 }
 
-bool Connection::isResponseCgi(void) const
+bool	Connection::isResponseCgi(void) const
 {
 	return (m_cgiFd);
 }
 
-bool Connection::operator==(const int a_fd) const
+bool	Connection::operator==(const int a_fd) const
 {
 	return (m_clientSocket == a_fd);
 }

@@ -20,6 +20,21 @@
 
 class Request
 {
+private:
+
+	int									m_isValid;
+	bool								m_headComplete;
+	bool								m_bodyComplete;
+	std::size_t							m_chunkSize;
+	std::size_t							m_maxBodySize;
+	std::string							m_head;
+	std::string							m_body;
+	std::string							m_buffer;
+	std::map <std::string, std::string>	m_requestHeader;
+
+	void	getRequestLine(std::string& line);
+	void	createKeyValuePair(std::string line);
+
 public:
 
 	Request(void);
@@ -46,21 +61,6 @@ public:
 	void				setHeadDone(void);
 	void				setBodyDone(void);
 	void				setMaxBodySize(std::size_t a_maxBody);
-
-private:
-
-	void	getRequestLine(std::string& line);
-	void	createKeyValuePair(std::string line);
-
-	int									m_isValid;
-	bool								m_headComplete;
-	bool								m_bodyComplete;
-	std::size_t							m_chunkSize;
-	std::size_t							m_maxBodySize;
-	std::string							m_head;
-	std::string							m_body;
-	std::string							m_buffer;
-	std::map <std::string, std::string>	m_requestHeader;
 };
 
 #endif // !REQUEST_HPP

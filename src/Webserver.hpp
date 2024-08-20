@@ -3,16 +3,15 @@
 
 #include <map>
 #include <vector>
-#include "Server.hpp"
+#include <iostream>
 #include <poll.h>
-#include "PollContainer.hpp"
 #include <fstream>
-#include "Data.hpp"
-#include "ConfigParser.hpp"
 #include <map>
 #include <csignal>
-
-
+#include "Server.hpp"
+#include "PollContainer.hpp"
+#include "Data.hpp"
+#include "ConfigParser.hpp"
 
 class Webserver
 {
@@ -21,8 +20,10 @@ private:
 	std::vector<Server>		m_servers;
 	PollContainer			m_polls;
 
-	int	pollServers(void);
-	int	pollClients(void);
+	int		pollServers(void);
+	int		pollClients(void);
+
+	void	removeTimeoutConnections(void);
 
 public:
 
@@ -32,7 +33,7 @@ public:
 	Webserver& operator=(const Webserver& other);
 	~Webserver();
 
-	int	runServer();
+	int		runServer(void);
 };
 
 

@@ -25,16 +25,16 @@ private:
 	Request		m_request;
 	Response	m_response;
 
-	int		readAppend(std::string& a_appendString);
-	int		readAppend(std::string& a_appendString, std::size_t a_size);
-	int		readHead(void);
-	int		readBody(void);
+	int			readAppend(std::string& a_appendString);
+	int			readHead(void);
+	int			readBody(void);
 
 	Connection(void);
 
 public:
 
 	Timer		idleTime;
+	
 	Connection(Server& a_server, int a_clientSocket);
 	Connection(const Connection& a_other);
 	~Connection();
@@ -42,11 +42,11 @@ public:
 	Connection&	operator=(const Connection& a_other);
 	bool		operator==(const int a_fd) const;
 
-	int	getSocketFd(void) const;
-	int	receiveRequestRaw(void);
-	int	sendResponse(void);
+	int		getSocketFd(void) const;
+	int		receiveRequestRaw(void);
+	int		sendResponse(void);
 
-	bool isResponseCgi(void) const;
+	bool	isResponseCgi(void) const;
 };
 
 #endif // !CONNECTION_HPP
