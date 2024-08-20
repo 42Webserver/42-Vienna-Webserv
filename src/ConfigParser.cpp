@@ -1,6 +1,6 @@
 #include "ConfigParser.hpp"
 
-std::vector<struct subserver> ConfigParser::m_subservers;
+std::vector<struct subserver>	ConfigParser::m_subservers;
 
 ConfigParser::ConfigParser(void) {}
 
@@ -17,7 +17,7 @@ ConfigParser&	ConfigParser::operator=(const ConfigParser& a_other)
 
 ConfigParser::~ConfigParser() {}
 
-void ConfigParser::replaceWhitespaces(std::string& str)
+void	ConfigParser::replaceWhitespaces(std::string& str)
 {
     std::string whitespaces = "\t\r\n\f\v ";
 
@@ -55,7 +55,7 @@ void	ConfigParser::separateSpecialChars(std::string& str)
 	}
 }
 
-void    ConfigParser::removeComments(std::string& str)
+void	ConfigParser::removeComments(std::string& str)
 {
     size_t hashtag;
     if ((hashtag = str.find('#')) != std::string::npos)
@@ -236,10 +236,6 @@ void	ConfigParser::readConfigFile(const std::string& file)
 	sortConfigVector(tokens);
 
 	safeData(tokens);
-	//printData(m_subservers);
-
-
-
 	inFile.close();
 }
 
@@ -326,9 +322,6 @@ void	ConfigParser::checkValueReturn(std::vector<std::string>& value)
 
 	if (value.at(0).length() > 3 || value.at(0).find_first_not_of("0123456789") != std::string::npos)
 		throw(std::runtime_error("Error: config-file: invalid statuscode at key 'return'."));
-
-	/* if (value.size() == 2 && value.at(1).at(0) != '/')
-		throw(std::runtime_error("Error: config-file: invalid location at key 'return'.")); */
 }
 
 void	ConfigParser::checkErrorPage(std::vector<std::string>& value)
@@ -346,7 +339,7 @@ void	ConfigParser::checkErrorPage(std::vector<std::string>& value)
 	}
 }
 
-void 	ConfigParser::checkValueExtension(std::vector<std::string>& value)
+void	ConfigParser::checkValueExtension(std::vector<std::string>& value)
 {
 	for (std::vector<std::string>::iterator it = value.begin(); it != value.end(); ++it)
 	{
@@ -355,7 +348,7 @@ void 	ConfigParser::checkValueExtension(std::vector<std::string>& value)
 	}
 }
 
-void 	ConfigParser::checkValueScriptPath(std::vector<std::string>& value)
+void	ConfigParser::checkValueScriptPath(std::vector<std::string>& value)
 {
 	for (std::vector<std::string>::iterator it = value.begin(); it != value.end(); ++it)
 	{
@@ -388,41 +381,6 @@ void	ConfigParser::checkValue(const std::string& key, std::vector<std::string>& 
 		checkValueScriptPath(value);
 }
 
-// shit incoming
-
-void	ConfigParser::printData(std::vector <struct subserver> data)
-{
-	for (size_t i = 0; i < data.size(); i++)
-	{
-		std::cout << "Server number " << i << std::endl;
-		for (std::map<std::string, std::vector<std::string> > ::iterator it = data.at(i).serverConfig.begin(); it != data.at(i).serverConfig.end(); ++it)
-		{
-			std::cout << "	Key: " << it->first << " | value: ";
-			for (size_t i = 0; i < it->second.size(); i++)
-			{
-				std::cout << it->second.at(i) << ", ";
-			}
-			std::cout<< std::endl;
-		}
-		std::cout << "Location: \n";
-
-		for (size_t j = 0; j < data.at(i).locationConfigs.size(); j++)
-		{
-			std::cout << "Location number: " << j << std::endl;
-			for (std::map<std::string, std::vector<std::string> > ::iterator it = data.at(i).locationConfigs.at(j).begin(); it != data.at(i).locationConfigs.at(j).end(); ++it)
-			{
-				std::cout << "		Key: " << it->first << " | value: ";
-				for (size_t j = 0; j < it->second.size(); j++)
-				{
-					std::cout << it->second.at(j) << ", ";
-				}
-				std::cout<< std::endl;
-			}
-		}			struct subserver newSubserver;
-
-	}
-}
-
 void	ConfigParser::allowAllMethods(std::vector<std::string> &value)
 {
 	value.push_back("GET");
@@ -430,10 +388,10 @@ void	ConfigParser::allowAllMethods(std::vector<std::string> &value)
 	value.push_back("DELETE");
 }
 
-void ConfigParser::basicRequirement(const t_config &serverConfig)
+void	ConfigParser::basicRequirement(const t_config &serverConfig)
 {
 	if (!serverConfig.at("root").size() || !serverConfig.at("listen").size())
-		throw std::runtime_error("Error: config-file: required keys are missing (root and listen).");
+		throw std::runtime_error("Error: config-file: required keys are missing (root / listen).");
 }
 
 bool	ConfigParser::getLocation(struct subserver &newSubserver, std::vector<std::string> &tokens, size_t &i)
@@ -501,7 +459,6 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 
 	if (tokens.at(i + 1) == ";")
 		throw std::runtime_error("Error: config-file: Missing argument at key [serverscope]");
-	//ADD just one arg!
 	if (tokens.at(i) == "listen" || tokens.at(i) == "root" || tokens.at(i) == "index" \
 		|| tokens.at(i) == "client_max_body_size" || tokens.at(i) == "autoindex" || tokens.at(i) == "upload")
 	{
@@ -513,7 +470,6 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 		if (tokens.at(++i) != ";")
 			throw std::runtime_error("Error: config-file: Two many arguments for key [serverscope]");
 	}
-	//ADD optional multiple arguments!
 	else if (tokens.at(i) == "server_name" || tokens.at(i) == "error_page" || \
 		tokens.at(i) == "allowed_methods" || tokens.at(i) == "return" \
 			|| tokens.at(i) == "extension" || tokens.at(i) == "script_path" \
@@ -530,9 +486,9 @@ void	ConfigParser::addValue(const std::vector<std::string> &tokens, struct subse
 	}
 }
 
-static void addErrorPagesToMap(std::map<std::string, std::vector<std::string> >& config)
+static void	addErrorPagesToMap(t_config& config)
 {
-	std::map<std::string, std::vector<std::string> >::iterator	it;
+	t_config::iterator	it;
 
 	if ((it = config.find("error_page")) == config.end())
 		return;
@@ -565,7 +521,7 @@ void	ConfigParser::setupErrorPages(struct subserver& subserver)
 		addErrorPagesToMap(subserver.locationConfigs.at(i));
 }
 
-void ConfigParser::checkDuplicateLocations(struct subserver& subserver)
+void	ConfigParser::checkDuplicateLocations(struct subserver& subserver)
 {
 	std::map<std::string, std::string>	used;
 
@@ -577,7 +533,7 @@ void ConfigParser::checkDuplicateLocations(struct subserver& subserver)
 	}
 }
 
-void ConfigParser::compareCgiKey(const struct subserver& a_subserver)
+void	ConfigParser::compareCgiKey(const struct subserver& a_subserver)
 {
 	if (a_subserver.serverConfig.at("extension").size() != a_subserver.serverConfig.at("script_path").size())
 		throw std::runtime_error("Error: config-file: invalid amount of value at cgi keys");
@@ -587,7 +543,7 @@ void ConfigParser::compareCgiKey(const struct subserver& a_subserver)
 			throw std::runtime_error("Error: config-file: invalid amount of value at cgi keys");
 }
 
-void ConfigParser::safeData(std::vector<std::string> tokens)
+void	ConfigParser::safeData(std::vector<std::string> tokens)
 {
 	for (size_t i = 0; i < tokens.size(); i++)
 	{
@@ -606,9 +562,9 @@ void ConfigParser::safeData(std::vector<std::string> tokens)
 					else
 						continue;
 				}
-				if (newSubserver.serverConfig.find(tokens.at(i)) != newSubserver.serverConfig.end()) //add value
+				if (newSubserver.serverConfig.find(tokens.at(i)) != newSubserver.serverConfig.end())
 					addValue(tokens, newSubserver, i);
-				else if (tokens.at(i) == "location") 		//Add location
+				else if (tokens.at(i) == "location")
 					getLocation(newSubserver, tokens, i);
 				else
 					throw std::runtime_error("Error: config-file: Trash not allowed [serverscope]");
@@ -628,7 +584,7 @@ void ConfigParser::safeData(std::vector<std::string> tokens)
 
 }
 
-void ConfigParser::initSubserver(struct subserver &subserver)
+void	ConfigParser::initSubserver(struct subserver &subserver)
 {
 	subserver.serverConfig["listen"];
 	subserver.serverConfig["root"];
@@ -646,9 +602,9 @@ void ConfigParser::initSubserver(struct subserver &subserver)
 
 }
 
-void ConfigParser::updateLocation(std::map<std::string, std::vector<std::string> > &location, struct subserver newSubserver)
+void	ConfigParser::updateLocation(t_config &location, struct subserver newSubserver)
 {
-	std::map<std::string, std::vector<std::string> >::iterator	it = location.begin();
+	t_config::iterator	it = location.begin();
 
 	while (it != location.end())
 	{
@@ -660,7 +616,7 @@ void ConfigParser::updateLocation(std::map<std::string, std::vector<std::string>
 	}
 }
 
-void ConfigParser::initLocation(std::map<std::string, std::vector<std::string> > &location)
+void	ConfigParser::initLocation(t_config &location)
 {
 	location["index"];
 	location["client_max_body_size"];
