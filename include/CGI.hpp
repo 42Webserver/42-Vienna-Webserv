@@ -33,6 +33,14 @@ private:
 	std::string					m_responseBody;
 	std::string					m_filePath;
 
+	enum
+	{
+		CGI_WRITING = 1,
+		CGI_CLIENTFD,
+		CGI_READING,
+		CGI_FINISHED
+	} m_cgiStatus;
+
 	CGI(void);
 	CGI(const CGI& other);
 	CGI& operator=(const CGI& other);

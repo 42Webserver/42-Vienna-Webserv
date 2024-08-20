@@ -77,6 +77,7 @@ int	Connection::receiveRequestRaw(void)
 	if (m_response.isCgiResponse())
 	{
 		m_cgiFd = m_response.createResponseMsg();
+		idleTime.resetTime();
 		return (0);
 	}
 	if (!m_request.headComplete())
@@ -111,7 +112,10 @@ int	Connection::sendResponse(void)
 	if (!m_request.isReady())
 		return (0);
 	if ((m_cgiFd = m_response.createResponseMsg()))
+	{
+		idleTime.resetTime();
 		return (1);
+	}
 	error_code = m_request.getIsValid();
 	m_request = Request();
 	const std::string	response = m_response.getResponse();

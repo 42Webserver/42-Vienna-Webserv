@@ -1,6 +1,6 @@
 #include "CGI.hpp"
 
-CGI::CGI(t_config config, Request& request) : m_path(NULL), m_config(config), m_request(request), m_pid(0), m_status(0) 
+CGI::CGI(t_config config, Request& request) : m_path(NULL), m_config(config), m_request(request), m_pid(0), m_status(0), m_cgiStatus(CGI_WRITING)
 {
 	m_inputPipe[0] = -1;
 	m_inputPipe[1] = -1;
@@ -9,7 +9,7 @@ CGI::CGI(t_config config, Request& request) : m_path(NULL), m_config(config), m_
 }
 
 CGI::CGI(const CGI &other) 
-	:  m_config(other.m_config), m_request(other.m_request), m_pid(other.m_pid), m_status(other.m_status)
+	:  m_config(other.m_config), m_request(other.m_request), m_pid(other.m_pid), m_status(other.m_status), m_cgiStatus(other.m_cgiStatus)
 {
 	m_inputPipe[0] = other.m_inputPipe[0];
 	m_inputPipe[1] = other.m_inputPipe[1];
@@ -46,6 +46,7 @@ CGI& CGI::operator=(const CGI &other)
 		m_outputPipe[0] = other.m_outputPipe[0];
 		m_outputPipe[1] = other.m_outputPipe[1];
 		m_status = other.m_status;
+		m_cgiStatus = other.m_cgiStatus;
 
 		m_path = new char[std::strlen(other.m_path) + 1];
 		std::strcpy(m_path, other.m_path);
@@ -137,7 +138,6 @@ int	CGI::run()
   if (pipe(m_inputPipe) == -1 || pipe(m_outputPipe) == -1)
 	{
 		std::cout << "Error while opening pipe\n";
-
 		return (500);
 	}
 
@@ -148,27 +148,32 @@ int	CGI::run()
 		return (500);
 	}
  	if (pid == 0)
-    {
-		dup2(m_outputPipe[1], STDOUT_FILENO);
-		dup2(m_inputPipe[0], STDIN_FILENO);
-		dup2(m_outputPipe[1], STDERR_FILENO);
-		
-        close(m_outputPipe[0]);
-        close(m_outputPipe[1]);
-        close(m_inputPipe[0]);
-        close(m_inputPipe[1]);
+	{
+		bool error = false;
+		if (dup2(m_outputPipe[1], STDOUT_FILENO) == -1 ||
+			dup2(m_inputPipe[0], STDIN_FILENO) == -1 ||
+			dup2(m_outputPipe[1], STDERR_FILENO) == -1)
+		{
+			error = true;
+		}
+		close(m_outputPipe[0]);
+		close(m_outputPipe[1]);
+		close(m_inputPipe[0]);
+		close(m_inputPipe[1]);
+		if (error)
+			exit(42);
 		m_envp.push_back(NULL);
 		m_argv.push_back(NULL);
 		if (chdir(m_filePath.substr(0, m_filePath.find_last_of('/')).c_str()) == -1)
-			exit(500);
+			exit(42);
 		if (execve(m_path, m_argv.data(), m_envp.data()) == -1)
-            exit(500);
-        exit(0);
-    }
-    else
-    {
+			exit(42);
+		exit(0);
+	}
+	else
+	{
 		m_pid = pid;
-    }
+	}
 	return (0);
 }
 
@@ -200,9 +205,18 @@ int	CGI::io()
 	{
 		kill(m_pid, SIGINT);
 		m_status = 500;
+		close(m_inputPipe[0]);
+		close(m_inputPipe[1]);
+		close(m_outputPipe[0]);
+		close(m_outputPipe[1]);
+		m_inputPipe[0] = -1;
+		m_inputPipe[1] = -1;
+		m_outputPipe[0] = -1;
+		m_outputPipe[1] = -1;
+		return (0);
 	}
 
-	if (m_inputPipe[1] > 2)
+	if (m_cgiStatus == CGI_WRITING)
 	{
 		ssize_t n = write(
 			m_inputPipe[1],
@@ -215,19 +229,34 @@ int	CGI::io()
 			close(m_inputPipe[0]);
 			m_inputPipe[1] = -1;
 			written = 0;
+			m_cgiStatus = CGI_CLIENTFD;
 		}
 	}
-	else if (m_outputPipe[0] > 2)
+	else if (m_cgiStatus == CGI_CLIENTFD)
 	{
 		int status_code = 0;
-		ssize_t n = 0;
-		char buffer[4096];
 		if (waitpid(m_pid, &status_code, WNOHANG) == 0)
 		{
 			return (-1);
 		}
 		if (WIFEXITED(status_code) && WEXITSTATUS(status_code) != 0)
+		{
 			m_status = 500;
+			if (WEXITSTATUS(status_code) == 42)
+			{
+				close(m_outputPipe[0]);
+				close(m_outputPipe[1]);
+				m_cgiStatus = CGI_FINISHED;
+				return (0);
+			}
+		}
+		m_cgiStatus = CGI_READING;
+	}
+	else if (m_cgiStatus == CGI_READING)
+	{
+		ssize_t n = 0;
+		char buffer[4096];
+		
 		n = read(m_outputPipe[0], buffer, 4096);
 		if (n > 0)
 			m_responseBody.append(buffer, n);
@@ -236,6 +265,7 @@ int	CGI::io()
 			close(m_outputPipe[0]);
 			close(m_outputPipe[1]);
 			m_outputPipe[0] = -1;
+			m_cgiStatus = CGI_FINISHED;
 			return (0);
 		}
 	}
@@ -246,7 +276,13 @@ int	CGI::io()
 
 int	CGI::getFd(void) const
 {
-	return (m_inputPipe[1] != -1 ? m_inputPipe[1] : m_outputPipe[0]);
+	if (m_cgiStatus == CGI_WRITING)
+		return (m_inputPipe[1]);
+	if (m_cgiStatus == CGI_CLIENTFD)
+		return (-1);
+	if (m_cgiStatus == CGI_READING)
+		return (m_outputPipe[0]);
+	return (0);
 }
 
 const std::string&	CGI::getResponseBody() const
