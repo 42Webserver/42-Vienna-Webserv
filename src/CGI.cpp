@@ -33,7 +33,7 @@ CGI::CGI(const CGI &other)
 	}
 }
 
-CGI &CGI::operator=(const CGI &other)
+CGI& CGI::operator=(const CGI &other)
 {
 	if (this != &other)
 	{
@@ -75,7 +75,7 @@ int	CGI::scriptIsExecutable(const std::string& a_filePath) const
 	return (!access(a_filePath.c_str(), X_OK) ? 0 : 500);
 }
 
-int CGI::setPath(const std::string& a_filePath)
+int	CGI::setPath(const std::string& a_filePath)
 {
 	t_config::iterator extentions = m_config.find("extension");
 	if (extentions == m_config.end())
@@ -132,7 +132,7 @@ void	CGI::setEnvp()
 	}
 }
 
-int CGI::run()
+int	CGI::run()
 {
   if (pipe(m_inputPipe) == -1 || pipe(m_outputPipe) == -1)
 	{
@@ -172,7 +172,7 @@ int CGI::run()
 	return (0);
 }
 
-void CGI::deleteData()
+void	CGI::deleteData()
 {
 	if (m_path != NULL)
 	{
@@ -244,22 +244,22 @@ int	CGI::io()
 	return (-1);
 }
 
-int CGI::getFd(void) const
+int	CGI::getFd(void) const
 {
 	return (m_inputPipe[1] != -1 ? m_inputPipe[1] : m_outputPipe[0]);
 }
 
-const std::string& CGI::getResponseBody() const
+const std::string&	CGI::getResponseBody() const
 {
 	return (m_responseBody);
 }
 
-int CGI::getStatusCode() const
+int	CGI::getStatusCode() const
 {
 	return (m_status);
 }
 
-void CGI::setUrlQuery(const std::string &a_urlQuery)
+void	CGI::setUrlQuery(const std::string &a_urlQuery)
 {
 	std::string envvar = "QUERY_STRING=";
 	envvar.append(a_urlQuery);
@@ -268,7 +268,7 @@ void CGI::setUrlQuery(const std::string &a_urlQuery)
 	m_envp.push_back(str);
 }
 
-void CGI::setPathInfo(const std::string &a_pathInfo)
+void	CGI::setPathInfo(const std::string &a_pathInfo)
 {
 	char* str = new char[a_pathInfo.length() + PATH_INFO_STRING_LENGTH + 1];
 	std::strcpy(str, PATH_INFO_STRING);
