@@ -7,7 +7,7 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "Server.hpp"
-#include "Debug.h"
+#include "Debug.hpp"
 #include "Timer.hpp"
 
 #define BUFFER_SIZE 80000

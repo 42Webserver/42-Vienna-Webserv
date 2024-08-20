@@ -1,5 +1,5 @@
-#ifndef ConfigParser_HPP
-# define ConfigParser_HPP
+#ifndef CONFIGPARSER_HPP
+# define CONFIGPARSER_HPP
 
 #include <map>
 #include <vector>
@@ -60,4 +60,4 @@ public:
 };
 
 
-#endif // !ConfigParser_HPP
+#endif // !CONFIGPARSER_HPP

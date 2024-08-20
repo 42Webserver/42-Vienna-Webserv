@@ -10,7 +10,7 @@
 #include <dirent.h>
 #include <cstdlib>
 
-#include "Debug.h"
+#include "Debug.hpp"
 
 #define MAX_HEAD_SIZE 8192
 #define MAX_BODY_SIZE 1073741824
