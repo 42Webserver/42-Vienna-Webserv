@@ -108,7 +108,6 @@ int	Connection::receiveRequestRaw(void)
 
 int	Connection::sendResponse(void)
 {
-	int error_code = 0;
 	if (!m_request.isReady())
 		return (0);
 	if ((m_cgiFd = m_response.createResponseMsg()))
@@ -116,14 +115,13 @@ int	Connection::sendResponse(void)
 		idleTime.resetTime();
 		return (1);
 	}
-	error_code = m_request.getIsValid();
 	m_request = Request();
 	const std::string	response = m_response.getResponse();
 	m_response.clearBody();
 	idleTime.resetTime();
 	if (send(m_clientSocket, response.data(), response.size(), 0) == -1)
 		return (-1);
-	return (error_code);
+	return (0);
 }
 
 void	Connection::closeConnection(void)

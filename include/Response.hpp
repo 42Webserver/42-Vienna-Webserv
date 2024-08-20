@@ -49,7 +49,7 @@ private:
 	std::string	headerMapToString(void) const;
 	void 		getResponseHeader(const std::string &a_status_code, const std::string &a_redirLoc, const std::string &a_content_type);
 	void		addDateAndTime(void);
-	void		addConnection(const std::string& a_status_code);
+	void		addConnection(void);
 	void		setErrorMsg(const int &a_status_code);
 	void		setDefaultErrorMsg(const std::string &a_status_code);
 	void		setValidMsg(const std::string &filepath);

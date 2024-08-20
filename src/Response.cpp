@@ -459,7 +459,7 @@ void	Response::getResponseHeader(const std::string &a_status_code, const std::st
 	addDateAndTime();
 	addContentType(a_content_type);
 	addContentLength();
-	addConnection(a_status_code);
+	addConnection();
 	addRedirection(a_redirLoc);
 }
 
@@ -474,12 +474,10 @@ void	Response::addDateAndTime()
 	m_responseHeader["Date"] = buffer;
 }
 
-void	Response::addConnection(const std::string& a_status_code)
+void	Response::addConnection()
 {
 	const std::string& requestConnection = m_request.getValue("Connection");
-	if (a_status_code > "302")
-		m_responseHeader["Connection"] = "close";
-	else if (!requestConnection.empty())
+	if (!requestConnection.empty())
 		m_responseHeader["Connection"] = requestConnection;
 }
 

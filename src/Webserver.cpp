@@ -152,7 +152,6 @@ int	Webserver::runServer()
 	while (1)
 	{
 		pollRet = poll(m_polls.getPollfds().data(), m_polls.getPollfds().size(), 100);
-		std::cout << "POLL RET: " << pollRet << '\n';
 		if (!g_isRunning)
 		{
 			std::cout << "Stopping Server :)" << std::endl;
