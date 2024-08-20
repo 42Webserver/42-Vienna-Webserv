@@ -2,7 +2,8 @@
 
 Server::Server(void) {}
 
-Server::Server(const Server& a_other) : m_serverSocket(a_other.m_serverSocket), m_serverAddress(a_other.m_serverAddress), m_subServers(a_other.m_subServers) {}
+Server::Server(const Server& a_other)
+	: m_serverSocket(a_other.m_serverSocket), m_serverAddress(a_other.m_serverAddress), m_subServers(a_other.m_subServers) {}
 
 Server &Server::operator=(const Server &other)
 {
@@ -117,7 +118,6 @@ int Server::initServerSocket()
 		throw (std::runtime_error("Error: server: binding socket to ip failed."));
 	}
 	freeaddrinfo(resultFree);
-	// std::cout << m_serverAddress.sin_addr.s_addr << " " << m_serverAddress.sin_port << std::endl;
 	if (listen(sock, 16) == -1)
 	{
 		throw (std::runtime_error("Error: server: setting socket to listen failed."));
@@ -139,7 +139,6 @@ int	Server::acceptNewConnection(void)
 		std::cerr << "Error: fatal, accept fail.\n";
 		return (-1);
 	}
-	// std::cout << "new socket: " << clientFd << '\n';
 	return (clientFd);
 }
 

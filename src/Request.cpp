@@ -7,7 +7,7 @@ Request::Request(const Request &other)
 	*this = other;
 }
 
-Request &Request::operator=(const Request &other)
+Request	&Request::operator=(const Request &other)
 {
 	if (this != &other)
 	{
@@ -27,14 +27,14 @@ Request &Request::operator=(const Request &other)
 
 Request::~Request() {}
 
-void Request::getRequestLine(std::string& line)
+void	Request::getRequestLine(std::string& line)
 {
 	std::stringstream	input(line);
 	std::string			value;
 
 	if (line.empty())
 	{
-		std::cout << "EMPTY REQUEST HEADLINE!!!" << std::endl;
+		LOG_ERROR("Request has empty header!")
 		m_isValid = 400;
 		return;
 	}
@@ -52,13 +52,13 @@ void Request::getRequestLine(std::string& line)
 	}
 	if (args != 3)
 	{
-		std::cout << "INVALID AMOUNT OF ARGUMENTS IN REQUEST HEADLINE!!!" << std::endl;
+		LOG_ERROR("Request is missing mandatory values!")
 		m_isValid = 400;
 		return;
 	}
 }
 
-void Request::createKeyValuePair(std::string line)
+void	Request::createKeyValuePair(std::string line)
 {
 	std::stringstream	input(line.substr(0, line.length()));
 
@@ -88,7 +88,7 @@ void Request::createKeyValuePair(std::string line)
 	m_requestHeader[key] = value;
 }
 
-void Request::initMap()
+void	Request::initMap()
 {
 	size_t	delimiter = m_head.find_first_of("\r\n");
 
@@ -130,21 +130,19 @@ void Request::initMap()
 		m_isValid = 400; 
 	}
 	addBody(""); //just so if we have added something to buffer in addHead, we will add it to body properly here.
-	// for (std::map<std::string, std::string>::iterator it = m_requestHeader.begin(); it != m_requestHeader.end(); ++it)
-	// 	std::cout << "key = '" << it->first << "' value = '" << it->second << "'" << std::endl;
 }
 
-void Request::setHeadDone(void)
+void	Request::setHeadDone(void)
 {
 	m_headComplete = true;
 }
 
-void Request::setBodyDone(void)
+void	Request::setBodyDone(void)
 {
 	m_bodyComplete = true;
 }
 
-void Request::setMaxBodySize(std::size_t a_maxBody)
+void	Request::setMaxBodySize(std::size_t a_maxBody)
 {
 	m_maxBodySize = a_maxBody;
 	if (m_maxBodySize != 0 && m_body.length() > m_maxBodySize)
@@ -154,12 +152,12 @@ void Request::setMaxBodySize(std::size_t a_maxBody)
 	}
 }
 
-const std::string &Request::getValue(const std::string &a_key)
+const std::string	&Request::getValue(const std::string &a_key)
 {
 	return (m_requestHeader[a_key]);
 }
 
-void Request::setUri(std::string a_uri)
+void	Request::setUri(std::string a_uri)
 {
 	m_requestHeader["uri"] = a_uri;
 }
@@ -180,18 +178,17 @@ int	Request::getIsValid(void) const
 	return (m_isValid);
 }
 
-size_t Request::getContentLength() const
+size_t	Request::getContentLength() const
 {
 	std::map<std::string, std::string>::const_iterator found = m_requestHeader.find("Content-Length");
 	if (found != m_requestHeader.end())
 	{
-		//Maybe parse value, check for numbers!
 		return (std::strtol(found->second.c_str(), NULL, 10));		
 	}
 	return 0;
 }
 
-void Request::addHead(const std::string &a_head)
+void	Request::addHead(const std::string &a_head)
 {
 	if (m_headComplete)
 	{
@@ -223,12 +220,12 @@ void Request::addHead(const std::string &a_head)
 	m_headComplete = true;
 }
 
-bool Request::headComplete(void)
+bool	Request::headComplete(void)
 {
 	return (m_headComplete || (m_headComplete = (m_head.rfind("\r\n\r\n") != std::string::npos)));
 }
 
-void Request::addBody(const std::string &a_body)
+void	Request::addBody(const std::string &a_body)
 {
 	if (m_maxBodySize > 0 && m_body.length() + a_body.length() >= m_maxBodySize)
 	{
@@ -266,7 +263,7 @@ void Request::addBody(const std::string &a_body)
 	m_body.append(a_body);
 }
 
-void Request::reciveChunked(const std::string &a_body)
+void	Request::reciveChunked(const std::string &a_body)
 {
 	std::cout << "Recieved data length: " << a_body.length() << '\n';
 	std::size_t start = 0;
@@ -303,51 +300,28 @@ void Request::reciveChunked(const std::string &a_body)
 			start += RN_CHAR_OFFSET;
 	}
 }
-/* {
-	std::size_t	start = 0;
-	std::size_t	amount = 0;
-	std::size_t	rnPos = 0;
-	char		*end_hex;
-	while (start < a_body.length())
-	{
-		if (m_chunkSize == 0)
-		{
-			m_chunkSize = std::strtol(a_body.c_str() + start, &end_hex, BASE_HEX);
-			if (m_chunkSize == 0)
-			{
-				setBodyDone();
-				return;
-			}
-			if (static_cast<std::size_t>((end_hex + RN_CHAR_OFFSET) - a_body.c_str()) < a_body.length())
-				start = (end_hex + RN_CHAR_OFFSET) - a_body.c_str();
-		}
-		rnPos = a_body.find("\r\n");
-		amount = rnPos != m_chunkSize ? a_body.length() : m_chunkSize;
-		m_body.append(a_body, start, amount);
-	}
-} */
 
-bool Request::bodyComplete(void)
+bool	Request::bodyComplete(void)
 {
 	return (m_bodyComplete || (getContentLength() == m_body.length() && m_requestHeader["Transfer-Encoding"] != "chunked"));
 }
 
-bool Request::isReady(void)
+bool	Request::isReady(void)
 {
 	return ((headComplete() && bodyComplete()) || m_isValid);
 }
 
-const std::string &Request::getHead()
+const std::string	&Request::getHead()
 {
 	return (m_head);
 }
 
-const std::string &Request::getBody()
+const std::string	&Request::getBody()
 {
 	return (m_body);
 }
 
-bool Request::getValue(const std::string &a_key, std::string &a_returnValue) const
+bool	Request::getValue(const std::string &a_key, std::string &a_returnValue) const
 {
 	std::map<std::string, std::string>::const_iterator found = m_requestHeader.find(a_key);
 	if (found != m_requestHeader.end()) {
@@ -357,7 +331,7 @@ bool Request::getValue(const std::string &a_key, std::string &a_returnValue) con
 	return (false);
 }
 
-void Request::setValue(const std::string &a_key, const std::string &a_val)
+void	Request::setValue(const std::string &a_key, const std::string &a_val)
 {
 	m_requestHeader[a_key] = a_val;
 }
