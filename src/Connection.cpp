@@ -69,7 +69,7 @@ int	Connection::readBody()
 
 int	Connection::getSocketFd(void) const
 {
-	return (m_cgiFd != 0 ? m_cgiFd : m_clientSocket);
+	return (m_cgiFd > 2 ? m_cgiFd : m_clientSocket);
 }
 
 int	Connection::receiveRequestRaw(void)
@@ -124,6 +124,12 @@ int	Connection::sendResponse(void)
 	if (send(m_clientSocket, response.data(), response.size(), 0) == -1)
 		return (-1);
 	return (error_code);
+}
+
+void	Connection::closeConnection(void)
+{
+	m_cgiFd = 0;
+	close(m_clientSocket);
 }
 
 bool	Connection::isResponseCgi(void) const

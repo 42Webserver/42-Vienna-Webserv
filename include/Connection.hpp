@@ -45,7 +45,7 @@ public:
 	int		getSocketFd(void) const;
 	int		receiveRequestRaw(void);
 	int		sendResponse(void);
-
+	void	closeConnection(void);
 	bool	isResponseCgi(void) const;
 };
 

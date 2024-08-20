@@ -69,6 +69,14 @@ CGI& CGI::operator=(const CGI &other)
 CGI::~CGI() 
 {
 	deleteData();
+	if (m_inputPipe[0] > 2)
+		close(m_inputPipe[0]);
+	if (m_inputPipe[1] > 2)
+		close(m_inputPipe[1]);
+	if (m_outputPipe[0] > 2)
+		close(m_outputPipe[0]);
+	if (m_outputPipe[1] > 2)
+		close(m_outputPipe[1]);
 }
 
 int	CGI::scriptIsExecutable(const std::string& a_filePath) const
@@ -327,5 +335,5 @@ int	CGI::execute(std::string a_filePath)
 	m_status = run();
 	deleteData();
 
-    return (m_status);
+	return (m_status);
 }
