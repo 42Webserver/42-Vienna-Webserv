@@ -87,7 +87,7 @@ const std::string Response::getResponse() const
 
 void Response::setValidMsg(const std::string &filepath)
 {
-	if (m_cgi)
+	if (m_cgi || m_eventFlags & RESPONSE_COMPLETE)
 		return ;
 	if (!getBody(filepath))
 		setErrorMsg(404);
