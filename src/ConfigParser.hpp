@@ -30,7 +30,6 @@ private:
 	static void	checkSyntax(std::vector<std::string>& tokens);
 	static void	removeHttpScope(std::vector<std::string>& tokens);
 	static void	sortConfigVector(std::vector<std::string>& tokens);
-
 	static void	checkValue(const std::string& key, std::vector<std::string>& value);
 	static void	checkValueAutoindex(std::string& value);
 	static void	checkValueClientMaxBodySize(std::string& value);
@@ -42,23 +41,21 @@ private:
 	static void	checkErrorPage(std::vector<std::string>& value);
 	static void checkValueExtension(std::vector<std::string>& value);
 	static void checkValueScriptPath(std::vector<std::string>& value);
-
 	static void	setupErrorPages(struct subserver& subserver);
 	static void checkDuplicateLocations(struct subserver& subserver);
-
 	static void	safeData(std::vector<std::string> tokens);
 	static void	compareCgiKey(const struct subserver& a_subserver);
 	static void	initSubserver(struct subserver &subserver);
-	static void	initLocation(std::map<std::string, std::vector<std::string> > &location);
-	static void	updateLocation(std::map<std::string, std::vector<std::string> > &location, struct subserver newSubserver);
-	static void	printData(std::vector <struct subserver> data);
-
-	static bool	getLocation(struct subserver &newSubserver, std::vector<std::string> &tokens, size_t &i);
-	static bool	endOfServerScope(std::string &str, size_t &countScopes);
+	static void	initLocation(t_config &location);
+	static void	updateLocation(t_config &location, struct subserver newSubserver);
 	static void	addValue(const std::vector<std::string> &tokens, struct subserver &newSubserver, size_t &i);
 	static void allowAllMethods(std::vector<std::string> &value);
 	static void basicRequirement(const t_config &serverConfig);
+	static bool	getLocation(struct subserver &newSubserver, std::vector<std::string> &tokens, size_t &i);
+	static bool	endOfServerScope(std::string &str, size_t &countScopes);
+
 public:
+
 	static std::vector<struct subserver>	parseConfig(std::string& configname);
 };
 
