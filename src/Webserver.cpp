@@ -2,47 +2,32 @@
 
 bool	g_isRunning = true;
 
-static void stopServer(int a_sig)
+static void	stopServer(int a_sig)
 {
 	if (a_sig)
 		g_isRunning = false;
 }
 
-Webserver::Webserver(void)
-{
-	// if (testSrvr.initServerSocket(INADDR_ANY, 8090) != -1)
-	// {
-	// 	m_servers.push_back(testSrvr);
-	// 	m_polls.addServer(testSrvr);
-	// }
-	// else
-	// 	std::cerr << "fail port 8090" << '\n';
-}
+Webserver::Webserver(void) {}
 
 Webserver::Webserver(std::vector<struct subserver> subservers)
 {
 	signal(SIGINT, stopServer);
 	for (std::size_t i = 0; i < subservers.size(); i++)
 	{
-		//std::cout << (m_servers.size() != 0 ? m_servers.at(0).getPort() : -1) << " | " << subservers.at(i).getPort() << '\n';
 		std::vector<Server>::iterator found = std::find(m_servers.begin(), m_servers.end(), subservers.at(i).getAdress());
-		if (found == m_servers.end()) { //servers can run on different ips but same port.
+		if (found == m_servers.end()) {
 			Server	temp;
 			temp.addSubServer(subservers.at(i));
 			m_servers.push_back(temp);
-			//std::cout << "Add new server with subserver port:" << temp.getPort() << "\n";
 		} else {
 			found->addSubServer(subservers.at(i));
-			//std::cout << "Add new subserver\n";
 		}
-		// m_servers[subservers.at(i).getPort()].addSubServer(subservers.at(i));
-		// std::cout << "Adding subserver: " << subservers.at(i).getPort() << '\n';
 	}
 	for (std::vector<Server>::iterator it = m_servers.begin(); it != m_servers.end(); it++)
 	{
 		it->initServerSocket();
 		m_polls.addServer(*it);
-		//std::cout << "Init server, and add to Pollcontainer\n";
 	}
 }
 
@@ -60,7 +45,7 @@ Webserver&	Webserver::operator=(const Webserver& a_other)
 
 Webserver::~Webserver() {}
 
-int Webserver::pollServers(void)
+int	Webserver::pollServers(void)
 {
 	for (std::size_t i = 0; i < m_servers.size(); i++)
 	{
@@ -102,7 +87,7 @@ std::ostream& operator<<(std::ostream& os, const pollfd& a_pollfd)
 	return (os);
 }
 
-int Webserver::pollClients(void)
+int	Webserver::pollClients(void)
 {
 	for (std::size_t i = m_servers.size(); i < m_polls.getPollfds().size(); i++)
 	{
@@ -145,14 +130,10 @@ int Webserver::pollClients(void)
 				continue;
 			else if (error_code != 0)
 			{
-				//sleep(5);
 				std::cerr << "Error: send\n";
 				m_polls.removeConnection(i--);
 				continue;
 			}
-			// close(m_polls.getPollfdsAt(i).fd);
-			// m_polls.removeConnection(i--); 	//? Sicher
-			// continue ;						//?
 			m_polls.getPollfdsAt(i).events |= POLLIN;
 			m_polls.getPollfdsAt(i).events &= ~POLLOUT;
 		}
@@ -190,29 +171,26 @@ int	Webserver::runServer()
 			std::cerr << "Error: poll error.\n";
 		else if (pollRet == 0) {
 			LOG_INFO("Poll timeout " << m_polls.getPollfds().size());
-			for (std::size_t i = m_polls.getPollfds().size() - 1; i >= m_servers.size(); i--)
-			{
-				if (m_polls.getConnection(i).idleTime.isOver(1)) {
-					LOGC(TERMC_DARKGREEN, ">>> Client time out <<<")
-					m_polls.removeConnection(i);
-					continue;
-				}
-			}
+			removeTimeoutConnections();
 		}
 		else
 		{
 			LOGC(TERMC_ORANGE, pollRet << '/' << m_polls.getPollfds().size() - m_servers.size() << " Poll(s) triggered\n")
-			if (pollServers() == -1)
-			{
-				std::cerr << "Poll server error\n";
-				continue; //try save by clean function?
-			}
-			if (pollClients() == -1)
-			{
-				std::cerr << "Poll client error\n";
-				continue; //? überlegen ob das sinn macht. Error handling geschichte
-			}
+			pollServers();
+			pollClients();
 		}
 	}
 	return (pollRet);
+}
+
+void	Webserver::removeTimeoutConnections(void)
+{
+	for (std::size_t i = m_polls.getPollfds().size() - 1; i >= m_servers.size(); i--)
+	{
+		if (m_polls.getConnection(i).idleTime.isOver(1)) {
+			LOGC(TERMC_DARKGREEN, ">>> Client time out <<<")
+			m_polls.removeConnection(i);
+			continue;
+		}
+	}
 }

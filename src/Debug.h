@@ -17,12 +17,12 @@
 #ifdef DEBUG
 #define LOG(msg) std::cout << msg << '\n';
 #define LOGC(colour, msg) { \
-	time_t rawtime; \
-	struct tm* timeinfo; \
+	std::time_t rawtime; \
+	struct std::tm* timeinfo; \
 	char buffer [80]; \
-	time(&rawtime); \
-	timeinfo = localtime(&rawtime); \
-	strftime(buffer,80, "%Y-%m-%d %H:%M:%S | ", timeinfo); \
+	std::time(&rawtime); \
+	timeinfo = std::localtime(&rawtime); \
+	std::strftime(buffer,80, "%Y-%m-%d %H:%M:%S | ", timeinfo); \
 	std::cout << buffer << colour << msg << "\033[39m" << '\n'; \
 } 
 #define LOG_INFO(msg) LOGC(TERMC_BLUE, msg)
