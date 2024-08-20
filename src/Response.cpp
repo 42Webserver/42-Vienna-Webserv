@@ -108,7 +108,7 @@ void	Response::setErrorMsg(const int &a_status_code)
 		getResponseHeader("200", "", "");
 		return;
 	}
-	else if (m_cgi && !m_responseBody.empty())
+	else if ((m_cgi || m_eventFlags & RESPONSE_COMPLETE) && !m_responseBody.empty())
 	{
 		getResponseHeader("500", "", "html");		
 		return ;
