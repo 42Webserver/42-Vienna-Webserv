@@ -305,6 +305,8 @@ int Response::createResponseMsg()
 	std::string urlQuery;
 	std::string pathInfo;
 
+	if (m_eventFlags & RESPONSE_COMPLETE)
+		return (0);
 	if (isCgiResponse())
 	{
 		if (isCgiReady())
@@ -314,6 +316,8 @@ int Response::createResponseMsg()
 				error_code = m_cgi->getStatusCode();
 			else
 				insertCgiResponse();
+			m_cgi = SharedPtr<CGI>(NULL);
+			m_eventFlags |= RESPONSE_COMPLETE;
 		}
 		else
 			return (m_cgi->getFd());
@@ -360,6 +364,7 @@ int Response::createResponseMsg()
 		setErrorMsg(error_code);
 	else
 		setValidMsg(filepath);
+	m_eventFlags |= RESPONSE_COMPLETE;
 	return (0);
 }
 

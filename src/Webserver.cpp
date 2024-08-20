@@ -125,8 +125,8 @@ int Webserver::pollClients(void)
 			int ret = m_polls.getConnection(i).receiveRequestRaw();
 			m_polls.updateConntectionFd(i);
 			if (ret == 1){
-				m_polls.getPollfdsAt(i).events ^= POLLOUT;
-				m_polls.getPollfdsAt(i).events ^= POLLIN;
+				m_polls.getPollfdsAt(i).events |= POLLOUT;
+				m_polls.getPollfdsAt(i).events &= ~POLLIN;
 				// continue;
 			} if (ret == -1) {
 				std::cerr << "Mal schaun\n";
@@ -153,8 +153,8 @@ int Webserver::pollClients(void)
 			// close(m_polls.getPollfdsAt(i).fd);
 			// m_polls.removeConnection(i--); 	//? Sicher
 			// continue ;						//?
-			m_polls.getPollfdsAt(i).events ^= POLLIN;
-			m_polls.getPollfdsAt(i).events ^= POLLOUT;
+			m_polls.getPollfdsAt(i).events |= POLLIN;
+			m_polls.getPollfdsAt(i).events &= ~POLLOUT;
 		}
 		if (m_polls.getConnection(i).idleTime.isOver(1)) {
 			LOGC(TERMC_DARKGREEN, ">>> Client time out <<<")
