@@ -3,7 +3,7 @@
 
 u_int16_t	subserver::getPort(void) const 
 {
-	return (atoi(serverConfig.at("listen").at(1).c_str()));
+	return (std::atoi(serverConfig.at("listen").at(1).c_str()));
 }
 
 u_int64_t subserver::getIp(void) const

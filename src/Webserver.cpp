@@ -112,9 +112,7 @@ int	Webserver::pollClients(void)
 			if (ret == 1){
 				m_polls.getPollfdsAt(i).events |= POLLOUT;
 				m_polls.getPollfdsAt(i).events &= ~POLLIN;
-				// continue;
 			} if (ret == -1) {
-				std::cerr << "Mal schaun\n";
 				m_polls.removeConnection(i--);
 				continue;
 			}
