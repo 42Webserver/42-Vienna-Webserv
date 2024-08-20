@@ -1,5 +1,5 @@
 NAME=	webserv
-FLAGS=	-Wall -Werror -Wextra -pedantic -std=c++98 -g
+FLAGS=	-Wall -Werror -Wextra -pedantic -std=c++98 -g -I./include
 
 SRC_DIR= ./src/
 OBJ_DIR= ${SRC_DIR}objs/
