@@ -265,7 +265,6 @@ void	Request::addBody(const std::string &a_body)
 
 void	Request::reciveChunked(const std::string &a_body)
 {
-	std::cout << "Recieved data length: " << a_body.length() << '\n';
 	std::size_t start = 0;
 	std::size_t amount = 0;
 	char *end_hex;
