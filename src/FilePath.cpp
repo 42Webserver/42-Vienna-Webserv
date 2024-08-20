@@ -1,10 +1,5 @@
 #include "FilePath.hpp"
 
-void FilePath::setStat(void)
-{
-	m_statValid = (stat(m_string.c_str(), &m_sb) == 0);
-}
-
 FilePath::FilePath(void)
 {
 	setStat();
@@ -37,8 +32,11 @@ FilePath &FilePath::operator=(const std::string &str)
 	return (*this);
 }
 
-FilePath::~FilePath()
+FilePath::~FilePath() {}
+
+void	FilePath::setStat(void)
 {
+	m_statValid = (stat(m_string.c_str(), &m_sb) == 0);
 }
 
 void FilePath::append(const std::string &path)
