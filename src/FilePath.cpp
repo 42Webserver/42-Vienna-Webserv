@@ -14,7 +14,7 @@ FilePath::FilePath(const std::string &str) : m_string(str)
 	setStat();
 }
 
-FilePath &FilePath::operator=(const FilePath &other)
+FilePath&	FilePath::operator=(const FilePath &other)
 {
 	if (this != &other)
 	{
@@ -25,7 +25,7 @@ FilePath &FilePath::operator=(const FilePath &other)
 	return (*this);
 }
 
-FilePath &FilePath::operator=(const std::string &str)
+FilePath&	FilePath::operator=(const std::string &str)
 {
 	m_string.replace(0, -1, str);
 	setStat();
@@ -39,7 +39,7 @@ void	FilePath::setStat(void)
 	m_statValid = (stat(m_string.c_str(), &m_sb) == 0);
 }
 
-void FilePath::append(const std::string &path)
+void	FilePath::append(const std::string &path)
 {
 	if (m_string.length() && *(m_string.end() - 1) != '/' && path.length() && *(path.end() - 1) != '/')
 		m_string.push_back('/');
@@ -47,7 +47,7 @@ void FilePath::append(const std::string &path)
 	setStat();
 }
 
-void FilePath::append(const std::string &path, std::size_t start, std::size_t n)
+void	FilePath::append(const std::string &path, std::size_t start, std::size_t n)
 {
 	if (m_string.length() && *(m_string.end() - 1) != '/' && start + n < path.length() && path.at(start + n) != '/')
 		m_string.push_back('/');
@@ -56,23 +56,23 @@ void FilePath::append(const std::string &path, std::size_t start, std::size_t n)
 	
 }
 
-void FilePath::clear(void)
+void	FilePath::clear(void)
 {
 	m_string.clear();
 	setStat();
 }
 
-const char *FilePath::c_str() const
+const char*	FilePath::c_str() const
 {
 	return (m_string.c_str());
 }
 
-const std::string &FilePath::str() const
+const std::string&	FilePath::str() const
 {
 	return (m_string);
 }
 
-void FilePath::remove_filename(void)
+void	FilePath::remove_filename(void)
 {
 	std::size_t	startPos;
 	startPos = (startPos = m_string.find_last_of('/')) == m_string.npos ? m_string.length() : startPos;
@@ -83,7 +83,7 @@ void FilePath::remove_filename(void)
 	
 }
 
-void FilePath::remove_last(void)
+void	FilePath::remove_last(void)
 {
 	std::size_t	startPos;
 	if (m_string.length() < 2)
@@ -93,14 +93,14 @@ void FilePath::remove_last(void)
 	setStat();
 }
 
-void FilePath::replace_filename(const std::string &filename)
+void	FilePath::replace_filename(const std::string &filename)
 {
 	remove_filename();
 	m_string.append(filename);
 	setStat();
 }
 
-void FilePath::replace_extension(const std::string &extension)
+void	FilePath::replace_extension(const std::string &extension)
 {
 	std::string	name = filename();
 	std::size_t	dotPos;
@@ -113,7 +113,7 @@ void FilePath::replace_extension(const std::string &extension)
 	setStat();
 }
 
-std::string FilePath::extension(void) const
+std::string	FilePath::extension(void) const
 {
 	std::string	name = filename();
 	std::size_t	dotPos;
@@ -122,7 +122,7 @@ std::string FilePath::extension(void) const
 	return (name);
 }
 
-std::string FilePath::filename(void) const
+std::string	FilePath::filename(void) const
 {
 	std::size_t	startPos;
 	startPos = (startPos = m_string.find_last_of('/')) == m_string.npos ? m_string.length() : startPos;
@@ -131,37 +131,37 @@ std::string FilePath::filename(void) const
 	return (m_string.substr(startPos));
 }
 
-mode_t FilePath::getMode(void) const
+mode_t	FilePath::getMode(void) const
 {
 	return (m_sb.st_mode);
 }
 
-bool FilePath::exists(void) const
+bool	FilePath::exists(void) const
 {
 	return (m_statValid);
 }
 
-bool FilePath::isFile(void) const
+bool	FilePath::isFile(void) const
 {
 	return (S_ISREG(m_sb.st_mode));
 }
 
-bool FilePath::isDir(void) const
+bool	FilePath::isDir(void) const
 {
 	return (S_ISDIR(m_sb.st_mode));
 }
 
-bool FilePath::isExec(void) const
+bool	FilePath::isExec(void) const
 {
 	return (S_IXGRP & m_sb.st_mode);
 }
 
-bool FilePath::isRead(void) const
+bool	FilePath::isRead(void) const
 {
 	return (S_IRUSR & m_sb.st_mode);
 }
 
-std::ostream &operator<<(std::ostream &os, const FilePath &fp)
+std::ostream&	operator<<(std::ostream &os, const FilePath &fp)
 {
 	os << fp.str();
 	return (os);
