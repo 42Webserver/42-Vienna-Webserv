@@ -24,7 +24,6 @@ private:
 	char*						m_path;
 	std::vector<char*>			m_argv;
 	std::vector<char*>			m_envp;
-
 	t_config					m_config;
 	Request&					m_request;
 	int							m_pid;
@@ -35,6 +34,8 @@ private:
 	std::string					m_filePath;
 
 	CGI(void);
+	CGI(const CGI& other);
+	CGI& operator=(const CGI& other);
 
 	int		scriptIsExecutable(const std::string& a_filePath) const;
 	int		setPath(const std::string& a_filePath);
@@ -42,23 +43,21 @@ private:
 	void	setArgv(const std::string& a_filePath);
 	void	setEnvp();
 	void	deleteData();
-	CGI(const CGI& other);
-	CGI& operator=(const CGI& other);
 
 public:
+
+	Timer				startTime;
 
 	CGI(t_config config, Request& a_request);
 	~CGI();
 
-	Timer				startTime;
-
 	int					execute(std::string a_filePath);
-	const std::string& 	getResponseBody() const;
-	int					getStatusCode() const;
-	void				setUrlQuery(const std::string& a_urlQuery);
 	int					io(void);
 	int					getFd(void) const;
+	int					getStatusCode() const;
 	void				setPathInfo(const std::string& a_pathInfo);
+	void				setUrlQuery(const std::string& a_urlQuery);
+	const std::string& 	getResponseBody() const;
 };
 
 #endif // !CGI_HPP
