@@ -6,7 +6,7 @@ int	main(int argc, char **argv)
 
 	if (argc > 2)
 	{
-		std::cerr << "Error: too many arguments." << std::endl;
+		std::cout << "Error: too many arguments." << std::endl;
 		return (1);
 	}
 
@@ -28,7 +28,7 @@ int	main(int argc, char **argv)
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cout << e.what() << '\n';
 		return (42);
 	}
 	return (0);

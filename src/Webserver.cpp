@@ -54,7 +54,7 @@ int	Webserver::pollServers(void)
 			int client_socket = m_servers.at(i).acceptNewConnection();
 			if (client_socket == -1)
 			{
-				std::cerr << "Server Error: could not accept new client" << '\n';
+				std::cout << "Server Error: could not accept new client" << '\n';
 				continue ;
 			}
 			m_polls.addConnection(Connection(m_servers.at(i), client_socket));
@@ -115,7 +115,7 @@ int	Webserver::pollClients(void)
 		}
 		if (m_polls.getPollfdsAt(i).revents & POLLOUT)
 		{
-			LOG_INFO("Pollout triggered")
+			LOG_INFO("Send response.")
 			int error_code = m_polls.getConnection(i).sendResponse();
 			m_polls.updateConntectionFd(i);
 			if (m_polls.getConnection(i).isResponseCgi())
@@ -124,7 +124,7 @@ int	Webserver::pollClients(void)
 				continue;
 			else if (error_code != 0)
 			{
-				std::cerr << "Error: send\n";
+				std::cout << "Error: send\n";
 				m_polls.removeConnection(i--);
 				continue;
 			}
@@ -146,7 +146,7 @@ int	Webserver::runServer()
 	int	pollRet = 0;
 	if (m_servers.size() == 0)
 	{
-		std::cerr << "NO servers\n";
+		std::cout << "NO servers\n";
 		return (1);
 	}
 	while (1)
@@ -157,7 +157,6 @@ int	Webserver::runServer()
 			std::cout << "Stopping Server :)" << std::endl;
 			for (size_t i = 0; i < m_polls.getPollfds().size(); i++)
 			{
-				std::cout << "CLOSING: " << m_polls.getPollfdsAt(i).fd << std::endl;
 				if (m_servers.size() > i)
 					close(m_polls.getPollfdsAt(i).fd);
 				else
@@ -167,7 +166,7 @@ int	Webserver::runServer()
 		}
 		else if (pollRet == -1)
 		{
-			std::cerr << "Error: poll error.\n";
+			std::cout << "Error: poll error.\n";
 			return (pollRet);
 		}
 		else if (pollRet == 0) {

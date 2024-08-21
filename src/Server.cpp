@@ -136,7 +136,7 @@ int	Server::acceptNewConnection(void)
 	int clientFd = accept(m_serverSocket, &clientAdr, &addrlen);
 	if (clientFd == -1)
 	{
-		std::cerr << "Error: fatal, accept fail.\n";
+		std::cout << "Error: fatal, accept fail.\n";
 		return (-1);
 	}
 	return (clientFd);

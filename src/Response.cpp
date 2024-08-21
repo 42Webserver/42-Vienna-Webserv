@@ -35,7 +35,7 @@ bool	Response::getBody(std::string const &filename)
 	std::stringstream body;
 	if (!input_file.is_open() || !input_file.good())
 	{
-		std::cerr << "Error: open error file" << '\n';
+		std::cout << "Error: open error file" << '\n';
 		return (false);
 	}
 	body << input_file.rdbuf();
