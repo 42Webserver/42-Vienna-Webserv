@@ -188,6 +188,8 @@ int	Response::getValidFilePath(std::string &a_filepath, std::string& a_pathInfo)
 			a_filepath = path.str();
 			if (!path.exists())
 				return (404);
+			if (path.isChr())
+				return (403);
 			return (0);
 		}
 		else if (!a_pathInfo.empty())
@@ -202,6 +204,8 @@ int	Response::getValidFilePath(std::string &a_filepath, std::string& a_pathInfo)
 		}
 		return (403);
 	}
+	if (path.isChr())
+		return (403);
 	return (0);
 }
 
@@ -414,7 +418,7 @@ void	Response::createAutoIndex(const std::string &a_path)
 		uri.insert(0, m_config.at("name").at(0));
 	m_responseBody.append("<!DOCTYPE html><body><h1>Index of " + uri
 		+ "</h1><hr><div style=\"display: flex; flex-direction: column; justify-items: center; align-items: flex-begin;\">");
-	struct dirent* de;
+	struct dirent* de = NULL;
 	std::vector<dirent> ents;
 	while ((de = readdir(dir)) != NULL)
 		ents.push_back(*de);
@@ -510,5 +514,7 @@ void 	Response::addContentType(const std::string &a_content_type)
 
 static bool	operator<(dirent lhs, dirent rhs)
 {
-	return (lhs.d_type < rhs.d_type || std::strcmp(lhs.d_name, rhs.d_name) < 0);
+	if (lhs.d_type == rhs.d_type)
+		return (std::strcmp(lhs.d_name, rhs.d_name) < 0);
+	return (lhs.d_type == DT_DIR);
 }

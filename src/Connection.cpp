@@ -119,7 +119,7 @@ int	Connection::sendResponse(void)
 	const std::string	response = m_response.getResponse();
 	m_response.clearBody();
 	idleTime.resetTime();
-	if (send(m_clientSocket, response.data(), response.size(), 0) == -1)
+	if (send(m_clientSocket, response.data(), response.size(), MSG_DONTWAIT) == -1)
 		return (-1);
 	return (0);
 }

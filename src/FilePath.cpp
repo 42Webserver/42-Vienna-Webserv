@@ -161,6 +161,11 @@ bool	FilePath::isRead(void) const
 	return (S_IRUSR & m_sb.st_mode);
 }
 
+bool FilePath::isChr(void) const
+{
+	return (S_ISCHR(m_sb.st_mode));
+}
+
 std::ostream&	operator<<(std::ostream &os, const FilePath &fp)
 {
 	os << fp.str();

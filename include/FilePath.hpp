@@ -42,6 +42,7 @@ public:
 	bool				isDir(void) const;
 	bool				isExec(void) const;
 	bool				isRead(void) const;
+	bool				isChr(void) const;
 };
 
 std::ostream&	operator<<(std::ostream& os, const FilePath& fp);
