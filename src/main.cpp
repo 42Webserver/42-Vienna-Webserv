@@ -21,7 +21,8 @@ int	main(int argc, char **argv)
 
 	try
 	{
-        Webserver webserv = Webserver(ConfigParser::parseConfig(configName));
+        Webserver webserv = Webserver();
+		webserv.init(ConfigParser::parseConfig(configName));
         Response::initStatusCodes();
 		Response::initContentType();
 	    webserv.runServer();

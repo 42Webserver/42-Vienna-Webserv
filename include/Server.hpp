@@ -11,8 +11,8 @@
 #include <poll.h>
 #include <unistd.h>
 #include <algorithm>
-#include "Data.hpp"
 #include <netdb.h>
+#include "Data.hpp"
 
 class Server
 {

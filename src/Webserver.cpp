@@ -10,9 +10,34 @@ static void	stopServer(int a_sig)
 
 Webserver::Webserver(void) {}
 
-Webserver::Webserver(std::vector<struct subserver> subservers)
+Webserver::Webserver(const Webserver& a_other) : m_servers(a_other.m_servers), m_polls(a_other.m_polls) {}
+
+Webserver&	Webserver::operator=(const Webserver& a_other)
+{
+	if (this != &a_other)
+	{
+		m_servers = a_other.m_servers;
+		m_polls = a_other.m_polls;
+	}
+	return (*this);
+}
+
+Webserver::~Webserver() 
+{
+	for (size_t i = 0; i < m_polls.getPollfds().size(); i++)
+	{
+		if (m_servers.size() > i)
+			close(m_polls.getPollfdsAt(i).fd);
+		else
+			m_polls.getConnection(i).closeConnection();
+	}
+}
+
+int Webserver::init(std::vector<struct subserver> subservers)
 {
 	signal(SIGINT, stopServer);
+	for (size_t i = 0; i < subservers.size(); i++)
+		freeaddrinfo(subservers.at(i).setServerAdress());
 	for (std::size_t i = 0; i < subservers.size(); i++)
 	{
 		std::vector<Server>::iterator found = std::find(m_servers.begin(), m_servers.end(), subservers.at(i).getAdress());
@@ -29,21 +54,8 @@ Webserver::Webserver(std::vector<struct subserver> subservers)
 		it->initServerSocket();
 		m_polls.addServer(*it);
 	}
+	return (0);
 }
-
-Webserver::Webserver(const Webserver& a_other) : m_servers(a_other.m_servers), m_polls(a_other.m_polls) {}
-
-Webserver&	Webserver::operator=(const Webserver& a_other)
-{
-	if (this != &a_other)
-	{
-		m_servers = a_other.m_servers;
-		m_polls = a_other.m_polls;
-	}
-	return (*this);
-}
-
-Webserver::~Webserver() {}
 
 int	Webserver::pollServers(void)
 {
@@ -141,7 +153,7 @@ int	Webserver::pollClients(void)
 	return (0);
 }
 
-int	Webserver::runServer()
+int Webserver::runServer()
 {
 	int	pollRet = 0;
 	if (m_servers.size() == 0)
@@ -155,13 +167,7 @@ int	Webserver::runServer()
 		if (!g_isRunning)
 		{
 			std::cout << "Stopping Server :)" << std::endl;
-			for (size_t i = 0; i < m_polls.getPollfds().size(); i++)
-			{
-				if (m_servers.size() > i)
-					close(m_polls.getPollfdsAt(i).fd);
-				else
-					m_polls.getConnection(i).closeConnection();
-			}
+			
 			return (0);
 		}
 		else if (pollRet == -1)

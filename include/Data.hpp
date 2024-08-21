@@ -7,6 +7,11 @@
 #include <cstdlib>
 #include <ostream>
 #include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <cstring>
+#include <sstream>
 
 typedef std::map<std::string, std::vector<std::string> > t_config;
 
@@ -35,6 +40,7 @@ struct subserver
 	std::string		getHost(void) const;
 	serveradress	getAdress(void) const;
 	const t_config&	getValidConfig(std::string a_uri);
+	addrinfo*		setServerAdress(void);
 };
 
 #endif // !DATA_H

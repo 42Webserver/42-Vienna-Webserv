@@ -114,6 +114,7 @@ int Server::initServerSocket()
 	}
 	if (bind(sock, (struct sockaddr *)m_serverAddress, sizeof(*m_serverAddress)) == -1)
 	{
+		close(sock);
 		freeaddrinfo(resultFree);
 		throw (std::runtime_error("Error: server: binding socket to ip failed."));
 	}

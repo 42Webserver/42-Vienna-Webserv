@@ -13,7 +13,9 @@ u_int64_t subserver::getIp(void) const
 
 void	subserver::setIp(u_int32_t n_host)
 {
-	serverConfig.at("listen").at(0) = ntohl(n_host);
+	std::stringstream ss; 
+	ss << ntohl(n_host);
+	serverConfig.at("listen").at(0) = ss.str();
 }
 
 std::string subserver::getHost(void) const
@@ -43,6 +45,23 @@ const t_config &subserver::getValidConfig(std::string a_uri)
 			a_uri = a_uri.substr(0, pos + 1);
 	}
 	return (serverConfig);
+}
+
+
+addrinfo* subserver::setServerAdress(void)
+{
+	int error_code;
+	struct addrinfo input, *result; 
+	
+	memset(&input, 0, sizeof(input));
+	input.ai_family = AF_INET; //IPV4;
+	input.ai_socktype = SOCK_STREAM; //TCP connection; 
+	if ((error_code = getaddrinfo(getHost().c_str(), "http", &input, &result)) != 0)
+		throw (std::runtime_error("Error: server: Host not found"));
+	
+	setIp(((struct sockaddr_in *)result->ai_addr)->sin_addr.s_addr);
+	
+	return (result);
 }
 
 u_int64_t serveradress::getIp(void) const

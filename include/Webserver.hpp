@@ -28,11 +28,11 @@ private:
 public:
 
 	Webserver(void);
-	Webserver(std::vector<struct subserver> subservers);
 	Webserver(const Webserver& other);
 	Webserver& operator=(const Webserver& other);
 	~Webserver();
 
+	int		init(std::vector<struct subserver> subservers);
 	int		runServer(void);
 };
 
