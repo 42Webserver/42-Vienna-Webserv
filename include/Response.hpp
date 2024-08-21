@@ -29,6 +29,7 @@
 #define RESPONSE_COMPLETE 1U << 4
 
 #define BYTE_TO_KB 1000
+#define CHUNK_SIZE 32768
 
 class Response
 {
@@ -70,6 +71,7 @@ private:
 	int			deleteRequest(const FilePath& a_filePath);
 	void		modifyUri(void);
 	void		insertCgiResponse();
+	void		makeBodyChunked();
 
 
 public:
@@ -86,6 +88,7 @@ public:
 	static void			initStatusCodes();
 	const std::string	getResponse() const;
 	int					createResponseMsg();
+	int					sendResponse(int clientSocket);
 	void				clearBody();
 	std::size_t			getMaxBodySize(void) const;
 };

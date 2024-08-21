@@ -40,7 +40,6 @@ bool	Response::getBody(std::string const &filename)
 	}
 	body << input_file.rdbuf();
 	m_responseBody.append(body.str());
-	m_responseBody.append("\r\n");
 	input_file.close();
 	return (true);
 }
@@ -285,6 +284,31 @@ void	Response::insertCgiResponse()
 	}
 }
 
+void Response::makeBodyChunked()
+{
+	std::string newBody;
+	std::stringstream ss;
+	std::size_t size = CHUNK_SIZE; 
+	ss << std::hex << size << "\r\n";
+	while (!m_responseBody.empty())
+	{
+		if (m_responseBody.length() < CHUNK_SIZE)
+		{
+			size = m_responseBody.length();
+			ss.str("");
+			ss << std::hex << size << "\r\n";
+		}
+		newBody.append(ss.str());
+		newBody.append(m_responseBody, 0, size);
+		newBody.append("\r\n");
+		m_responseBody.erase(0, size);
+	}
+	newBody.append("0\r\n\r\n");
+	m_responseBody.clear();
+	m_responseBody = newBody;
+	std::cout << std::dec;
+}
+
 int	Response::isValidRequestHeader()
 {
 	int error_code;
@@ -368,8 +392,35 @@ int	Response::createResponseMsg()
 	return (0);
 }
 
+int Response::sendResponse(int clientSocket)
+{
+	ssize_t n = 0;
+	if (!m_responseHeader.empty())
+	{
+		std::string head = headerMapToString();
+		n = send(clientSocket, head.c_str(), head.length(), MSG_DONTWAIT | MSG_NOSIGNAL);
+		m_responseHeader.clear();
+	}
+	else
+	{
+		n = send(clientSocket, m_responseBody.c_str(), m_responseBody.length(), MSG_DONTWAIT | MSG_NOSIGNAL);
+		if (n > 0)
+			m_responseBody.erase(0, n);
+	}
+	if (n == -1)
+		return (-1);
+	if (m_responseBody.empty())
+	{
+		clearBody();
+		m_request = Request();
+		return (0);
+	}
+	return (1);
+}
+
 void	Response::clearBody()
 {
+	m_responseHeader.clear();
 	m_responseBody.clear();
 }
 
@@ -487,10 +538,19 @@ void	Response::addConnection()
 
 void	Response::addContentLength()
 {
-	std::ostringstream convert;
+	if (m_responseBody.length() > CHUNK_SIZE)
+	{
+		m_responseHeader["Transfer-Encoding"] = "chunked";
+		makeBodyChunked();
+	}
+	else
+	{
+		std::ostringstream convert;
 
-	convert << m_responseBody.length();
-	m_responseHeader["Content-Length"] = convert.str();
+		convert << m_responseBody.length();
+		m_responseHeader["Content-Length"] = convert.str();
+		m_responseBody.append("\r\n");
+	}
 }
 
 void	Response::addRedirection(const std::string &a_redLoc)

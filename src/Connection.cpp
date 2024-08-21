@@ -29,7 +29,7 @@ int	Connection::readAppend(std::string& a_appendString)
 	static char	buffer[BUFFER_SIZE];
 	int		ret;
 
-	ret = recv(m_clientSocket, buffer, BUFFER_SIZE, MSG_DONTWAIT);
+	ret = recv(m_clientSocket, buffer, BUFFER_SIZE, MSG_DONTWAIT | MSG_NOSIGNAL);
 	if (ret == -1)
 		return (-1);
 	a_appendString.append(buffer, ret);
@@ -115,13 +115,8 @@ int	Connection::sendResponse(void)
 		idleTime.resetTime();
 		return (1);
 	}
-	m_request = Request();
-	const std::string	response = m_response.getResponse();
-	m_response.clearBody();
 	idleTime.resetTime();
-	if (send(m_clientSocket, response.data(), response.size(), MSG_DONTWAIT) == -1)
-		return (-1);
-	return (0);
+	return (m_response.sendResponse(m_clientSocket));
 }
 
 void	Connection::closeConnection(void)
