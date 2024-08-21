@@ -44,7 +44,7 @@ void	PollContainer::addConnection(const Connection& a_connection)
 
 void	PollContainer::removeConnection(int a_idx)
 {
-	close(m_pollfds.at(a_idx).fd);
+	getConnection(a_idx).closeConnection();
 	m_pollfds.erase(m_pollfds.begin() + a_idx);
 	m_connections.erase(m_connections.begin() + a_idx - (m_pollfds.size() - m_connections.size() + 1));
 }
