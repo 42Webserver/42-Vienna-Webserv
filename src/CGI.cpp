@@ -230,6 +230,12 @@ int	CGI::io()
 			m_inputPipe[1],
 			m_request.getBody().c_str() + written, 
 			m_request.getBody().length() - written > 5000 ? 5000 : m_request.getBody().length() - written);
+		if (n == -1)
+		{
+			m_status = 500;
+			m_cgiStatus = CGI_FINISHED;
+			return (0);
+		}
 		written += n;
 		if (written == m_request.getBody().length())
 		{
@@ -266,6 +272,12 @@ int	CGI::io()
 		char buffer[4096];
 		
 		n = read(m_outputPipe[0], buffer, 4096);
+		if (n == -1)
+		{
+			m_status = 500;
+			m_cgiStatus = CGI_FINISHED;
+			return (0);
+		}
 		if (n > 0)
 			m_responseBody.append(buffer, n);
 		if (n < 4096)
