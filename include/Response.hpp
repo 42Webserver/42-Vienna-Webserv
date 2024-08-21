@@ -44,6 +44,7 @@ private:
 	t_config									m_config;
 	unsigned int								m_eventFlags;
 	SharedPtr<CGI>								m_cgi;
+	std::size_t									m_sentBytes;
 	
 	Response(void);
 
@@ -71,8 +72,6 @@ private:
 	int			deleteRequest(const FilePath& a_filePath);
 	void		modifyUri(void);
 	void		insertCgiResponse();
-	void		makeBodyChunked();
-
 
 public:
 

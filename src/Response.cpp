@@ -5,11 +5,11 @@ std::map<std::string, std::string>	Response::s_content_type;
 
 Response::Response(Request &a_request) : m_request(a_request),  m_eventFlags(0), m_cgi(NULL) {}
 
-Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0), m_cgi(NULL) {}
+Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0), m_cgi(NULL), m_sentBytes(0) {}
 
-Response::Response(Request &a_request, const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(a_request), m_config(other.m_config), m_eventFlags(other.m_eventFlags), m_cgi(other.m_cgi){}
+Response::Response(Request &a_request, const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(a_request), m_config(other.m_config), m_eventFlags(other.m_eventFlags), m_cgi(other.m_cgi), m_sentBytes(other.m_sentBytes) {}
 
-Response::Response(const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(other.m_request), m_config(other.m_config), m_eventFlags(other.m_eventFlags), m_cgi(other.m_cgi) {}
+Response::Response(const Response &other) : m_responseHeader(other.m_responseHeader), m_responseBody(other.m_responseBody), m_request(other.m_request), m_config(other.m_config), m_eventFlags(other.m_eventFlags), m_cgi(other.m_cgi), m_sentBytes(other.m_sentBytes) {}
 
 Response &Response::operator=(const Response &other)
 {
@@ -21,6 +21,7 @@ Response &Response::operator=(const Response &other)
 		m_config = other.m_config;
 		m_eventFlags = other.m_eventFlags;
 		m_cgi = other.m_cgi;
+		m_sentBytes = other.m_sentBytes;
 	}
 	return (*this);
 }
@@ -284,31 +285,6 @@ void	Response::insertCgiResponse()
 	}
 }
 
-void Response::makeBodyChunked()
-{
-	std::string newBody;
-	std::stringstream ss;
-	std::size_t size = CHUNK_SIZE; 
-	ss << std::hex << size << "\r\n";
-	while (!m_responseBody.empty())
-	{
-		if (m_responseBody.length() < CHUNK_SIZE)
-		{
-			size = m_responseBody.length();
-			ss.str("");
-			ss << std::hex << size << "\r\n";
-		}
-		newBody.append(ss.str());
-		newBody.append(m_responseBody, 0, size);
-		newBody.append("\r\n");
-		m_responseBody.erase(0, size);
-	}
-	newBody.append("0\r\n\r\n");
-	m_responseBody.clear();
-	m_responseBody = newBody;
-	std::cout << std::dec;
-}
-
 int	Response::isValidRequestHeader()
 {
 	int error_code;
@@ -398,21 +374,28 @@ int Response::sendResponse(int clientSocket)
 	if (!m_responseHeader.empty())
 	{
 		std::string head = headerMapToString();
+		if (m_responseBody.length() > CHUNK_SIZE)
+		{
+			std::stringstream ss;
+			ss << std::hex << m_responseBody.length() << "\r\n";
+			head.append(ss.str());
+			m_responseBody.append("\r\n0\r\n\r\n");
+		}
 		n = send(clientSocket, head.c_str(), head.length(), MSG_DONTWAIT | MSG_NOSIGNAL);
 		m_responseHeader.clear();
 	}
 	else
 	{
-		n = send(clientSocket, m_responseBody.c_str(), m_responseBody.length(), MSG_DONTWAIT | MSG_NOSIGNAL);
-		if (n > 0)
-			m_responseBody.erase(0, n);
+		n = send(clientSocket, m_responseBody.c_str() + m_sentBytes, m_responseBody.length() - m_sentBytes, MSG_DONTWAIT | MSG_NOSIGNAL);
+		m_sentBytes += n;
 	}
-	if (n == -1)
-		return (-1);
-	if (m_responseBody.empty())
+	if (m_sentBytes == m_responseBody.length() || n == -1)
 	{
+		m_sentBytes = 0;
 		clearBody();
 		m_request = Request();
+		if (n == -1)
+			return (-1);
 		return (0);
 	}
 	return (1);
@@ -465,7 +448,7 @@ void	Response::createAutoIndex(const std::string &a_path)
 		return ;
 	std::string uri = a_path;
 	uri.erase(0,  m_config.at("root").at(0).length());
-	if (m_config.find("name") != m_config.end())
+	if (m_config.find("name") != m_config.end() && m_config.at("name").at(0).length() > 1)
 		uri.insert(0, m_config.at("name").at(0));
 	m_responseBody.append("<!DOCTYPE html><body><h1>Index of " + uri
 		+ "</h1><hr><div style=\"display: flex; flex-direction: column; justify-items: center; align-items: flex-begin;\">");
@@ -541,7 +524,6 @@ void	Response::addContentLength()
 	if (m_responseBody.length() > CHUNK_SIZE)
 	{
 		m_responseHeader["Transfer-Encoding"] = "chunked";
-		makeBodyChunked();
 	}
 	else
 	{
