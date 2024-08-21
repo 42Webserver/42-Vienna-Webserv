@@ -237,7 +237,7 @@ int	CGI::io()
 			return (0);
 		}
 		written += n;
-		if (written == m_request.getBody().length())
+		if (written == m_request.getBody().length() || n == 0)
 		{
 			close(m_inputPipe[1]);
 			close(m_inputPipe[0]);
