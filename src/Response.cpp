@@ -3,7 +3,7 @@
 std::map<std::string, std::string>	Response::s_status_codes;
 std::map<std::string, std::string>	Response::s_content_type;
 
-Response::Response(Request &a_request) : m_request(a_request),  m_eventFlags(0), m_cgi(NULL) {}
+Response::Response(Request &a_request) : m_request(a_request),  m_eventFlags(0), m_cgi(NULL), m_sentBytes(0) {}
 
 Response::Response(Request &a_request, const t_config &a_config) : m_request(a_request), m_config(a_config), m_eventFlags(0), m_cgi(NULL), m_sentBytes(0) {}
 

@@ -1,6 +1,6 @@
 #include "CGI.hpp"
 
-CGI::CGI(t_config config, Request& request) : m_path(NULL), m_config(config), m_request(request), m_pid(0), m_status(0), m_cgiStatus(CGI_WRITING)
+CGI::CGI(t_config config, Request& request) : m_path(NULL), m_config(config), m_request(request), m_pid(0), m_status(0), m_sentBytes(0), m_cgiStatus(CGI_WRITING)
 {
 	m_inputPipe[0] = -1;
 	m_inputPipe[1] = -1;
@@ -9,7 +9,7 @@ CGI::CGI(t_config config, Request& request) : m_path(NULL), m_config(config), m_
 }
 
 CGI::CGI(const CGI &other) 
-	:  m_config(other.m_config), m_request(other.m_request), m_pid(other.m_pid), m_status(other.m_status), m_cgiStatus(other.m_cgiStatus)
+	:  m_config(other.m_config), m_request(other.m_request), m_pid(other.m_pid), m_status(other.m_status), m_sentBytes(0), m_cgiStatus(other.m_cgiStatus)
 {
 	m_inputPipe[0] = other.m_inputPipe[0];
 	m_inputPipe[1] = other.m_inputPipe[1];
@@ -46,6 +46,7 @@ CGI& CGI::operator=(const CGI &other)
 		m_outputPipe[0] = other.m_outputPipe[0];
 		m_outputPipe[1] = other.m_outputPipe[1];
 		m_status = other.m_status;
+		m_sentBytes = other.m_sentBytes;
 		m_cgiStatus = other.m_cgiStatus;
 
 		m_path = new char[std::strlen(other.m_path) + 1];
@@ -143,7 +144,7 @@ void	CGI::setEnvp()
 
 int	CGI::run()
 {
-  if (pipe(m_inputPipe) == -1 || pipe(m_outputPipe) == -1)
+  	if (pipe(m_inputPipe) == -1 || pipe(m_outputPipe) == -1)
 	{
 		std::cout << "Error while opening pipe\n";
 		return (500);
@@ -208,7 +209,6 @@ void	CGI::deleteData()
 
 int	CGI::io()
 {
-	static size_t written = 0;
 	if (startTime.isOver(CGI_TIMEOUT_SECONDS))
 	{
 		kill(m_pid, SIGINT);
@@ -228,21 +228,21 @@ int	CGI::io()
 	{
 		ssize_t n = write(
 			m_inputPipe[1],
-			m_request.getBody().c_str() + written, 
-			m_request.getBody().length() - written > 5000 ? 5000 : m_request.getBody().length() - written);
+			m_request.getBody().c_str() + m_sentBytes, 
+			m_request.getBody().length() - m_sentBytes > 5000 ? 5000 : m_request.getBody().length() - m_sentBytes);
 		if (n == -1)
 		{
 			m_status = 500;
 			m_cgiStatus = CGI_FINISHED;
 			return (0);
 		}
-		written += n;
-		if (written == m_request.getBody().length() || n == 0)
+		m_sentBytes += n;
+		if (m_sentBytes == m_request.getBody().length() || n == 0)
 		{
 			close(m_inputPipe[1]);
 			close(m_inputPipe[0]);
 			m_inputPipe[1] = -1;
-			written = 0;
+			m_sentBytes = 0;
 			m_cgiStatus = CGI_CLIENTFD;
 		}
 	}

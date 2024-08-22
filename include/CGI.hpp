@@ -32,6 +32,7 @@ private:
 	int							m_status;
 	std::string					m_responseBody;
 	std::string					m_filePath;
+	std::size_t					m_sentBytes;
 
 	enum
 	{
