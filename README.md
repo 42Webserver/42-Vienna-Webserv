@@ -112,7 +112,7 @@ Follow these steps to get your server up and running:
 2. **📂 Navigate to the Project Directory**:
    Change into the directory of the cloned repository:
    ```bash
-   cd webserv
+   cd 42-Vienna-Webserv
    ```
 
 3. **⚙️ Compile and Start the Server with Default Configuration**:
