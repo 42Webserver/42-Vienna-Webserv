@@ -107,8 +107,6 @@ Follow these steps to get your server up and running:
    ```bash
    git clone https://github.com/42Webserver/42-Vienna-Webserv.git
    ```
-   Replace `yourusername` with the actual username of the repository owner.
-
 2. **📂 Navigate to the Project Directory**:
    Change into the directory of the cloned repository:
    ```bash
@@ -120,22 +118,16 @@ Follow these steps to get your server up and running:
    ```bash
    make run
    ```
-
-4. **🔐 Ensure the Configuration File Has the Right Permissions**:
-   Make sure that the configuration file (`webserv.conf`) has the appropriate permissions to be read by the server. You can set the permissions using:
-   ```bash
-   chmod 644 webserv.conf
-   ```
-
-5. **🌐 Access the Server**:
+   
+4. **🌐 Access the Server**:
    Open your web browser and navigate to `http://localhost:8080` to access your application.
 
-6. **🧪 Test the Example Website**:
+5. **🧪 Test the Example Website**:
    To demonstrate all the functions of our web server, sessions and cookies have been integrated into the example website. Log in under "Manage Files" and "Upload Files" using the following credentials:
    - **Username**: admin
    - **Password**: hello123
 
-7. **🛠️ Test Different Routes**:
+6. **🛠️ Test Different Routes**:
    You can test various routes such as `/delete`, `/contact`, `/game`, `/overview`, and `/admin` to ensure everything is functioning as expected.
 
 ## 📌 Notes
