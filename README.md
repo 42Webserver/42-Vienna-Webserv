@@ -105,7 +105,7 @@ Follow these steps to get your server up and running:
 
 1. **📥 Pull the GitHub Repository**:
    ```bash
-   git clone https://github.com/yourusername/webserv.git
+   git clone https://github.com/42Webserver/42-Vienna-Webserv.git
    ```
    Replace `yourusername` with the actual username of the repository owner.
 
