@@ -41,17 +41,21 @@ This configuration structure allows for flexible and powerful setup, enabling We
 Below is an example configuration file to help you launch your HTTP server. It is structured to handle various routes and methods, ensuring smooth operation.
 
 ```nginx
-http {
-    server {
+http
+{
+    server
+    {
         listen localhost:8080;  # The server will listen on localhost at port 8080
         root /your/path/app;    # Base directory for serving files
 
-        location / {
+        location /
+        {
             index index.html;    # Default file to serve for the root location
             allowed_methods GET; # Allowed methods for this location
         }
 
-        location /delete {
+        location /delete
+        {
             root /your/path/app/public/delete/;  # Directory for delete operations
             cgi_methods POST GET;                 # Allowed methods for CGI
             extension .py;                        # File extension for CGI scripts
@@ -59,18 +63,21 @@ http {
             error_page 404 /public/error/404.html; # Custom error page for 404 errors
         }
 
-        location /contact {
+        location /contact
+        {
             root /your/path/app/public/contact;  # Directory for contact page
             index contact.html;                  # Default file for contact location
         }
 
-        location /game {
+        location /game
+        {
             root /your/path/app/public/game;     # Directory for game page
             index game.html;                     # Default file for game location
             allowed_methods GET;                 # Allowed methods for this location
         }
 
-        location /overview {
+        location /overview
+        {
             root /your/path/app/public/overview; # Directory for overview page
             index overview.html;                 # Default file for overview location
             cgi_methods POST GET;                # Allowed methods for CGI
@@ -78,7 +85,8 @@ http {
             script_path /usr/bin/python3 /bin/bash; # Paths to interpreters for CGI
         }
 
-        location /admin {
+        location /admin
+        {
             root /your/path/app/public/admin;    # Directory for admin page
             allowed_methods GET POST;            # Allowed methods for this location
             cgi_methods POST GET;                # Allowed methods for CGI
@@ -87,7 +95,8 @@ http {
             index admin.py;                      # Default file for admin location
         }
 
-        location /cgi-bin {
+        location /cgi-bin
+        {
             root /your/path/app/public/cgi-bin/; # Directory for CGI scripts
             cgi_methods POST GET;                 # Allowed methods for CGI
             extension .py .sh;                    # File extensions for CGI scripts
